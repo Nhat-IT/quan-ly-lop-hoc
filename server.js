@@ -26,6 +26,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Test DB (Giữ nguyên)
 app.get('/test-db', async (req, res) => { /* ... code cũ ... */ });
 
+// Thêm đoạn này để khi vào trang chủ (/) sẽ tự chuyển sang login.html
+app.get('/', (req, res) => {
+    res.redirect('/login.html');
+});
+
 app.listen(PORT, () => {
     console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 });
