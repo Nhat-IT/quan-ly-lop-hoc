@@ -4,71 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Quản Lý Lớp Học</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <script src="auth.js"></script>
+    
+    <script src="auth.js"></script> 
     
     <style>
         body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
         
-        /* Card & Table */
-        .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        /* Thẻ thống kê */
+        .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .stat-card:hover { transform: translateY(-3px); }
-        .table-card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; }
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
         
-        /* Rows */
-        .absence-item { border-bottom: 1px dashed #eee; padding: 8px 0; display: flex; align-items: center; flex-wrap: wrap; }
+        /* Bảng dữ liệu */
+        .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        /* Chi tiết vắng */
+        .absence-item { border-bottom: 1px dashed #eee; padding: 6px 0; display: flex; align-items: center; font-size: 0.9rem; }
         .absence-item:last-child { border-bottom: none; }
-        .subject-badge { font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; background-color: #f8f9fa; border: 1px solid #dee2e6; margin-right: 10px; font-weight: 600; color: #495057; }
-        .session-info { font-size: 0.9rem; color: #6c757d; margin-right: 15px; }
+        .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 2px 8px; margin-right: 8px; font-weight: 600; }
         
-        /* Action Buttons */
-        .note-actions { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+        /* Nút hành động nhỏ */
+        .btn-action { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; }
+        .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
+        .btn-note { width: auto; border-radius: 12px; background: #e7f1ff; color: #0d6efd; padding: 0 10px; border: none; font-size: 0.8rem; }
         
-        .btn-action { 
-            width: 28px; height: 28px; 
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-        
-        .btn-note-text { 
-            width: auto; height: auto; 
-            padding: 3px 10px; 
-            border-radius: 12px; 
-            background-color: #e7f1ff; color: #0d6efd; 
-            gap: 6px;
-        }
-
-        .btn-proof { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .btn-proof:hover { background-color: #ffe69c; color: #000; transform: scale(1.1); }
-
-        .btn-edit { background-color: white; border: 1px solid #dee2e6; color: #6c757d; }
-        .btn-edit:hover { background-color: #e9ecef; color: #0d6efd; border-color: #0d6efd; transform: scale(1.1); }
-
-        tr.alert-row { background-color: #fff5f5 !important; }
-        tr.alert-row td:first-child { border-left: 5px solid #dc3545; }
-        .text-orange { color: #fd7e14 !important; }
-        .detail-warning-card { border: 1px solid #ffeeba; background-color: #fff3cd; border-radius: 12px; transition: all 0.2s; cursor: pointer; }
-        .detail-warning-card:hover { background-color: #ffe69c; transform: translateY(-2px); }
-        .warning-count-badge { background-color: #dc3545; color: white; font-weight: bold; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
-        
-        .no-proof-msg { display: none; padding: 30px; color: #6c757d; font-style: italic; }
-        .no-proof-msg i { font-size: 3rem; margin-bottom: 10px; display: block; color: #dee2e6; }
+        /* Trạng thái cảnh báo */
+        .alert-row { background-color: #fff5f5 !important; }
+        .alert-row td:first-child { border-left: 5px solid #dc3545; }
+        .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
     </style>
 </head>
 <body>
-
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
         <div class="container">
             <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD</span>
             
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
-                    <div id="semesterDisplay">Học kỳ 1 (2025-2026)</div>
+                    <div id="semesterDisplay">Đang tải dữ liệu...</div>
                     <div>Lớp: 25TH01 - 25TH02</div>
                 </div>
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
@@ -79,405 +57,276 @@
     </nav>
 
     <div class="container">
-        <div class="row mb-4">
+        <div class="row mb-4 g-3">
             <div class="col-md-4">
                 <div class="card stat-card h-100">
                     <div class="card-body d-flex align-items-center">
                         <div class="icon-box bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-users"></i></div>
-                        <div><h6 class="text-muted mb-0 small fw-bold text-uppercase">TỔNG SINH VIÊN</h6><h3 class="fw-bold mb-0" id="totalStudentsDisplay">--</h3></div>
+                        <div><h6 class="text-muted small fw-bold">TỔNG SINH VIÊN</h6><h3 class="fw-bold mb-0" id="totalCount">--</h3></div>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card stat-card h-100 border-danger border-start border-4">
+                <div class="card stat-card h-100 border-start border-4 border-danger">
                     <div class="card-body d-flex align-items-center">
                         <div class="icon-box bg-danger bg-opacity-10 text-danger me-3"><i class="fas fa-user-times"></i></div>
-                        <div><h6 class="text-danger mb-0 small fw-bold text-uppercase">Sinh viên bị cảnh báo</h6><h3 class="fw-bold mb-0 text-danger" id="warningCount">--</h3><small class="text-muted" style="font-size: 0.75rem;">(Hiện tại)</small></div>
+                        <div><h6 class="text-danger small fw-bold">SV BỊ CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-danger" id="warningCount">--</h3></div>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card stat-card h-100 border-warning border-start border-4">
+                <div class="card stat-card h-100 border-start border-4 border-warning">
                     <div class="card-body d-flex align-items-center">
                         <div class="icon-box bg-warning bg-opacity-10 text-warning-emphasis me-3"><i class="fas fa-book-dead"></i></div>
-                        <div><h6 class="text-warning-emphasis mb-0 small fw-bold text-uppercase">Môn học cảnh báo</h6><h3 class="fw-bold mb-0 text-warning-emphasis" id="subjectWarningCount">--</h3></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card mb-4 border-0 shadow-sm" id="detailWarningSection">
-            <div class="card-header bg-white fw-bold border-bottom-0 pt-3"><i class="fas fa-list-ul text-secondary me-2"></i> CHI TIẾT CÁC MÔN CÓ SINH VIÊN BỊ CẢNH BÁO</div>
-            <div class="card-body pt-0">
-                <div class="row g-3">
-                    <div class="col-md-4 col-sm-6" data-semester="HK1">
-                        <div class="p-3 detail-warning-card d-flex justify-content-between align-items-center" onclick="quickFilter('PTUD Thực tế ảo', 'Nguyễn Văn A')">
-                            <div><div class="fw-bold text-dark">PTUD Thực tế ảo</div><div class="small text-muted"><i class="fas fa-chalkboard-teacher"></i> GV: Nguyễn Văn A</div></div>
-                            <div class="text-end"><span class="warning-count-badge">2 SV</span><div class="small text-danger fw-bold mt-1" style="font-size: 0.7rem;">Xem ngay <i class="fas fa-arrow-right"></i></div></div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-sm-6" data-semester="HK2">
-                        <div class="p-3 detail-warning-card d-flex justify-content-between align-items-center" onclick="quickFilter('Thương mại điện tử', 'Phạm Văn D')">
-                            <div><div class="fw-bold text-dark">Thương mại điện tử</div><div class="small text-muted"><i class="fas fa-chalkboard-teacher"></i> GV: Phạm Văn D</div></div>
-                            <div class="text-end"><span class="warning-count-badge">1 SV</span><div class="small text-danger fw-bold mt-1" style="font-size: 0.7rem;">Xem ngay <i class="fas fa-arrow-right"></i></div></div>
-                        </div>
+                        <div><h6 class="text-warning-emphasis small fw-bold">MÔN CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-warning-emphasis" id="subWarningCount">--</h3></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-            <div class="d-flex gap-2 align-items-center flex-wrap">
-                <select class="form-select w-auto fw-bold bg-primary text-white border-primary" id="semesterFilter" onchange="changeSemester()">
-                    <option value="HK1">Học Kỳ 1</option>
-                    <option value="HK2">Học Kỳ 2</option>
+        <div class="card mb-4 border-0 shadow-sm" id="detailSection">
+            <div class="card-header bg-white fw-bold border-0 pt-3"><i class="fas fa-list-ul text-secondary me-2"></i> MÔN HỌC CÓ SINH VIÊN BỊ CẢNH BÁO</div>
+            <div class="card-body pt-0">
+                <div class="row g-3" id="warningSubjectList">
+                    </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3 justify-content-between">
+            <div class="d-flex gap-2 flex-wrap">
+                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render()">
+                    </select>
+                <input type="text" class="form-control w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm tên hoặc MSSV...">
+                <select class="form-select w-auto text-primary fw-bold" id="subFilter" onchange="renderTable()">
+                    <option value="all">Tất cả môn</option>
                 </select>
-                <input type="text" class="form-control" id="searchInput" onkeyup="filterTable()" placeholder="Tìm tên hoặc MSSV..." style="width: 150px;">
-                <select class="form-select w-auto fw-bold text-success border-success" id="teacherFilter" onchange="filterTable()"></select>
-                <select class="form-select w-auto fw-bold text-primary" id="subjectFilter" onchange="filterTable()"></select>
-                <select class="form-select w-auto fw-bold" id="statusFilter" onchange="filterTable()">
+                <select class="form-select w-auto" id="statusFilter" onchange="renderTable()">
                     <option value="all">Tất cả trạng thái</option>
                     <option value="warning" class="text-danger">🔴 Chỉ hiện Cảnh báo</option>
                 </select>
             </div>
             <div>
-                <button class="btn btn-success me-2" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                <button class="btn btn-success me-2" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
                 <a href="diemdanh.html" class="btn btn-primary"><i class="fas fa-pen-nib"></i> Điểm danh</a>
             </div>
         </div>
 
         <div class="table-card">
-            <table class="table table-hover align-middle mb-0" id="attendanceTable">
+            <table class="table table-hover align-middle mb-0" id="mainTable">
                 <thead class="table-light">
-                    <tr><th width="5%" class="text-center">STT</th><th width="30%">Sinh viên</th><th width="55%">Chi tiết (Ngày - Buổi - Lý do)</th><th width="10%" class="text-center">Tổng Vắng</th></tr>
+                    <tr>
+                        <th class="text-center" width="5%">STT</th>
+                        <th width="30%">Sinh viên</th>
+                        <th width="55%">Chi tiết (Ngày - Buổi - Lý do)</th>
+                        <th class="text-center" width="10%">Tổng Vắng</th>
+                    </tr>
                 </thead>
-                <tbody id="studentTableBody">
-                    <tr class="alert-row" data-status="warning">
-                        <td class="text-center stt-cell">1</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold text-danger">Nguyễn Kỳ Quang</div>
-                                <div class="small text-muted">22050037</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="absence-item" data-subject="PTUD Thực tế ảo" data-semester="HK1">
-                                <span class="subject-badge text-alert">PTUD Thực tế ảo</span><span class="session-info">13/09/2025 - <b>Sáng</b></span>
-                                <div class="note-actions">
-                                    <span class="btn-action btn-note-text" data-bs-toggle="tooltip" title="Lý do: Nhập viện"><i class="far fa-comment-alt"></i> Lý do</span>
-                                    <button class="btn-action btn-proof" onclick="handleProof('https://via.placeholder.com/600x800?text=Giay+Nhap+Vien.jpg')" title="Xem minh chứng (Ảnh)"><i class="fas fa-eye"></i></button>
-                                    <button class="btn-action btn-edit" onclick="openEditModal('001', 'Nguyễn Kỳ Quang', 'PTUD', 'Nhập viện')"><i class="fas fa-pen"></i></button>
-                                </div>
-                            </div>
-                            <div class="absence-item" data-subject="PTUD Thực tế ảo" data-semester="HK1">
-                                <span class="subject-badge text-alert">PTUD Thực tế ảo</span><span class="session-info">13/09/2025 - <b>Chiều</b></span>
-                                <div class="note-actions">
-                                    <button class="btn-action btn-proof" onclick="handleProof('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf')" title="Tải/Xem minh chứng (File)"><i class="fas fa-eye"></i></button>
-                                    <button class="btn-action btn-edit" onclick="openEditModal('002', 'Nguyễn Kỳ Quang', 'PTUD', '')"><i class="fas fa-pen"></i></button>
-                                </div>
-                            </div>
-                            <div class="absence-item" data-subject="Robot Công nghiệp" data-semester="HK1"><span class="subject-badge">Robot Công nghiệp</span><span class="session-info">20/09/2025 - <b>Tối</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit" onclick="openEditModal('004', 'Nguyễn Kỳ Quang', 'Robot', '')"><i class="fas fa-pen"></i></button></div></div>
-                        </td>
-                        <td class="text-center fw-bold text-danger fs-5 js-total">3</td>
-                    </tr>
-                    <tr class="alert-row" data-status="warning">
-                        <td class="text-center stt-cell">2</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold text-danger">Trần Văn Nam</div>
-                                <div class="small text-muted">22050099</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="absence-item" data-subject="Robot Công nghiệp" data-semester="HK1">
-                                <span class="subject-badge text-alert">Robot Công nghiệp</span><span class="session-info">11/09/2025 - <b>Sáng</b></span>
-                                <div class="note-actions">
-                                    <button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button>
-                                    <button class="btn-action btn-edit" onclick="openEditModal('010', 'Trần Văn Nam', 'Robot', '')"><i class="fas fa-pen"></i></button>
-                                </div>
-                            </div>
-                             <div class="absence-item" data-subject="Robot Công nghiệp" data-semester="HK1">
-                                 <span class="subject-badge text-alert">Robot Công nghiệp</span><span class="session-info">18/09/2025 - <b>Sáng</b></span>
-                                 <div class="note-actions">
-                                     <button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button>
-                                     <button class="btn-action btn-edit" onclick="openEditModal('011', 'Trần Văn Nam', 'Robot', '')"><i class="fas fa-pen"></i></button>
-                                 </div>
-                            </div>
-                        </td>
-                        <td class="text-center fw-bold text-danger fs-5 js-total">2</td>
-                    </tr>
-                    <tr data-status="safe">
-                        <td class="text-center stt-cell">3</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold">Hoàng Thị Mai</div>
-                                <div class="small text-muted">22050015</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="absence-item" data-subject="Học sâu" data-semester="HK1"><span class="subject-badge">Học sâu</span><span class="session-info">12/09/2025 - <b>Tối</b></span><div class="note-actions"><button class="btn-action btn-note-text" data-bs-toggle="tooltip" title="Lý do: Về quê"><i class="far fa-comment-alt"></i> Lý do</button><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit" onclick="openEditModal('050', 'Hoàng Thị Mai', 'Học sâu', 'Về quê')"><i class="fas fa-pen"></i></button></div></div>
-                        </td>
-                        <td class="text-center fw-bold text-orange fs-5 js-total">1</td>
-                    </tr>
-                    <tr class="alert-row" data-status="warning">
-                        <td class="text-center stt-cell">4</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold text-danger">Lê Minh Tâm</div>
-                                <div class="small text-muted">22050123</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="absence-item" data-subject="Thương mại điện tử" data-semester="HK2"><span class="subject-badge text-alert">Thương mại điện tử</span><span class="session-info">15/02/2026 - <b>Sáng</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit" onclick="openEditModal('999', 'Lê Minh Tâm', 'TMĐT', '')"><i class="fas fa-pen"></i></button></div></div>
-                            <div class="absence-item" data-subject="Thương mại điện tử" data-semester="HK2"><span class="subject-badge text-alert">Thương mại điện tử</span><span class="session-info">22/02/2026 - <b>Sáng</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit" onclick="openEditModal('998', 'Lê Minh Tâm', 'TMĐT', '')"><i class="fas fa-pen"></i></button></div></div>
-                        </td>
-                        <td class="text-center fw-bold text-danger fs-5 js-total">2</td>
-                    </tr>
-                    <tr class="alert-row" data-status="warning">
-                        <td class="text-center stt-cell">5</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold text-danger">Vũ Quốc Hưng</div>
-                                <div class="small text-muted">22050088</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="absence-item" data-subject="Đồ án cơ sở" data-semester="HK2"><span class="subject-badge text-alert">Đồ án cơ sở</span><span class="session-info">10/03/2026 - <b>Chiều</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit"><i class="fas fa-pen"></i></button></div></div>
-                            <div class="absence-item" data-subject="Đồ án cơ sở" data-semester="HK2"><span class="subject-badge text-alert">Đồ án cơ sở</span><span class="session-info">17/03/2026 - <b>Chiều</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit"><i class="fas fa-pen"></i></button></div></div>
-                            <div class="absence-item" data-subject="Thương mại điện tử" data-semester="HK2"><span class="subject-badge">Thương mại điện tử</span><span class="session-info">18/03/2026 - <b>Sáng</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit"><i class="fas fa-pen"></i></button></div></div>
-                        </td>
-                        <td class="text-center fw-bold text-danger fs-5 js-total">3</td>
-                    </tr>
-                    <tr data-status="safe">
-                        <td class="text-center stt-cell">6</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold">Bùi Văn Long</div>
-                                <div class="small text-muted">22050077</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="absence-item" data-subject="Đồ án cơ sở" data-semester="HK2"><span class="subject-badge">Đồ án cơ sở</span><span class="session-info">10/03/2026 - <b>Chiều</b></span><div class="note-actions"><button class="btn-action btn-proof" onclick="handleProof('')"><i class="fas fa-eye"></i></button><button class="btn-action btn-edit"><i class="fas fa-pen"></i></button></div></div>
-                        </td>
-                        <td class="text-center fw-bold text-orange fs-5 js-total">1</td>
-                    </tr>
-                    <tr data-status="safe">
-                        <td class="text-center stt-cell">7</td>
-                        <td>
-                            <div>
-                                <div class="fw-bold">Đặng Ngọc Ánh</div>
-                                <div class="small text-muted">22050055</div>
-                            </div>
-                        </td>
-                        <td><span class="text-muted small fst-italic">Không vắng buổi nào</span></td>
-                        <td class="text-center fw-bold text-success fs-5 js-total">0</td>
-                    </tr>
+                <tbody id="tableBody">
+                    <tr><td colspan="4" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="modal fade" id="editModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold">✏️ Cập nhật trạng thái</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form><input type="hidden" id="editId"><div class="mb-3"><input type="text" class="form-control fw-bold" id="editStudentInfo" disabled></div><div class="mb-3"><textarea class="form-control" id="editReason" rows="3" placeholder="Lý do..."></textarea></div></form></div><div class="modal-footer d-flex justify-content-between"><button type="button" class="btn btn-outline-danger" onclick="deleteAbsence()">Xóa</button><div><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button><button type="button" class="btn btn-primary" onclick="saveEdit()">Lưu</button></div></div></div></div></div>
-
-    <div class="modal fade" id="proofModal" tabindex="-1">
+    <div class="modal fade" id="proofModal">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header border-0 pb-0"><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body text-center p-3">
-                    <img id="proofImage" src="" class="img-fluid rounded shadow" style="max-height: 80vh; display: none;">
-                    <div id="noProofText" class="no-proof-msg">
-                        <i class="fas fa-file-slash"></i>
+                <div class="modal-body text-center p-4">
+                    <img id="proofImg" class="img-fluid rounded shadow" style="display:none; max-height: 80vh;">
+                    <div id="noProof" class="py-5 text-muted" style="display:none">
+                        <i class="fas fa-file-slash fs-1 mb-3"></i>
                         <h5>Không có minh chứng</h5>
-                        <small>Sinh viên này chưa nộp ảnh hoặc file minh chứng nào.</small>
+                        <p class="small">Sinh viên chưa nộp minh chứng cho buổi vắng này.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el) })
+        // --- PHẦN 1: KHỞI TẠO & GỌI API ---
+        let db = {}; // Biến chứa dữ liệu tải từ server
 
-        const semesterData = {
-            "HK1": {
-                studentCount: 45,
-                subjects: ["PTUD Thực tế ảo", "Học sâu", "Robot Công nghiệp"],
-                teachers: ["Nguyễn Văn A", "Trần Thị B", "Lê Văn C"],
-                mapping: { "Nguyễn Văn A": ["PTUD Thực tế ảo"], "Trần Thị B": ["Robot Công nghiệp"], "Lê Văn C": ["Học sâu"] }
-            },
-            "HK2": {
-                studentCount: 49,
-                subjects: ["Thương mại điện tử", "Đồ án cơ sở"],
-                teachers: ["Phạm Văn D", "Võ Thị E"],
-                mapping: { "Phạm Văn D": ["Thương mại điện tử"], "Võ Thị E": ["Đồ án cơ sở"] }
+        async function init() {
+            try {
+                // Gọi API Dashboard từ Backend
+                const res = await fetch('/api/data/dashboard');
+                if(!res.ok) throw new Error('Lỗi kết nối Server');
+                
+                db = await res.json();
+
+                // Nếu DB rỗng (chưa có dữ liệu vắng), tạo cấu trúc mặc định
+                if (Object.keys(db).length === 0) {
+                    db = { "HK1": { total: 0, subjects: [], data: [] } };
+                }
+
+                // Tạo Option cho Select Học kỳ
+                const semSelect = document.getElementById('semFilter');
+                semSelect.innerHTML = '';
+                Object.keys(db).forEach(sem => {
+                    semSelect.add(new Option(sem, sem));
+                });
+
+                // Hiển thị dữ liệu
+                render();
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Lỗi: Không thể tải dữ liệu (${error.message})</td></tr>`;
             }
-        };
-
-        function init() { changeSemester(); }
-
-        function changeSemester() {
-            const currentSemester = document.getElementById('semesterFilter').value;
-            const data = semesterData[currentSemester];
-            document.getElementById('semesterDisplay').innerText = (currentSemester === 'HK1' ? 'Học kỳ 1 (2025-2026)' : 'Học kỳ 2 (2025-2026)');
-            document.getElementById('totalStudentsDisplay').innerText = data.studentCount;
-
-            const subjectSelect = document.getElementById('subjectFilter');
-            subjectSelect.innerHTML = '<option value="all">Tất cả môn học</option>';
-            data.subjects.forEach(sub => { const opt = document.createElement('option'); opt.value = sub; opt.text = sub; subjectSelect.add(opt); });
-
-            const teacherSelect = document.getElementById('teacherFilter');
-            teacherSelect.innerHTML = '<option value="all">Tất cả Giáo viên</option>';
-            data.teachers.forEach(tea => { const opt = document.createElement('option'); opt.value = tea; opt.text = "GV " + tea; teacherSelect.add(opt); });
-
-            document.querySelectorAll('#detailWarningSection .col-md-4').forEach(card => {
-                card.style.display = (card.getAttribute('data-semester') === currentSemester) ? '' : 'none';
-            });
-            filterTable();
         }
 
-        function quickFilter(subjectName, teacherName) {
-            document.getElementById('teacherFilter').value = teacherName || 'all';
-            document.getElementById('subjectFilter').value = subjectName;
-            document.getElementById('statusFilter').value = 'warning';
-            filterTable();
-            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
+        // --- PHẦN 2: LOGIC HIỂN THỊ (RENDER) ---
+        function render() {
+            const sem = document.getElementById('semFilter').value;
+            const currentData = db[sem];
+
+            if (!currentData) return;
+
+            // Cập nhật thống kê
+            document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
+            document.getElementById('totalCount').innerText = currentData.total;
+
+            // Cập nhật Select Môn học (Giữ lại 'All', thêm môn mới)
+            const subSelect = document.getElementById('subFilter');
+            const currentVal = subSelect.value;
+            subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
+            currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+            subSelect.value = currentVal; // Giữ lại lựa chọn cũ nếu có
+
+            renderTable();
+            renderWarningCards(currentData.data);
         }
 
-        function filterTable() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const currentSemester = document.getElementById('semesterFilter').value;
-            const teacherFilter = document.getElementById('teacherFilter').value;
-            const subjectFilter = document.getElementById('subjectFilter').value;
+        function renderTable() {
+            const sem = document.getElementById('semFilter').value;
+            if(!db[sem]) return;
+
+            const search = document.getElementById('search').value.toLowerCase();
+            const subFilter = document.getElementById('subFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
-            const currentMapping = semesterData[currentSemester].mapping;
+            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            let stt = 1;
+            let warnCount = 0;
+            let subWarnSet = new Set();
 
-            const rows = document.querySelectorAll('#studentTableBody tr');
-            let sttCounter = 1;
-            let totalWarningCount = 0; 
-            let subjectsWithWarning = new Set(); 
+            db[sem].data.forEach(sv => {
+                // 1. Lọc theo tên/MSSV
+                if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
+                
+                // 2. Lọc chi tiết vắng theo môn đã chọn
+                const visibleDetails = sv.details.filter(d => subFilter === 'all' || d.sub === subFilter);
+                
+                // 3. Logic trạng thái (Cảnh báo nếu vắng >= 2)
+                let total = visibleDetails.length;
+                let isWarning = total >= 2;
+                
+                if (statusFilter === 'warning' && !isWarning) return;
+                if (total === 0 && subFilter !== 'all') return; // Ẩn nếu chọn môn mà SV không vắng môn đó
 
-            rows.forEach(row => {
-                let showRow = true;
-                const studentName = row.querySelector('td:nth-child(2) .fw-bold').innerText.toLowerCase();
-                const studentMSSV = row.querySelector('td:nth-child(2) .small.text-muted').innerText.toLowerCase();
-                if (searchText !== "" && !studentName.includes(searchText) && !studentMSSV.includes(searchText)) showRow = false;
+                // Đếm thống kê
+                if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
 
-                const rowStatus = row.getAttribute('data-status');
-                if (statusFilter !== 'all' && rowStatus !== statusFilter) showRow = false;
+                // 4. Tạo HTML cho dòng
+                const rowClass = isWarning ? 'alert-row' : '';
+                const totalColor = isWarning ? 'text-danger' : (total > 0 ? 'text-warning-emphasis' : 'text-success');
+                
+                let detailsHtml = visibleDetails.length ? visibleDetails.map(d => `
+                    <div class="absence-item">
+                        <span class="badge-sub">${d.sub}</span> <span class="me-auto">${d.date}</span>
+                        <div class="d-flex gap-1">
+                            ${d.reason ? `<button class="btn-action btn-note" title="${d.reason}"><i class="far fa-comment-alt"></i></button>` : ''}
+                            <button class="btn-action" onclick="viewProof('${d.proof}')" title="Xem minh chứng"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>`).join('') : '<span class="text-muted small fst-italic">Không vắng buổi nào</span>';
 
-                const absenceItems = row.querySelectorAll('.absence-item');
-                let visibleCount = 0;
-                let hasMatchingItem = false;
+                const html = `
+                    <tr class="${rowClass}">
+                        <td class="text-center fw-bold text-muted">${stt++}</td>
+                        <td>
+                            <div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div>
+                            <div class="small text-muted">${sv.mssv}</div>
+                        </td>
+                        <td>${detailsHtml}</td>
+                        <td class="text-center fw-bold fs-5 ${totalColor}">${total}</td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', html);
+            });
 
-                if (absenceItems.length > 0) {
-                    absenceItems.forEach(item => {
-                        const itemSubject = item.getAttribute('data-subject');
-                        const itemSemester = item.getAttribute('data-semester');
-                        let itemVisible = true;
+            // Cập nhật số liệu cảnh báo lên thẻ
+            document.getElementById('warningCount').innerText = warnCount;
+            document.getElementById('subWarningCount').innerText = subWarnSet.size;
+        }
 
-                        if (itemSemester !== currentSemester) itemVisible = false;
-                        else {
-                            if (teacherFilter !== 'all') {
-                                const subjectsTaught = currentMapping[teacherFilter];
-                                if (!subjectsTaught || !subjectsTaught.includes(itemSubject)) itemVisible = false;
-                            }
-                            if (subjectFilter !== 'all' && itemSubject !== subjectFilter) itemVisible = false;
-                        }
-
-                        if (itemVisible) {
-                            item.style.display = ''; hasMatchingItem = true; visibleCount++;
-                            if(visibleCount >= 2) subjectsWithWarning.add(itemSubject);
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                    if (!hasMatchingItem) showRow = false;
-                } else {
-                    if (teacherFilter !== 'all' || subjectFilter !== 'all') showRow = false;
-                }
-
-                const totalCell = row.querySelector('.js-total');
-                if(totalCell) {
-                    totalCell.innerText = visibleCount;
-                    totalCell.className = 'text-center fw-bold fs-5 js-total';
-                    if (visibleCount >= 2) {
-                        totalCell.classList.add('text-danger');
-                        if(showRow) totalWarningCount++; 
-                    }
-                    else if (visibleCount === 1) totalCell.classList.add('text-orange');
-                    else totalCell.classList.add('text-success');
-                }
-
-                if (showRow) {
-                    row.style.display = '';
-                    const sttCell = row.querySelector('.stt-cell');
-                    if(sttCell) sttCell.innerText = sttCounter++;
-                } else {
-                    row.style.display = 'none';
+        function renderWarningCards(data) {
+            const container = document.getElementById('warningSubjectList');
+            container.innerHTML = '';
+            
+            // Tính toán môn nào có bao nhiêu SV bị cảnh báo
+            const subCounts = {};
+            data.forEach(sv => {
+                const grouped = {};
+                sv.details.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
+                for (let sub in grouped) {
+                    if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
                 }
             });
 
-            document.getElementById('warningCount').innerText = totalWarningCount;
-            document.getElementById('subjectWarningCount').innerText = subjectsWithWarning.size;
-        }
-
-        // HÀM XỬ LÝ MINH CHỨNG
-        function handleProof(url) {
-            const modalImg = document.getElementById('proofImage');
-            const noProofText = document.getElementById('noProofText');
-
-            if (!url) {
-                // Không có minh chứng
-                new bootstrap.Modal(document.getElementById('proofModal')).show();
-                modalImg.style.display = 'none';
-                noProofText.style.display = 'block';
+            if(Object.keys(subCounts).length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
                 return;
             }
 
-            // Có minh chứng
-            const isImage = url.match(/\.(jpeg|jpg|gif|png)$/) != null;
-            if (isImage) {
-                new bootstrap.Modal(document.getElementById('proofModal')).show();
-                modalImg.src = url;
-                modalImg.style.display = 'inline-block';
-                noProofText.style.display = 'none';
+            for (let [sub, count] of Object.entries(subCounts)) {
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${sub}')">
+                            <div class="fw-bold text-dark">${sub}</div>
+                            <div class="text-end">
+                                <span class="badge bg-danger">${count} SV</span>
+                                <div class="small text-danger mt-1 fw-bold" style="font-size: 0.7rem;">Xem <i class="fas fa-arrow-right"></i></div>
+                            </div>
+                        </div>
+                    </div>`);
+            }
+        }
+
+        // --- PHẦN 3: CÁC HÀM TIỆN ÍCH ---
+        function quickFilter(sub) {
+            document.getElementById('subFilter').value = sub;
+            document.getElementById('statusFilter').value = 'warning';
+            renderTable();
+            // Cuộn xuống bảng
+            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function viewProof(url) {
+            const modal = new bootstrap.Modal(document.getElementById('proofModal'));
+            const img = document.getElementById('proofImg');
+            const none = document.getElementById('noProof');
+            
+            if (url && (url.match(/\.(jpeg|jpg|gif|png)$/i) || url.startsWith('blob:'))) {
+                img.src = url; img.style.display = 'block'; none.style.display = 'none';
+                modal.show();
+            } else if (url) {
+                window.open(url, '_blank'); // Mở link file PDF/Word...
             } else {
-                window.open(url, '_blank');
+                img.style.display = 'none'; none.style.display = 'block';
+                modal.show();
             }
         }
 
-        let currentEditId = '';
-        function openEditModal(id, info, details, reason) {
-            currentEditId = id;
-            document.getElementById('editId').value = id;
-            document.getElementById('editStudentInfo').value = info + " - " + details;
-            document.getElementById('editReason').value = reason;
-            new bootstrap.Modal(document.getElementById('editModal')).show();
-        }
-        function deleteAbsence() {
-            if(confirm("Xóa dòng vắng này?")) {
-                const item = document.getElementById('abs-' + currentEditId);
-                if(item) { item.remove(); bootstrap.Modal.getInstance(document.getElementById('editModal')).hide(); filterTable(); }
-            }
-        }
-        function saveEdit() { bootstrap.Modal.getInstance(document.getElementById('editModal')).hide(); alert("Đã cập nhật!"); }
-        
-        function exportToExcel() {
-            let originalTable = document.getElementById("attendanceTable");
-            let clonedTable = originalTable.cloneNode(true);
-            let rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                if (row.style.display === 'none') { row.remove(); } else {
-                    row.querySelectorAll(".absence-item").forEach(item => { if (item.style.display === "none") item.remove(); });
-                    row.querySelectorAll("button, .note-actions, i, .btn-action").forEach(el => el.remove());
-                }
-            });
-            const wb = XLSX.utils.table_to_book(clonedTable, {sheet: "Báo Cáo"});
-            XLSX.writeFile(wb, "Bao_Cao.xlsx");
+        function exportExcel() {
+            const table = document.getElementById("mainTable");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Báo Cáo Vắng"});
+            XLSX.writeFile(wb, "Danh_Sach_Canh_Bao.xlsx");
         }
 
+        // Chạy ngay khi tải trang
         init();
     </script>
 </body>
