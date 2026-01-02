@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Điểm Danh</title>
+    <title>Điểm Danh Sinh Viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -11,13 +11,16 @@
         :root { --primary-color: #3459e6; --danger-color: #e6344a; --danger-bg-light: #fff0f3; --bg-body: #f4f7fa; --bg-white: #ffffff; --text-dark: #2c3e50; --border-color: #e2e8f0; }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
-        /* HEADER & CONTROLS */
+        /* HEADER CĂN GIỮA */
         .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .header-content { display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .page-title { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 800; color: var(--primary-color); font-size: 1.25rem; white-space: nowrap; }
+
         .scrollable-controls { background: var(--bg-white); padding-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
         .form-control-fixed, .form-select-fixed { height: 42px; }
 
-        /* --- CẤU TRÚC BẢNG (GRID SYSTEM) ĐỂ CĂN ĐỀU --- */
+        /* BẢNG & CỘT */
         .list-header { 
             background-color: #e9ecef; color: #495057; font-weight: bold; padding: 12px 0; 
             border-radius: 8px 8px 0 0; display: flex; align-items: center; border: 1px solid var(--border-color); border-bottom: none;
@@ -31,18 +34,17 @@
         
         .row-main-content { display: flex; align-items: center; width: 100%; }
 
-        /* CĂN CHỈNH CỘT */
-        .col-stt { width: 60px; text-align: center; font-weight: bold; color: #666; flex-shrink: 0; }
-        .col-name { flex: 2; padding-left: 15px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .col-mssv { flex: 1; text-align: center; color: #666; font-family: monospace; font-size: 0.95rem; }
-        .col-class { flex: 1; text-align: center; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; }
-        .col-action { width: 100px; text-align: center; flex-shrink: 0; }
+        /* CĂN CHỈNH KÍCH THƯỚC CỘT (Đã dịch sang trái) */
+        .col-stt { width: 50px; text-align: center; font-weight: bold; color: #666; flex-shrink: 0; }
+        .col-name { flex: 2; padding-left: 10px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        /* Dịch cột MSSV và Lớp sang trái bằng cách dùng text-start và padding */
+        .col-mssv { width: 150px; text-align: left; padding-left: 10px; color: #666; font-family: monospace; font-size: 0.95rem; flex-shrink: 0; }
+        .col-class { width: 100px; text-align: left; padding-left: 10px; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+        .col-action { width: 80px; text-align: center; flex-shrink: 0; }
 
-        /* INPUT LÝ DO */
-        .note-input-group { display: none; margin-top: 8px; margin-left: 60px; margin-right: 15px; }
+        .note-input-group { display: none; margin-top: 8px; margin-left: 50px; margin-right: 15px; }
         .is-absent .note-input-group { display: block; }
 
-        /* UTILS */
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         .btn-excel { background-color: #1D6F42 !important; color: white !important; border: 1px solid #1D6F42 !important; }
         .empty-state { padding: 40px; text-align: center; }
@@ -51,10 +53,12 @@
 <body>
 
     <div class="sticky-header">
-        <div class="container d-flex align-items-center">
-            <a href="index.html" class="btn btn-light btn-sm me-3 rounded-circle shadow-sm border"><i class="fas fa-arrow-left text-primary"></i></a>
-            <h4 class="mb-0 fw-bold text-dark">Điểm Danh</h4>
-            <div class="ms-auto"><span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill" id="displaySubjectName">--</span></div>
+        <div class="container header-content">
+            <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border"><i class="fas fa-arrow-left text-primary"></i></a>
+            
+            <div class="page-title" id="displaySubjectName">--</div>
+
+            <div style="width: 32px;"></div>
         </div>
     </div>
 
@@ -68,15 +72,17 @@
                         <option value="HK2">HK2</option>
                         <option value="HK3">HK3</option>
                     </select>
-                    
                     <button class="btn btn-success" type="button" onclick="openAddSubjectModal()" title="Thêm môn"><i class="fas fa-plus"></i></button>
-                    
                     <select class="form-select form-control-fixed fw-bold text-primary border-0" id="subjectSelect" onchange="changeSubject()"></select>
                     <button class="btn btn-warning" onclick="openEditSubjectModal()" title="Sửa/Xóa môn"><i class="fas fa-pen text-white"></i></button>
                     <button class="btn btn-excel" id="btnImportExcel" onclick="importClassList()"><i class="fas fa-file-excel"></i> Danh sách</button>
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
-                <div class="text-muted small mb-2"><i class="fas fa-chalkboard-teacher me-1"></i> <span id="displayTeacherName">--</span></div>
+                
+                <div class="d-flex justify-content-between align-items-center text-muted small">
+                    <span><i class="fas fa-chalkboard-teacher me-1"></i> <span id="displayTeacherName">--</span></span>
+                    <span><i class="far fa-calendar-alt me-1"></i> <span id="displayDateRange">--</span></span>
+                </div>
             </div>
 
             <div class="row g-3">
@@ -106,8 +112,7 @@
             <div class="list-header">
                 <div class="col-stt">STT</div>
                 <div class="col-name">Họ và Tên</div>
-                <div class="col-mssv">Mã SV</div>
-                <div class="col-class">Lớp</div>
+                <div class="col-mssv">Mã số sinh viên</div> <div class="col-class">Lớp</div>
                 <div class="col-action">Vắng</div>
             </div>
             <div id="listBody"></div>
@@ -117,7 +122,7 @@
     <div class="bottom-bar-wrapper">
         <div class="container d-flex justify-content-between align-items-center">
             <div><span class="text-muted small fw-bold text-uppercase">Vắng:</span> <span class="fw-bold text-danger fs-3" id="countAbsent">0</span></div>
-            <button class="btn btn-primary btn-lg px-5 fw-bold rounded-pill shadow" onclick="submitAttendance()">LƯU LẠI</button>
+            <button class="btn btn-primary btn-lg px-5 fw-bold rounded-pill shadow" id="btnSave" onclick="submitAttendance()">LƯU LẠI</button>
         </div>
     </div>
 
@@ -127,7 +132,7 @@
                 <div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn Mới</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="newSubjectName"></div>
-                    <div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="newTeacherName" placeholder="VD: Nguyễn Văn A"></div>
+                    <div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="newTeacherName"></div>
                     <div class="row g-2">
                         <div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="newStartDate"></div>
                         <div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="newEndDate"></div>
@@ -157,16 +162,24 @@
 
         async function init() {
             try {
+                // --- XỬ LÝ DASHBOARD: Kiểm tra URL có parameter 'semester' không ---
+                const urlParams = new URLSearchParams(window.location.search);
+                const dashboardSem = urlParams.get('semester');
+                if(dashboardSem) {
+                    document.getElementById('semesterSelect').value = dashboardSem;
+                }
+
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
+                
+                // Nếu chưa có học kỳ, mặc định HK1
                 if(!document.getElementById('semesterSelect').value) document.getElementById('semesterSelect').value = "HK1";
+                
                 filterSubjectsBySemester();
             } catch (error) { console.error("Lỗi:", error); }
         }
 
-        // --- HÀM MỞ MODAL THÊM MÔN (ĐÃ SỬA) ---
         function openAddSubjectModal() {
-            // Sử dụng Bootstrap API để mở Modal chắc chắn hơn
             const modalEl = document.getElementById('addSubjectModal');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
@@ -182,6 +195,7 @@
                 select.innerHTML = '<option value="">-- Trống --</option>';
                 document.getElementById('displaySubjectName').innerText = "--";
                 document.getElementById('displayTeacherName').innerText = "--";
+                document.getElementById('displayDateRange').innerText = "--";
                 currentStudents = []; renderList(); return;
             }
             filtered.forEach(s => select.add(new Option(s.subject_name, s.id)));
@@ -192,26 +206,37 @@
             const id = document.getElementById('subjectSelect').value;
             if(!id) return;
             const sub = allSubjects.find(s => s.id == id);
+            
+            // Cập nhật thông tin Header và Card
             if(sub) {
                 document.getElementById('displaySubjectName').innerText = sub.subject_name;
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name ? "GV: " + sub.teacher_name : "GV: Chưa cập nhật";
+                
+                // Hiển thị ngày bắt đầu - kết thúc
+                let sDate = sub.start_date ? new Date(sub.start_date).toLocaleDateString('vi-VN') : '...';
+                let eDate = sub.end_date ? new Date(sub.end_date).toLocaleDateString('vi-VN') : '...';
+                document.getElementById('displayDateRange').innerText = `${sDate} - ${eDate}`;
             }
+
             try {
                 const res = await fetch(`/api/data/students/${id}`);
                 currentStudents = await res.json();
             } catch (e) { currentStudents = []; }
+            
             renderList();
-            await loadSavedAttendance();
+            await loadSavedAttendance(); // Quan trọng: Load lại trạng thái điểm danh
         }
 
         function reloadData() { if (currentStudents.length > 0) loadSavedAttendance(); }
 
+        // Load trạng thái đã lưu từ DB
         async function loadSavedAttendance() {
             const subjectId = document.getElementById('subjectSelect').value;
             const date = document.getElementById('todayDate').value;
             const session = document.getElementById('sessionTime').value;
             if (!subjectId || !date) return;
 
+            // Reset
             document.querySelectorAll('.student-row').forEach(row => {
                 row.classList.remove('is-absent');
                 row.querySelector('.form-check-input').checked = false;
@@ -253,7 +278,6 @@
             }
             
             currentStudents.forEach((sv, i) => {
-                // Thêm data-name và data-mssv để lọc chính xác
                 const html = `
                 <div class="student-row" id="row-${sv.id}" 
                      data-id="${sv.id}" 
@@ -288,23 +312,15 @@
             if (uniqueClasses.includes(currentFilter)) classFilter.value = currentFilter;
         }
 
-        // --- HÀM LỌC ĐÃ SỬA: CHỈ LỌC THEO HỌ TÊN VÀ MSSV ---
         function filterList() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             const filterClass = document.getElementById('classFilter').value;
-
             document.querySelectorAll('.student-row').forEach(r => {
-                // Lấy dữ liệu từ attribute data-* thay vì innerText để chính xác
                 const name = r.getAttribute('data-name');
                 const mssv = r.getAttribute('data-mssv');
                 const studentClass = r.getAttribute('data-class');
-                
-                // Logic: Text chỉ tìm trong Tên hoặc MSSV (Không tìm trong lớp)
                 const matchText = name.includes(txt) || mssv.includes(txt);
-                
-                // Logic: Dropdown lớp lọc riêng
                 const matchClass = filterClass === "" || studentClass === filterClass;
-
                 r.style.display = (matchText && matchClass) ? 'flex' : 'none';
             });
         }
@@ -325,7 +341,6 @@
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ subject_name: name, teacher_name: teacher, semester: sem, start_date: start, end_date: end })
             });
-            // Ẩn modal sau khi lưu
             const modalEl = document.getElementById('addSubjectModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
@@ -357,7 +372,40 @@
         }
         function openEditStudent(id) { const s = currentStudents.find(x => x.id == id); document.getElementById('editStudentId').value = id; document.getElementById('editStudentName').value = s.full_name; document.getElementById('editStudentMSSV').value = s.mssv; document.getElementById('editStudentClass').value = s.class_name; new bootstrap.Modal(document.getElementById('editStudentModal')).show(); }
         async function saveEditedStudent() { const id = document.getElementById('editStudentId').value; const body = { full_name: document.getElementById('editStudentName').value, mssv: document.getElementById('editStudentMSSV').value, class_name: document.getElementById('editStudentClass').value }; await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}); bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject(); }
-        async function submitAttendance() { const data = Array.from(document.querySelectorAll('.student-row')).map(r => ({ student_id: r.dataset.id, is_absent: r.classList.contains('is-absent') ? 1 : 0, reason: r.querySelector('.txt-reason').value })); await fetch('/api/data/attendance', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject_id: document.getElementById('subjectSelect').value, session_date: document.getElementById('todayDate').value, session_time: document.getElementById('sessionTime').value, attendance_data: data }) }); alert("Đã lưu điểm danh!"); }
+        
+        // --- NÚT LƯU ĐÃ SỬA: HIỆU ỨNG LOADING ---
+        async function submitAttendance() {
+            const btn = document.getElementById('btnSave');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            btn.disabled = true;
+
+            const data = Array.from(document.querySelectorAll('.student-row')).map(r => ({ 
+                student_id: r.dataset.id, 
+                is_absent: r.classList.contains('is-absent') ? 1 : 0, 
+                reason: r.querySelector('.txt-reason').value 
+            })); 
+
+            try {
+                await fetch('/api/data/attendance', { 
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ 
+                        subject_id: document.getElementById('subjectSelect').value, 
+                        session_date: document.getElementById('todayDate').value, 
+                        session_time: document.getElementById('sessionTime').value, 
+                        attendance_data: data 
+                    }) 
+                });
+                alert("Đã lưu điểm danh thành công!");
+                // Không cần reload trang, chỉ cần load lại trạng thái
+                await loadSavedAttendance();
+            } catch(e) {
+                alert("Lỗi kết nối khi lưu!");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
 
         init();
     </script>
