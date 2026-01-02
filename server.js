@@ -31,7 +31,7 @@ app.get('/test-db', async (req, res) => { /* ... code cũ ... */ });
 
 // Thêm đoạn này để khi vào trang chủ (/) sẽ tự chuyển sang login.html
 app.get('/', (req, res) => {
-    res.redirect('/login.html');
+    res.redirect('/login/login.html');
 });
 
 app.listen(PORT, () => {
