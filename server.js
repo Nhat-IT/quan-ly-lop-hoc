@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // Đưa dòng này lên đây cho gọn
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 require('dotenv').config();
 
 // Import DB và Routes
@@ -10,6 +12,38 @@ const authRoutes = require('./src/routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Tạo thư mục uploads nếu chưa có
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Cấu hình multer để lưu file
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'proof-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: function (req, file, cb) {
+        const allowedTypes = /jpeg|jpg|png|gif|pdf/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Chỉ chấp nhận file ảnh (jpeg, jpg, png, gif) hoặc PDF'));
+        }
+    }
+});
 
 // --- 1. QUAN TRỌNG: PHẢI ĐẶT CÁC DÒNG NÀY LÊN TRÊN CÙNG ---
 // Để Server đọc được dữ liệu JSON gửi lên trước khi xử lý
@@ -22,6 +56,7 @@ app.use('/api/auth', authRoutes);
 
 // --- 3. CẤU HÌNH FILE TĨNH (GIAO DIỆN) ---
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Test DB
 app.get('/test-db', async (req, res) => {
@@ -47,14 +82,28 @@ app.listen(PORT, () => {
     console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 });
 
+// API: Upload file minh chứng
+app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Không có file được tải lên' });
+        }
+        const fileUrl = '/uploads/' + req.file.filename;
+        res.json({ url: fileUrl, message: 'Tải file thành công' });
+    } catch (error) {
+        console.error('Lỗi upload file:', error);
+        res.status(500).json({ message: 'Lỗi khi tải file' });
+    }
+});
+
 // API: Lấy dữ liệu điểm danh cũ của một môn vào ngày/buổi cụ thể
 app.get('/api/data/attendance/check', async (req, res) => {
     try {
         const { subject_id, session_date, session_time } = req.query;
         
-        // Query đúng với bảng attendance_records (theo db.sql)
+        // Query đúng với bảng attendance_records (theo db.sql) - bao gồm proof_image_url
         const sql = `
-            SELECT ar.student_id, ar.is_absent, ar.reason 
+            SELECT ar.student_id, ar.is_absent, ar.reason, ar.proof_image_url 
             FROM attendance_sessions s
             JOIN attendance_records ar ON s.id = ar.session_id
             WHERE s.subject_id = ? AND s.session_date = ? AND s.session_time = ?
@@ -63,7 +112,7 @@ app.get('/api/data/attendance/check', async (req, res) => {
         // Thực thi SQL
         const [rows] = await db.query(sql, [subject_id, session_date, session_time]);
         
-        res.json(rows); // Trả về mảng: [{student_id: 1, is_absent: 1, reason: 'ốm'}, ...]
+        res.json(rows); // Trả về mảng: [{student_id: 1, is_absent: 1, reason: 'ốm', proof_image_url: '...'}, ...]
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu điểm danh:', error);
         res.status(500).json([]);

@@ -93,7 +93,7 @@ exports.saveAttendance = async (req, res) => {
         }
         for (const record of attendance_data) {
             await connection.query('DELETE FROM attendance_records WHERE session_id=? AND student_id=?', [sessionId, record.student_id]);
-            await connection.query('INSERT INTO attendance_records (session_id, student_id, is_absent, reason) VALUES (?, ?, ?, ?)', [sessionId, record.student_id, record.is_absent, record.reason]);
+            await connection.query('INSERT INTO attendance_records (session_id, student_id, is_absent, reason, proof_image_url) VALUES (?, ?, ?, ?, ?)', [sessionId, record.student_id, record.is_absent, record.reason || '', record.proof_image_url || null]);
         }
         await connection.commit();
         res.json({ message: 'Lưu điểm danh thành công!' });

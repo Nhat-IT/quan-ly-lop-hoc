@@ -160,6 +160,11 @@
 
         .note-input-group { display: none; margin-top: 8px; margin-left: 50px; margin-right: 15px; }
         .is-absent .note-input-group { display: block; }
+        .proof-upload-section { margin-top: 8px; }
+        .proof-preview { margin-top: 8px; max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid #ddd; }
+        .proof-preview img { width: 100%; height: auto; border-radius: 4px; }
+        .proof-file-name { font-size: 0.85rem; color: #666; margin-top: 4px; }
+        .btn-remove-proof { margin-left: 8px; }
 
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         .btn-excel { background-color: #1D6F42 !important; color: white !important; border: 1px solid #1D6F42 !important; }
@@ -334,6 +339,7 @@
         document.getElementById('todayDate').valueAsDate = new Date();
         let allSubjects = [];
         let currentStudents = [];
+        let proofImages = {}; // Lưu URL ảnh minh chứng theo student_id
 
         document.getElementById('todayDate').addEventListener('change', reloadData);
         document.getElementById('sessionTime').addEventListener('change', reloadData);
@@ -419,6 +425,12 @@
                 row.classList.remove('is-absent');
                 row.querySelector('.form-check-input').checked = false;
                 row.querySelector('.txt-reason').value = '';
+                const studentId = row.dataset.id;
+                const previewContainer = document.getElementById(`proof-preview-${studentId}`);
+                if (previewContainer) previewContainer.innerHTML = '';
+                delete proofImages[studentId];
+                const fileInput = document.querySelector(`input[data-student-id="${studentId}"]`);
+                if (fileInput) fileInput.value = '';
             });
             updateCount();
 
@@ -435,6 +447,12 @@
                                     row.classList.add('is-absent');
                                     row.querySelector('.form-check-input').checked = true;
                                     row.querySelector('.txt-reason').value = record.reason || '';
+                                    
+                                    // Hiển thị ảnh minh chứng nếu có
+                                    if (record.proof_image_url) {
+                                        proofImages[record.student_id] = record.proof_image_url;
+                                        displayProofPreview(record.student_id, record.proof_image_url);
+                                    }
                                 }
                             }
                         });
@@ -470,7 +488,14 @@
                         <div class="col-class">${sv.class_name}</div>
                         <div class="col-action"><input type="checkbox" class="form-check-input" onchange="toggleAbs(${sv.id})"></div>
                     </div>
-                    <div class="note-input-group"><input type="text" class="form-control form-control-sm txt-reason" placeholder="Lý do vắng (nếu có)..."></div>
+                    <div class="note-input-group">
+                        <input type="text" class="form-control form-control-sm txt-reason mb-2" placeholder="Lý do vắng (nếu có)...">
+                        <div class="proof-upload-section">
+                            <label class="form-label small text-muted mb-1">Minh chứng (tùy chọn):</label>
+                            <input type="file" class="form-control form-control-sm proof-file-input" accept="image/*,.pdf" data-student-id="${sv.id}" onchange="handleProofUpload(${sv.id}, this)">
+                            <div class="proof-preview-container" id="proof-preview-${sv.id}"></div>
+                        </div>
+                    </div>
                 </div>`;
                 listBody.insertAdjacentHTML('beforeend', html);
             });
@@ -563,6 +588,86 @@
         function openEditStudent(id) { const s = currentStudents.find(x => x.id == id); document.getElementById('editStudentId').value = id; document.getElementById('editStudentName').value = s.full_name; document.getElementById('editStudentMSSV').value = s.mssv; document.getElementById('editStudentClass').value = s.class_name; new bootstrap.Modal(document.getElementById('editStudentModal')).show(); }
         async function saveEditedStudent() { const id = document.getElementById('editStudentId').value; const body = { full_name: document.getElementById('editStudentName').value, mssv: document.getElementById('editStudentMSSV').value, class_name: document.getElementById('editStudentClass').value }; await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}); bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject(); }
         
+        // Hàm xử lý upload file minh chứng
+        async function handleProofUpload(studentId, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Kiểm tra kích thước file (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB.');
+                input.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('proof', file);
+
+            try {
+                const res = await fetch('/api/data/upload-proof', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    proofImages[studentId] = result.url;
+                    displayProofPreview(studentId, result.url);
+                } else {
+                    alert(result.message || 'Lỗi khi tải file');
+                    input.value = '';
+                }
+            } catch (error) {
+                console.error('Lỗi upload:', error);
+                alert('Lỗi khi tải file minh chứng');
+                input.value = '';
+            }
+        }
+
+        // Hàm hiển thị preview ảnh minh chứng
+        function displayProofPreview(studentId, imageUrl) {
+            const previewContainer = document.getElementById(`proof-preview-${studentId}`);
+            if (!previewContainer) return;
+
+            const isImage = /\.(jpg|jpeg|png|gif)$/i.test(imageUrl);
+            
+            if (isImage) {
+                previewContainer.innerHTML = `
+                    <div class="proof-preview">
+                        <img src="${imageUrl}" alt="Minh chứng" onclick="window.open('${imageUrl}', '_blank')" style="cursor: pointer;">
+                        <div class="proof-file-name">Đã tải minh chứng</div>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-proof" onclick="removeProof(${studentId})">
+                            <i class="fas fa-times"></i> Xóa
+                        </button>
+                    </div>
+                `;
+            } else {
+                previewContainer.innerHTML = `
+                    <div class="proof-file-name">
+                        <a href="${imageUrl}" target="_blank" class="text-primary">
+                            <i class="fas fa-file-pdf"></i> Xem file minh chứng
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-proof" onclick="removeProof(${studentId})">
+                            <i class="fas fa-times"></i> Xóa
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Hàm xóa minh chứng
+        function removeProof(studentId) {
+            delete proofImages[studentId];
+            const previewContainer = document.getElementById(`proof-preview-${studentId}`);
+            if (previewContainer) {
+                previewContainer.innerHTML = '';
+            }
+            const fileInput = document.querySelector(`input[data-student-id="${studentId}"]`);
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+
         async function submitAttendance() {
             const btn = document.getElementById('btnSave');
             const originalText = btn.innerText;
@@ -573,7 +678,8 @@
                 student_id: r.dataset.id, 
                 // Quan trọng: Kiểm tra trạng thái của checkbox (checked = 1)
                 is_absent: r.querySelector('.form-check-input').checked ? 1 : 0, 
-                reason: r.querySelector('.txt-reason').value 
+                reason: r.querySelector('.txt-reason').value,
+                proof_image_url: proofImages[r.dataset.id] || null
             })); 
 
             try {
