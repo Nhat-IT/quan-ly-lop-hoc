@@ -46,3 +46,28 @@ app.get(['/login', '/login.html', '/login/'], (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 });
+
+// API: Lấy dữ liệu điểm danh cũ của một môn vào ngày/buổi cụ thể
+app.get('/api/data/attendance/check', async (req, res) => {
+    try {
+        const { subject_id, session_date, session_time } = req.query;
+        
+        // Query này giả định bạn có bảng 'attendance_records' lưu chi tiết từng sinh viên
+        // Cần join bảng sessions và details (tùy cấu trúc DB của bạn)
+        // Ví dụ đơn giản:
+        const sql = `
+            SELECT d.student_id, d.is_absent, d.reason 
+            FROM attendance_sessions s
+            JOIN attendance_details d ON s.id = d.session_id
+            WHERE s.subject_id = ? AND s.session_date = ? AND s.session_time = ?
+        `;
+        
+        // Thực thi SQL (ví dụ dùng mysql2/sqlite)
+        const [rows] = await db.execute(sql, [subject_id, session_date, session_time]);
+        
+        res.json(rows); // Trả về mảng: [{student_id: 1, is_absent: 1, reason: 'ốm'}, ...]
+    } catch (error) {
+        console.error(error);
+        res.status(500).json([]);
+    }
+});
