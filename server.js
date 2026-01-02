@@ -34,6 +34,11 @@ app.get('/', (req, res) => {
     res.redirect('/login/login.html');
 });
 
+// Hỗ trợ truy cập trực tiếp vào /login hoặc /login.html
+app.get(['/login', '/login.html', '/login/'], (req, res) => {
+    res.redirect('/login/login.html');
+});
+
 app.listen(PORT, () => {
     console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 });
