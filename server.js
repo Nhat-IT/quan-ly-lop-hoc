@@ -2,12 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./src/config/db');
 require('dotenv').config();
+const dataRoutes = require('./src/routes/dataRoutes');
 
 // --- IMPORT ROUTE ---
 const authRoutes = require('./src/routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use('/api/data', dataRoutes); // Đường dẫn gốc là /api/data
+
 
 app.use(cors());
 app.use(express.json());

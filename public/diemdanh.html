@@ -225,151 +225,185 @@
     <div class="modal fade" id="proofModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-header border-0 pb-0"><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center p-3"><img id="proofImage" src="" class="img-fluid rounded shadow" style="max-height: 80vh;"></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('todayDate').valueAsDate = new Date();
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('todayDate').valueAsDate = new Date();
+    
+    // Biến toàn cục lưu danh sách môn học để dùng lại
+    let subjectsList = [];
 
-        const mockDatabase = {
-            "ptud": {
-                name: "PTUD Thực tế ảo", start: "2025-08-15", end: "2025-12-15",
-                students: [
-                    { id: 1, mssv: "22050001", name: "Phạm Thanh Phong", class_name: "25TH01" },
-                    { id: 15, mssv: "22050037", name: "Nguyễn Kỳ Quang", class_name: "25TH01" },
-                    { id: 3, mssv: "22050012", name: "Nguyễn Quang Huy", class_name: "25TH02" },
-                    { id: 4, mssv: "22050099", name: "Trần Văn Nam", class_name: "25TH02" }
-                ]
-            },
-            "dl": { name: "Học sâu (Deep Learning)", start: "2025-09-01", end: "2025-11-30", students: [ { id: 1, mssv: "22050001", name: "Phạm Thanh Phong", class_name: "25TH01" } ] },
-            "robot": { name: "Robot Công nghiệp", start: "2025-10-01", end: "2026-01-15", students: [ { id: 1, mssv: "22050001", name: "Phạm Thanh Phong", class_name: "25TH01" } ] }
-        };
-
-        function init() { changeSubject(); }
-
-        function changeSubject() {
+    // --- 1. KHỞI TẠO: LẤY DANH SÁCH MÔN TỪ DB ---
+    async function init() {
+        try {
+            // Gọi API lấy môn học (Đường dẫn tương đối để chạy được cả localhost và Render)
+            const res = await fetch('/api/data/subjects'); 
+            if(!res.ok) throw new Error("Lỗi kết nối server");
+            
+            subjectsList = await res.json();
+            
             const select = document.getElementById('subjectSelect');
-            const subjectKey = select.value;
-            const subjectName = select.options[select.selectedIndex].text;
-            document.getElementById('displaySubjectName').innerText = subjectName;
-            document.getElementById('displaySubjectNameMobile').innerText = subjectName;
+            select.innerHTML = ''; // Xóa option cũ
 
-            const data = mockDatabase[subjectKey];
-            if(data) {
-                document.getElementById('startDate').value = data.start;
-                document.getElementById('endDate').value = data.end;
-                renderStudentList(data.students);
-            }
-        }
-
-        function renderStudentList(students) {
-            const container = document.getElementById('studentListContainer');
-            container.innerHTML = "";
-            document.getElementById('studentCount').innerText = students.length;
-            document.getElementById('countAbsent').innerText = 0;
-
-            if(students.length === 0) {
-                container.innerHTML = `<div class="text-center text-muted py-5 opacity-50"><i class="fas fa-user-graduate fs-1 mb-3"></i><br>Chưa có danh sách sinh viên.</div>`;
+            if (subjectsList.length === 0) {
+                select.innerHTML = '<option>Chưa có môn học</option>';
                 return;
             }
 
-            students.forEach((sv, index) => { 
-                const html = `
-                <div class="student-row" id="row-${sv.id}">
-                    <div class="row-main-content">
-                        <div class="col-stt">${index + 1}</div>
-                        <div class="col-info">
-                            <div class="field-name">
-                                <span class="text-name" id="name-${sv.id}">${sv.name}</span>
-                                <i class="fas fa-pen btn-edit-student" onclick="openEditStudentModal(${sv.id}, '${sv.name}', '${sv.mssv}', '${sv.class_name || '25TH01'}')"></i>
-                            </div>
-                            <div class="field-mssv text-mssv" id="mssv-${sv.id}">${sv.mssv}</div>
-                            <div class="field-class"><span class="text-class" id="class-${sv.id}">${sv.class_name || '25TH01'}</span></div>
-                        </div>
-                        <div class="col-action">
-                            <input class="form-check-input shadow-sm" type="checkbox" onchange="toggleAbsent(${sv.id})">
-                        </div>
-                    </div>
-                    
-                    <div class="note-input-group">
-                        <input type="text" class="form-control form-control-sm mb-2 shadow-sm border-danger-subtle" placeholder="Lý do vắng (nếu có)...">
-                        <div class="d-flex align-items-center">
-                            <label class="btn btn-sm btn-light text-muted border shadow-sm me-2 rounded-pill px-3" for="file-${sv.id}">
-                                <i class="fas fa-paperclip me-1"></i> Đính kèm Ảnh
-                            </label>
-                            <input type="file" id="file-${sv.id}" hidden onchange="previewFile(this)">
-                            <button class="btn btn-sm btn-outline-primary rounded-circle border-0 d-none ms-2" id="view-btn-${sv.id}" onclick="viewProof('${sv.id}')"><i class="fas fa-eye"></i></button>
-                        </div>
-                    </div>
-                </div>`;
-                container.insertAdjacentHTML('beforeend', html);
+            // Đổ dữ liệu vào Dropdown
+            subjectsList.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.id; // ID trong DB
+                opt.text = sub.subject_name; // Tên trong DB
+                select.appendChild(opt);
             });
+
+            // Sau khi có môn, tải sinh viên của môn đầu tiên
+            changeSubject();
+
+        } catch (error) {
+            console.error(error);
+            alert("Không thể tải danh sách môn học.");
+        }
+    }
+
+    // --- 2. KHI ĐỔI MÔN HỌC ---
+    async function changeSubject() {
+        const select = document.getElementById('subjectSelect');
+        const subjectId = select.value;
+        const subjectName = select.options[select.selectedIndex].text;
+        
+        // Cập nhật tên môn hiển thị
+        document.getElementById('displaySubjectName').innerText = subjectName;
+        document.getElementById('displaySubjectNameMobile').innerText = subjectName;
+
+        // Cập nhật ngày bắt đầu/kết thúc (Lấy từ biến subjectsList đã lưu)
+        const currentSubject = subjectsList.find(s => s.id == subjectId);
+        if(currentSubject) {
+            // Cắt chuỗi ngày (VD: 2025-08-15T00:00:00.000Z -> 2025-08-15)
+            document.getElementById('startDate').value = currentSubject.start_date ? currentSubject.start_date.split('T')[0] : '';
+            document.getElementById('endDate').value = currentSubject.end_date ? currentSubject.end_date.split('T')[0] : '';
         }
 
-        function previewFile(input) {
-            const btn = document.getElementById('view-btn-' + input.id.split('-')[1]);
-            if(input.files && input.files[0]) {
-                btn.classList.remove('d-none');
-                btn.setAttribute('data-url', URL.createObjectURL(input.files[0]));
-            }
+        // GỌI API LẤY SINH VIÊN
+        try {
+            const res = await fetch(`/api/data/students/${subjectId}`);
+            const students = await res.json();
+            renderStudentList(students);
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi khi tải danh sách sinh viên");
         }
-        function viewProof(id) {
-            const btn = document.getElementById('view-btn-' + id);
-            document.getElementById('proofImage').src = btn.getAttribute('data-url');
-            new bootstrap.Modal(document.getElementById('proofModal')).show();
+    }
+
+    // --- 3. HIỂN THỊ DANH SÁCH ---
+    function renderStudentList(students) {
+        const container = document.getElementById('studentListContainer');
+        container.innerHTML = "";
+        document.getElementById('studentCount').innerText = students.length;
+        document.getElementById('countAbsent').innerText = 0;
+
+        if(students.length === 0) {
+            container.innerHTML = `<div class="text-center text-muted py-5 opacity-50"><i class="fas fa-user-graduate fs-1 mb-3"></i><br>Chưa có sinh viên nào đăng ký môn này.</div>`;
+            return;
         }
 
-        function filterList() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const classFilter = document.getElementById('classFilter').value;
-            const rows = document.querySelectorAll('.student-row');
-            rows.forEach(row => {
-                const name = row.querySelector('.text-name').innerText.toLowerCase();
-                const mssv = row.querySelector('.text-mssv').innerText.toLowerCase();
-                const className = row.querySelector('.text-class').innerText;
-                const matchesText = (searchText === "") || (name.includes(searchText) || mssv.includes(searchText));
-                const matchesClass = (classFilter === "all") || (className === classFilter);
-                row.style.display = (matchesText && matchesClass) ? 'flex' : 'none';
-            });
-        }
+        students.forEach((sv, index) => { 
+            // Lưu ý: DB trả về full_name, class_name (khác với mockData là name)
+            const html = `
+            <div class="student-row" id="row-${sv.id}">
+                <div class="row-main-content">
+                    <div class="col-stt">${index + 1}</div>
+                    <div class="col-info">
+                        <div class="field-name">
+                            <span class="text-name" id="name-${sv.id}">${sv.full_name}</span>
+                            <i class="fas fa-pen btn-edit-student" onclick="openEditStudentModal(${sv.id}, '${sv.full_name}', '${sv.mssv}', '${sv.class_name}')"></i>
+                        </div>
+                        <div class="field-mssv text-mssv" id="mssv-${sv.id}">${sv.mssv}</div>
+                        <div class="field-class"><span class="text-class" id="class-${sv.id}">${sv.class_name}</span></div>
+                    </div>
+                    <div class="col-action">
+                        <input class="form-check-input shadow-sm" type="checkbox" onchange="toggleAbsent(${sv.id})">
+                    </div>
+                </div>
+                
+                <div class="note-input-group">
+                    <input type="text" class="form-control form-control-sm mb-2 shadow-sm border-danger-subtle" placeholder="Lý do vắng (nếu có)...">
+                    <div class="d-flex align-items-center">
+                        <label class="btn btn-sm btn-light text-muted border shadow-sm me-2 rounded-pill px-3" for="file-${sv.id}">
+                            <i class="fas fa-paperclip me-1"></i> Đính kèm Ảnh
+                        </label>
+                        <input type="file" id="file-${sv.id}" hidden onchange="previewFile(this)">
+                        <button class="btn btn-sm btn-outline-primary rounded-circle border-0 d-none ms-2" id="view-btn-${sv.id}" onclick="viewProof('${sv.id}')"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
 
-        function openEditStudentModal(id, name, mssv, className) {
-            document.getElementById('editStudentId').value = id;
-            document.getElementById('editStudentName').value = name;
-            document.getElementById('editStudentMSSV').value = mssv;
-            document.getElementById('editStudentClass').value = className;
-            new bootstrap.Modal(document.getElementById('editStudentModal')).show();
+    // --- CÁC HÀM HỖ TRỢ (GIỮ NGUYÊN) ---
+    function previewFile(input) {
+        const btn = document.getElementById('view-btn-' + input.id.split('-')[1]);
+        if(input.files && input.files[0]) {
+            btn.classList.remove('d-none');
+            btn.setAttribute('data-url', URL.createObjectURL(input.files[0]));
         }
+    }
+    function viewProof(id) {
+        const btn = document.getElementById('view-btn-' + id);
+        document.getElementById('proofImage').src = btn.getAttribute('data-url');
+        new bootstrap.Modal(document.getElementById('proofModal')).show();
+    }
 
-        function saveEditedStudent() {
-            const id = document.getElementById('editStudentId').value;
-            const newName = document.getElementById('editStudentName').value;
-            const newMSSV = document.getElementById('editStudentMSSV').value;
-            const newClass = document.getElementById('editStudentClass').value;
-            if(!newName) return;
-            document.getElementById(`name-${id}`).innerText = newName;
-            document.getElementById(`mssv-${id}`).innerText = newMSSV;
-            document.getElementById(`class-${id}`).innerText = newClass;
-            bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide();
-        }
+    function filterList() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const classFilter = document.getElementById('classFilter').value;
+        const rows = document.querySelectorAll('.student-row');
+        rows.forEach(row => {
+            const name = row.querySelector('.text-name').innerText.toLowerCase();
+            const mssv = row.querySelector('.text-mssv').innerText.toLowerCase();
+            const className = row.querySelector('.text-class').innerText;
+            const matchesText = (searchText === "") || (name.includes(searchText) || mssv.includes(searchText));
+            const matchesClass = (classFilter === "all") || (className === classFilter);
+            row.style.display = (matchesText && matchesClass) ? 'flex' : 'none';
+        });
+    }
 
-        function toggleAbsent(id) {
-            const row = document.getElementById('row-' + id);
-            row.classList.toggle('is-absent');
-            document.getElementById('countAbsent').innerText = document.querySelectorAll('.student-row.is-absent').length;
-        }
+    // Modal logic (Chỉ sửa giao diện, chưa lưu DB phần này)
+    function openEditStudentModal(id, name, mssv, className) {
+        document.getElementById('editStudentId').value = id;
+        document.getElementById('editStudentName').value = name;
+        document.getElementById('editStudentMSSV').value = mssv;
+        document.getElementById('editStudentClass').value = className;
+        new bootstrap.Modal(document.getElementById('editStudentModal')).show();
+    }
+    function saveEditedStudent() {
+        const id = document.getElementById('editStudentId').value;
+        const newName = document.getElementById('editStudentName').value;
+        // Cập nhật giao diện tạm thời
+        document.getElementById(`name-${id}`).innerText = newName;
+        bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide();
+    }
+    function toggleAbsent(id) {
+        const row = document.getElementById('row-' + id);
+        row.classList.toggle('is-absent');
+        document.getElementById('countAbsent').innerText = document.querySelectorAll('.student-row.is-absent').length;
+    }
+    
+    // Các modal thêm/sửa môn học (Hiện tại chỉ thông báo)
+    function openEditSubjectModal() { alert("Chức năng sửa môn học đang được cập nhật kết nối DB."); }
+    function saveEditedSubject() { }
+    function openAddSubjectModal() { new bootstrap.Modal(document.getElementById('addSubjectModal')).show(); }
+    function saveNewSubject() { alert("Chức năng thêm môn học đang được cập nhật kết nối DB."); }
+    function importClassList() { alert("Chức năng Import đang được phát triển."); }
+    
+    function submitAttendance() { 
+        alert("Đã gửi dữ liệu điểm danh lên Server (Demo)!"); 
+        window.location.href = 'index.html'; 
+    }
 
-        function openEditSubjectModal() {
-            const data = mockDatabase[document.getElementById('subjectSelect').value];
-            document.getElementById('editSubjectName').value = data.name;
-            document.getElementById('editStartDate').value = data.start;
-            document.getElementById('editEndDate').value = data.end;
-            new bootstrap.Modal(document.getElementById('editSubjectModal')).show();
-        }
-        function saveEditedSubject() { alert("Đã cập nhật môn học!"); bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); }
-        function openAddSubjectModal() { new bootstrap.Modal(document.getElementById('addSubjectModal')).show(); }
-        function saveNewSubject() { alert("Đã thêm môn mới!"); bootstrap.Modal.getInstance(document.getElementById('addSubjectModal')).hide(); }
-        function importClassList() { alert("Đã nhập danh sách!"); }
-        function submitAttendance() { alert("Lưu thành công!"); window.location.href = 'index.html'; }
-
-        init();
-    </script>
+    // CHẠY CHƯƠNG TRÌNH
+    init();
+</script>
 </body>
 </html>
