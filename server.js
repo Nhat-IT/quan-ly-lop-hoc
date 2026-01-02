@@ -1,40 +1,44 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./src/config/db');
+const path = require('path'); // Đưa dòng này lên đây cho gọn
 require('dotenv').config();
-const dataRoutes = require('./src/routes/dataRoutes');
 
-// --- IMPORT ROUTE ---
+// Import DB và Routes
+const db = require('./src/config/db');
+const dataRoutes = require('./src/routes/dataRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use('/api/data', dataRoutes); // Đường dẫn gốc là /api/data
 
-
+// --- 1. QUAN TRỌNG: PHẢI ĐẶT CÁC DÒNG NÀY LÊN TRÊN CÙNG ---
+// Để Server đọc được dữ liệu JSON gửi lên trước khi xử lý
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); 
 
-// --- SỬ DỤNG ROUTE ---
-app.use('/api/auth', authRoutes); // Đường dẫn gốc là /api/auth
-const path = require('path'); // Thêm dòng này ở đầu file cùng các require khác
+// --- 2. SAU ĐÓ MỚI ĐẾN CÁC ROUTE ---
+app.use('/api/data', dataRoutes);
+app.use('/api/auth', authRoutes);
 
-// ... (các dòng app.use khác)
-
-// Cấu hình để Node.js phục vụ file tĩnh (HTML, CSS, JS) từ thư mục public
+// --- 3. CẤU HÌNH FILE TĨNH (GIAO DIỆN) ---
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ... (các dòng app.use route API)
+// Test DB
+app.get('/test-db', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT 1');
+        res.send('Kết nối DB thành công!');
+    } catch (err) {
+        res.status(500).send('Lỗi kết nối DB: ' + err.message);
+    }
+});
 
-// Test DB (Giữ nguyên)
-app.get('/test-db', async (req, res) => { /* ... code cũ ... */ });
-
-// Thêm đoạn này để khi vào trang chủ (/) sẽ tự chuyển sang login.html
+// Chuyển hướng trang chủ về login
 app.get('/', (req, res) => {
     res.redirect('/login/login.html');
 });
 
-// Hỗ trợ truy cập trực tiếp vào /login hoặc /login.html
+// Hỗ trợ truy cập trực tiếp
 app.get(['/login', '/login.html', '/login/'], (req, res) => {
     res.redirect('/login/login.html');
 });
