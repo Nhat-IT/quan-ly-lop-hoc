@@ -13,6 +13,9 @@
         
         /* 1. HEADER CHỈNH SỬA: TITLE NGAY SAU MŨI TÊN */
         .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .sticky-header .header-center { flex: 1; text-align: center; }
+        .sticky-header .header-title { font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: var(--text-dark); }
+        .sticky-header .header-subject { font-size: 1.3rem; font-weight: bold; text-transform: uppercase; color: var(--primary-color); margin-top: 4px; }
         
         .scrollable-controls { background: var(--bg-white); padding-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
@@ -39,13 +42,20 @@
 
         /* 2. CĂN CHỈNH CỘT: CĂN GIỮA MÃ SV VÀ LỚP */
         .col-stt { width: 50px; text-align: center; font-weight: bold; color: #666; flex-shrink: 0; padding: 0 10px; }
-        .col-name { flex: 1; padding: 0 15px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .col-name { flex: 1; padding: 0 15px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: left; }
         
         /* Căn giữa Mã số và Lớp */
         .col-mssv { width: 160px; text-align: center; color: #666; font-family: monospace; font-size: 0.95rem; flex-shrink: 0; padding: 0 10px; }
         .col-class { width: 120px; text-align: center; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; flex-shrink: 0; padding: 0 10px; }
         
         .col-action { width: 80px; text-align: center; flex-shrink: 0; padding: 0 10px; }
+        
+        /* Căn chỉnh header để match với data */
+        .list-header .col-stt,
+        .list-header .col-mssv,
+        .list-header .col-class,
+        .list-header .col-action { text-align: center; }
+        .list-header .col-name { text-align: left; }
 
         .note-input-group { display: none; margin-top: 8px; margin-left: 50px; margin-right: 15px; }
         .is-absent .note-input-group { display: block; }
@@ -60,8 +70,11 @@
     <div class="sticky-header">
         <div class="container d-flex align-items-center">
             <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border me-3"><i class="fas fa-arrow-left text-primary"></i></a>
-            <h4 class="mb-0 fw-bold text-dark">Điểm Danh</h4>
-            <div class="ms-auto"><span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill" id="displaySubjectName">--</span></div>
+            <div class="header-center">
+                <div class="header-title">ĐIỂM DANH</div>
+                <div class="header-subject" id="displaySubjectName">--</div>
+            </div>
+            <div style="width: 50px;"></div>
         </div>
     </div>
 
@@ -233,7 +246,7 @@
             
             // Cập nhật thông tin vào 3 ô riêng biệt
             if(sub) {
-                document.getElementById('displaySubjectName').innerText = sub.subject_name;
+                document.getElementById('displaySubjectName').innerText = sub.subject_name.toUpperCase();
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name || "Chưa cập nhật";
                 document.getElementById('displayStartDate').innerText = sub.start_date ? new Date(sub.start_date).toLocaleDateString('vi-VN') : '...';
                 document.getElementById('displayEndDate').innerText = sub.end_date ? new Date(sub.end_date).toLocaleDateString('vi-VN') : '...';
