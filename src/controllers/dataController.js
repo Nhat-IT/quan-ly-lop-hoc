@@ -84,20 +84,54 @@ exports.saveAttendance = async (req, res) => {
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
-        const [sessions] = await connection.query('SELECT id FROM attendance_sessions WHERE subject_id=? AND session_date=? AND session_time=?', [subject_id, session_date, session_time]);
+        
+        // 1. Tìm hoặc tạo session
+        const [sessions] = await connection.query(
+            'SELECT id FROM attendance_sessions WHERE subject_id=? AND session_date=? AND session_time=?', 
+            [subject_id, session_date, session_time]
+        );
         let sessionId;
-        if (sessions.length > 0) sessionId = sessions[0].id;
-        else {
-            const [result] = await connection.query('INSERT INTO attendance_sessions (subject_id, session_date, session_time) VALUES (?, ?, ?)', [subject_id, session_date, session_time]);
+        if (sessions.length > 0) {
+            sessionId = sessions[0].id;
+        } else {
+            const [result] = await connection.query(
+                'INSERT INTO attendance_sessions (subject_id, session_date, session_time) VALUES (?, ?, ?)', 
+                [subject_id, session_date, session_time]
+            );
             sessionId = result.insertId;
         }
-        for (const record of attendance_data) {
-            await connection.query('DELETE FROM attendance_records WHERE session_id=? AND student_id=?', [sessionId, record.student_id]);
-            await connection.query('INSERT INTO attendance_records (session_id, student_id, is_absent, reason, proof_image_url) VALUES (?, ?, ?, ?, ?)', [sessionId, record.student_id, record.is_absent, record.reason || '', record.proof_image_url || null]);
+        
+        // 2. Xóa tất cả records cũ của session này (1 query thay vì N queries)
+        await connection.query('DELETE FROM attendance_records WHERE session_id=?', [sessionId]);
+        
+        // 3. Batch insert tất cả records (1 query thay vì N queries)
+        if (attendance_data.length > 0) {
+            const values = attendance_data.map(record => [
+                sessionId,
+                record.student_id,
+                record.is_absent || 0,
+                record.reason || '',
+                record.proof_image_url || null
+            ]);
+            
+            const placeholders = values.map(() => '(?, ?, ?, ?, ?)').join(', ');
+            const flatValues = values.flat();
+            
+            await connection.query(
+                `INSERT INTO attendance_records (session_id, student_id, is_absent, reason, proof_image_url) VALUES ${placeholders}`,
+                flatValues
+            );
         }
+        
         await connection.commit();
         res.json({ message: 'Lưu điểm danh thành công!' });
-    } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi lưu điểm danh' }); } finally { connection.release(); }
+    } catch (error) {
+        await connection.rollback();
+        console.error('Lỗi lưu điểm danh:', error);
+        res.status(500).json({ message: 'Lỗi lưu điểm danh: ' + error.message });
+    } finally {
+        connection.release();
+    }
 };
 exports.importStudents = async (req, res) => {
     const { subject_id, students } = req.body;
