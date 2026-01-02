@@ -14,7 +14,7 @@ class AuthGuard {
         const currentPage = window.location.pathname.split("/").pop();
 
         // Danh sách các trang không cần kiểm tra (Trang công khai)
-        const publicPages = ['login.html', 'forgot-password.html'];
+        const publicPages = ['/login/login.html', '/login/forgot-password.html'];
 
         if (!user) {
             // Nếu chưa đăng nhập mà đang ở trang nội bộ -> Đá về Login
