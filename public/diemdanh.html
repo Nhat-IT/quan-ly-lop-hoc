@@ -12,17 +12,17 @@
     <style>
         /* CSS CHO NÚT EXCEL */
         .btn-excel {
-            background-color: #3dd883 !important; /* Màu xanh chuẩn Excel */
+            background-color: #35c274 !important; /* Màu xanh chuẩn Excel */
             color: white !important;
-            border: 1px solid #3dd883 !important;
+            border: 1px solid #35c274 !important;
             transition: none !important; /* Tắt hiệu ứng chuyển động */
         }
 
         /* KHI DI CHUỘT VÀO: GIỮ NGUYÊN MÀU */
         .btn-excel:hover, .btn-excel:active, .btn-excel:focus {
-            background-color: #3dd883 !important; /* Vẫn giữ màu cũ */
+            background-color: #35c274 !important; /* Vẫn giữ màu cũ */
             color: white !important;
-            border-color: #3dd883 !important;
+            border-color: #35c274 !important;
             transform: none !important; /* Không phóng to/thu nhỏ */
             box-shadow: none !important; /* Không đổ bóng */
         }
@@ -420,127 +420,141 @@
             });
         }
 
-        // --- CHỨC NĂNG IMPORT EXCEL (ĐÃ NÂNG CẤP) ---
+        // --- CHỨC NĂNG IMPORT EXCEL (NÂNG CẤP XỬ LÝ ĐA DẠNG FILE) ---
     
-    function importClassList() { 
-        document.getElementById('fileInput').click(); 
-    }
+        function importClassList() { 
+            document.getElementById('fileInput').click(); 
+        }
 
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
+            const reader = new FileReader();
             
-            // --- 1. TỰ ĐỘNG TÌM DÒNG TIÊU ĐỀ ---
-            // Chuyển sheet thành mảng 2 chiều để quét
-            const aoa = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            let headerRowIndex = 0;
-            
-            // Quét 20 dòng đầu xem dòng nào chứa chữ "Mã SV" hoặc "MSSV"
-            for (let i = 0; i < Math.min(aoa.length, 20); i++) {
-                const row = aoa[i];
-                // Kiểm tra xem dòng này có ô nào chứa từ khóa không
-                if (row && row.some(cell => cell && (cell.toString().trim() === "Mã SV" || cell.toString().trim() === "MSSV"))) {
-                    headerRowIndex = i;
-                    console.log("Tìm thấy tiêu đề tại dòng:", i + 1);
-                    break;
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // 1. Tự động tìm dòng chứa tiêu đề (Quét 20 dòng đầu)
+                const aoa = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                let headerRowIndex = 0;
+                
+                for (let i = 0; i < Math.min(aoa.length, 20); i++) {
+                    const row = aoa[i];
+                    // Tìm dòng có chứa chữ "Mã SV" hoặc "MSSV"
+                    if (row && row.some(cell => cell && /mã\s*sv|mssv/i.test(cell.toString()))) {
+                        headerRowIndex = i;
+                        break;
+                    }
                 }
-            }
 
-            // Đọc lại dữ liệu bắt đầu từ dòng tiêu đề vừa tìm được
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex });
+                // Đọc dữ liệu từ dòng tiêu đề tìm được
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex });
+                
+                if (jsonData.length === 0) {
+                    alert("Không đọc được dữ liệu! Vui lòng kiểm tra file Excel.");
+                    return;
+                }
+
+                processImportData(jsonData);
+            };
             
-            if (jsonData.length === 0) {
-                alert("Không đọc được dữ liệu nào từ file Excel!");
+            reader.readAsArrayBuffer(file);
+            event.target.value = ''; // Reset input
+        }
+
+        async function processImportData(data) {
+            const subjectId = document.getElementById('subjectSelect').value;
+            if (!subjectId) {
+                alert("Vui lòng chọn Môn học trước khi Import!");
                 return;
             }
 
-            processImportData(jsonData);
-        };
-        
-        reader.readAsArrayBuffer(file);
-        event.target.value = ''; // Reset input
-    }
-
-    async function processImportData(data) {
-        const subjectId = document.getElementById('subjectSelect').value;
-        if (!subjectId) {
-            alert("Vui lòng chọn Môn học trước khi Import!");
-            return;
-        }
-
-        // --- 2. XỬ LÝ GHÉP HỌ TÊN ---
-        const students = data.map(row => {
-            // Thử lấy cột Họ Tên gộp
-            let fullName = row['Họ Tên'] || row['Họ và Tên'] || row['Full Name'] || row['name'];
-            
-            // Nếu không có, thử ghép từ cột "Họ SV" và "Tên SV" (như file của bạn)
-            if (!fullName && (row['Họ SV'] || row['Họ']) && (row['Tên SV'] || row['Tên'])) {
-                const ho = row['Họ SV'] || row['Họ'] || '';
-                const ten = row['Tên SV'] || row['Tên'] || '';
-                fullName = ho.trim() + ' ' + ten.trim();
-            }
-
-            // Lấy MSSV (chấp nhận cả trường hợp file Excel bị lỗi format số)
-            let mssv = row['MSSV'] || row['Mã SV'] || row['mssv'];
-            
-            return {
-                mssv: mssv ? mssv.toString().trim() : '',
-                full_name: fullName ? fullName.toString().trim() : '',
-                class_name: row['Lớp'] || row['Class'] || row['class'] || '25TH'
+            // 2. Hàm hỗ trợ tìm giá trị bất chấp chữ hoa/thường/khoảng cách
+            // Ví dụ: Tìm "Họ SV", "Họ đệm", "Họ"... trong row
+            const findValue = (row, keywords) => {
+                const keys = Object.keys(row);
+                for (const k of keys) {
+                    const normalizedKey = k.trim().toLowerCase();
+                    for (const kw of keywords) {
+                        if (normalizedKey === kw.toLowerCase()) return row[k];
+                    }
+                }
+                return '';
             };
-        });
 
-        // Lọc bỏ những dòng rác (không có MSSV hoặc Tên)
-        const validStudents = students.filter(s => s.mssv !== '' && s.full_name !== '');
+            const students = data.map(row => {
+                // A. Xử lý Họ Tên
+                let fullName = findValue(row, ['Họ và Tên', 'Họ Tên', 'Full Name', 'Name']);
+                
+                // Nếu không có cột gộp, thử ghép từ cột Họ + Tên (như file của bạn)
+                if (!fullName) {
+                    const ho = findValue(row, ['Họ SV', 'Họ', 'Surname', 'Last Name']);
+                    const ten = findValue(row, ['Tên SV', 'Tên', 'First Name']);
+                    if (ho || ten) {
+                        fullName = (ho + ' ' + ten).trim();
+                    }
+                }
 
-        if (validStudents.length === 0) {
-            alert("Không tìm thấy dữ liệu sinh viên hợp lệ! Vui lòng kiểm tra tên cột trong Excel (cần có 'Mã SV', 'Họ SV', 'Tên SV').");
-            return;
-        }
+                // B. Xử lý MSSV
+                let mssv = findValue(row, ['Mã SV', 'MSSV', 'Student ID', 'ID']);
+                
+                // C. Xử lý Lớp
+                let lop = findValue(row, ['Lớp', 'Class', 'Mã Lớp']);
 
-        if (!confirm(`Tìm thấy ${validStudents.length} sinh viên hợp lệ. Bấm OK để nhập vào hệ thống.`)) return;
-
-        // Gửi lên Server
-        try {
-            const btn = document.querySelector('.btn-excel');
-            const oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang nhập...';
-            btn.disabled = true;
-
-            const res = await fetch('/api/data/students/import', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    subject_id: subjectId,
-                    students: validStudents
-                })
+                return {
+                    mssv: mssv ? mssv.toString().trim() : '',
+                    full_name: fullName ? fullName.toString().trim() : '',
+                    class_name: lop ? lop.toString().trim() : '25TH' // Mặc định nếu không có cột lớp
+                };
             });
 
-            const result = await res.json();
-            
-            if (res.ok) {
-                alert(result.message);
-                changeSubject(); // Tải lại danh sách ngay lập tức
-            } else {
-                alert("Lỗi Server: " + result.message);
+            // Lọc bỏ dòng trống/rác
+            const validStudents = students.filter(s => s.mssv && s.full_name);
+
+            if (validStudents.length === 0) {
+                alert("Không tìm thấy dữ liệu hợp lệ. File Excel cần có cột: 'Mã SV', 'Họ SV', 'Tên SV'.");
+                return;
             }
-        } catch (error) {
-            console.error(error);
-            alert("Lỗi kết nối Server khi import.");
-        } finally {
-            const btn = document.querySelector('.btn-excel');
-            btn.innerHTML = '<i class="fas fa-file-excel"></i> Danh sách lớp';
-            btn.disabled = false;
+
+            if (!confirm(`Tìm thấy ${validStudents.length} sinh viên. Bạn có muốn nhập vào hệ thống?`)) return;
+
+            // Gửi lên Server
+            try {
+                const btn = document.querySelector('.btn-excel');
+                const oldHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+                btn.disabled = true;
+
+                const res = await fetch('/api/data/students/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject_id: subjectId,
+                        students: validStudents
+                    })
+                });
+
+                const result = await res.json();
+                
+                if (res.ok) {
+                    alert(result.message);
+                    changeSubject(); // Tải lại bảng danh sách ngay lập tức
+                } else {
+                    alert("Lỗi Server: " + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Lỗi kết nối Server khi import.");
+            } finally {
+                const btn = document.querySelector('.btn-excel');
+                btn.innerHTML = '<i class="fas fa-file-excel"></i> Danh sách lớp';
+                btn.disabled = false;
+            }
         }
-    }
         init();
     </script>
 </body>
