@@ -19,3 +19,11 @@ router.put('/students/:id', dataController.updateStudent);
 router.post('/attendance', dataController.saveAttendance);
 
 module.exports = router;
+
+// ...
+router.post('/attendance', dataController.saveAttendance);
+
+// API MỚI: Import sinh viên
+router.post('/students/import', dataController.importStudents); // <--- THÊM DÒNG NÀY
+
+module.exports = router;

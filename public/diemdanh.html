@@ -76,7 +76,11 @@
                     <select class="form-select form-control-fixed fw-bold text-primary border-0" id="subjectSelect" onchange="changeSubject()" style="background: white;">
                         </select>
                     <button class="btn btn-warning" onclick="openEditSubjectModal()" title="Sửa môn đang chọn"><i class="fas fa-pen text-white"></i></button>
-                    <button class="btn btn-outline-primary bg-white border-0" onclick="importClassList()"><i class="fas fa-file-import"></i> Danh sách lớp</button>
+                    <button class="btn btn-outline-primary bg-white border-0" onclick="importClassList()">
+                        <i class="fas fa-file-import"></i> Danh sách lớp
+                    </button>
+
+<input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
                 <div class="row g-2">
                     <div class="col-6"><input type="date" class="form-control form-control-sm bg-white border-0 shadow-sm" id="startDate" disabled></div>
@@ -398,7 +402,97 @@
             });
         }
 
-        function importClassList() { alert("Tính năng Import chưa được hỗ trợ."); }
+        // --- CHỨC NĂNG IMPORT EXCEL ---
+    
+        // 1. Kích hoạt chọn file khi bấm nút
+        function importClassList() { 
+            document.getElementById('fileInput').click(); 
+        }
+
+        // 2. Xử lý khi người dùng chọn file
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Lấy sheet đầu tiên
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Chuyển đổi sang JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                if (jsonData.length === 0) {
+                    alert("File Excel rỗng hoặc không đúng định dạng!");
+                    return;
+                }
+
+                processImportData(jsonData);
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+            // Reset input để chọn lại file cũ được
+            event.target.value = '';
+        }
+
+        // 3. Gửi dữ liệu lên Server
+        async function processImportData(data) {
+            const subjectId = document.getElementById('subjectSelect').value;
+            if (!subjectId) {
+                alert("Vui lòng chọn Môn học trước khi Import!");
+                return;
+            }
+
+            // Chuẩn hóa dữ liệu (Map tên cột trong Excel sang tên biến)
+            // Giả sử file Excel có cột: "MSSV", "Họ Tên", "Lớp"
+            const students = data.map(row => {
+                return {
+                    mssv: row['MSSV'] || row['Mã SV'] || row['mssv'],
+                    full_name: row['Họ Tên'] || row['Họ và Tên'] || row['Full Name'] || row['name'],
+                    class_name: row['Lớp'] || row['Class'] || row['class'] || '25TH'
+                };
+            });
+
+            // Lọc bỏ những dòng không có MSSV
+            const validStudents = students.filter(s => s.mssv && s.full_name);
+
+            if (validStudents.length === 0) {
+                alert("Không tìm thấy cột 'MSSV' và 'Họ Tên' trong file Excel. Vui lòng kiểm tra lại file mẫu.");
+                return;
+            }
+
+            if (!confirm(`Tìm thấy ${validStudents.length} sinh viên. Bạn có muốn nhập vào môn này không?`)) return;
+
+            // Gọi API
+            try {
+                const res = await fetch('/api/data/students/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject_id: subjectId,
+                        students: validStudents
+                    })
+                });
+
+                const result = await res.json();
+                
+                if (res.ok) {
+                    alert(result.message);
+                    changeSubject(); // Tải lại danh sách sinh viên
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Lỗi kết nối Server khi import.");
+            }
+        }
 
         init();
     </script>

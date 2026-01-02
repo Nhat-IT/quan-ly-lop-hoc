@@ -135,3 +135,53 @@ exports.saveAttendance = async (req, res) => {
         connection.release();
     }
 };
+
+// ... (các hàm cũ giữ nguyên)
+
+// 7. [MỚI] Import danh sách sinh viên từ Excel
+exports.importStudents = async (req, res) => {
+    const { subject_id, students } = req.body;
+    // students là mảng: [{ mssv: '...', full_name: '...', class_name: '...' }, ...]
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        for (const sv of students) {
+            // B1: Thêm hoặc Cập nhật Sinh viên (Dựa trên MSSV là duy nhất)
+            await connection.query(
+                `INSERT INTO students (mssv, full_name, class_name) VALUES (?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), class_name = VALUES(class_name)`,
+                [sv.mssv, sv.full_name, sv.class_name]
+            );
+
+            // B2: Lấy ID của sinh viên vừa insert/update
+            const [rows] = await connection.query('SELECT id FROM students WHERE mssv = ?', [sv.mssv]);
+            const studentId = rows[0].id;
+
+            // B3: Đăng ký sinh viên vào môn học (Nếu chưa có)
+            // Kiểm tra đã đăng ký chưa
+            const [enrollment] = await connection.query(
+                'SELECT id FROM enrollments WHERE student_id = ? AND subject_id = ?', 
+                [studentId, subject_id]
+            );
+
+            if (enrollment.length === 0) {
+                await connection.query(
+                    'INSERT INTO enrollments (student_id, subject_id) VALUES (?, ?)', 
+                    [studentId, subject_id]
+                );
+            }
+        }
+
+        await connection.commit();
+        res.json({ message: `Đã import thành công ${students.length} sinh viên!` });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error("Import Error:", error);
+        res.status(500).json({ message: 'Lỗi khi import danh sách' });
+    } finally {
+        connection.release();
+    }
+};
