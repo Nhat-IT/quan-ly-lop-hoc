@@ -78,3 +78,20 @@ exports.getDashboardData = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server khi lấy dữ liệu dashboard' });
     }
 };
+
+// ... (các hàm cũ giữ nguyên)
+
+// HÀM MỚI: Thêm môn học vào Database
+exports.createSubject = async (req, res) => {
+    const { subject_name, semester, start_date, end_date } = req.body;
+    
+    try {
+        const sql = `INSERT INTO subjects (subject_name, semester, start_date, end_date) VALUES (?, ?, ?, ?)`;
+        await db.query(sql, [subject_name, semester, start_date, end_date]);
+        
+        res.status(201).json({ message: 'Thêm môn thành công!' });
+    } catch (error) {
+        console.error("Add Subject Error:", error);
+        res.status(500).json({ message: 'Lỗi server khi thêm môn' });
+    }
+};

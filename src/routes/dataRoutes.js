@@ -1,13 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const dataController = require('../controllers/dataController');
-// Import thêm dashboardController
-const dashboardController = require('../controllers/dashboardController'); // <--- THÊM
+const dashboardController = require('../controllers/dashboardController');
 
-router.get('/subjects', dataController.getSubjects);
-router.get('/students/:subjectId', dataController.getStudentsBySubject);
+// --- Dashboard ---
+router.get('/dashboard', dashboardController.getDashboardData);
 
-// API MỚI CHO DASHBOARD
-router.get('/dashboard', dashboardController.getDashboardData); // <--- THÊM
+// --- Môn học ---
+router.get('/subjects', dataController.getSubjects);         // Lấy danh sách
+router.post('/subjects', dataController.createSubject);      // Thêm mới
+router.put('/subjects/:id', dataController.updateSubject);   // Sửa
+
+// --- Sinh viên ---
+router.get('/students/:subjectId', dataController.getStudentsBySubject); // Lấy SV theo môn
+router.put('/students/:id', dataController.updateStudent);               // Sửa SV
+
+// --- Điểm danh ---
+router.post('/attendance', dataController.saveAttendance);   // Lưu điểm danh
 
 module.exports = router;
