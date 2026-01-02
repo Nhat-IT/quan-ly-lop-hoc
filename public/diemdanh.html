@@ -12,9 +12,35 @@
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
         /* 1. HEADER CHỈNH SỬA: TITLE NGAY SAU MŨI TÊN */
-        .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .sticky-header .header-title { font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: var(--text-dark); margin-right: 20px; }
-        .sticky-header .header-subject { font-size: 1.7rem; font-weight: bold; text-transform: uppercase; color: var(--primary-color); }
+        .sticky-header {
+            background: var(--bg-white);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .sticky-header .header-title {
+            font-size: 1.5rem;
+            font-weight: 800; /* đậm rõ */
+            text-transform: uppercase;
+            color: var(--text-dark);
+            margin-right: 20px;
+        }
+        
+        
+        /* Căn giữa tuyệt đối */
+        .sticky-header .header-subject {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--primary-color);
+        }
         
         .scrollable-controls { background: var(--bg-white); padding-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
@@ -67,13 +93,20 @@
 <body>
 
     <div class="sticky-header">
-        <div class="container d-flex align-items-center">
-            <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border me-3"><i class="fas fa-arrow-left text-primary"></i></a>
+        <div class="container d-flex align-items-center position-relative">
+            <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border me-3">
+                <i class="fas fa-arrow-left text-primary"></i>
+            </a>
+    
             <div class="header-title">ĐIỂM DANH</div>
+    
+            <!-- Căn giữa -->
             <div class="header-subject" id="displaySubjectName">--</div>
+    
             <div class="ms-auto"></div>
         </div>
     </div>
+    
 
     <div class="scrollable-controls">
         <div class="container">
