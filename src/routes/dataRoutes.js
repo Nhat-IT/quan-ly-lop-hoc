@@ -10,6 +10,7 @@ router.get('/dashboard', dashboardController.getDashboardData);
 router.get('/subjects', dataController.getSubjects);
 router.post('/subjects', dataController.createSubject);
 router.put('/subjects/:id', dataController.updateSubject);
+router.delete('/subjects/:id', dataController.deleteSubject);
 
 // --- Sinh viên API ---
 router.get('/students/:subjectId', dataController.getStudentsBySubject);
