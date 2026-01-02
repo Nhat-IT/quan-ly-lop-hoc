@@ -378,17 +378,25 @@
 
         async function init() {
             try {
-                // Dashboard Logic
+                // Ưu tiên lấy học kỳ từ URL parameter, sau đó từ localStorage, cuối cùng mặc định HK1
                 const urlParams = new URLSearchParams(window.location.search);
-                const dashboardSem = urlParams.get('semester');
-                if(dashboardSem) {
-                    document.getElementById('semesterSelect').value = dashboardSem;
+                let selectedSem = urlParams.get('semester');
+                
+                // Nếu không có trong URL, lấy từ localStorage (học kỳ đang hiển thị ở index)
+                if (!selectedSem) {
+                    selectedSem = localStorage.getItem('currentSemester');
                 }
+                
+                // Nếu vẫn không có, mặc định HK1
+                if (!selectedSem) {
+                    selectedSem = 'HK1';
+                }
+                
+                // Đặt giá trị cho select
+                document.getElementById('semesterSelect').value = selectedSem;
 
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
-                
-                if(!document.getElementById('semesterSelect').value) document.getElementById('semesterSelect').value = "HK1";
                 
                 filterSubjectsBySemester();
             } catch (error) { console.error("Lỗi:", error); }

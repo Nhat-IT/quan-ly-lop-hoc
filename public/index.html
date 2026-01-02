@@ -31,7 +31,7 @@
 <body>
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
         <div class="container">
-            <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD</span>
+            <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> Dashboard QUẢN LÝ LỚP HỌC</span>
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải dữ liệu...</div>
@@ -94,7 +94,7 @@
             </div>
             <div>
                 <button class="btn btn-success me-2" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
-                <a href="diemdanh.html" class="btn btn-primary"><i class="fas fa-pen-nib"></i> Điểm danh</a>
+                <a href="diemdanh.html" class="btn btn-primary" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
             </div>
         </div>
 
@@ -152,6 +152,15 @@
 
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('totalCount').innerText = currentData.total || 0;
+
+            // Lưu học kỳ hiện tại vào localStorage
+            localStorage.setItem('currentSemester', sem);
+            
+            // Cập nhật link Điểm danh với tham số semester
+            const btnDiemDanh = document.getElementById('btnDiemDanh');
+            if (btnDiemDanh) {
+                btnDiemDanh.href = `diemdanh.html?semester=${sem}`;
+            }
 
             const subSelect = document.getElementById('subFilter');
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
