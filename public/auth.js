@@ -19,12 +19,12 @@ class AuthGuard {
         if (!user) {
             // Nếu chưa đăng nhập mà đang ở trang nội bộ -> Đá về Login
             if (!publicPages.includes(currentPage)) {
-                window.location.href = 'login.html';
+                window.location.href = '/login/login.html';
             }
         } else {
             // Nếu đã đăng nhập mà lại vào trang Login -> Đá vào Dashboard
             if (publicPages.includes(currentPage)) {
-                window.location.href = 'index.html';
+                window.location.href = '/index.html';
             }
         }
     }
@@ -62,7 +62,7 @@ class AuthGuard {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('lastActivity');
         if (message) alert(message);
-        window.location.href = 'login.html';
+        window.location.href = '/login/login.html';
     }
 }
 

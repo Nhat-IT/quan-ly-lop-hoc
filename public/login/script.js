@@ -95,7 +95,7 @@ class LoginApp {
             document.getElementById('successMessage').classList.add('show');
         }, 300);
         
-        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
     }
 }
 new LoginApp();
