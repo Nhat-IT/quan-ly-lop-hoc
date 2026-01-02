@@ -8,31 +8,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    
     <script src="auth.js"></script> 
     
     <style>
         body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        
-        /* Thẻ thống kê */
         .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .stat-card:hover { transform: translateY(-3px); }
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
-        
-        /* Bảng dữ liệu */
         .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
-        /* Chi tiết vắng */
         .absence-item { border-bottom: 1px dashed #eee; padding: 6px 0; display: flex; align-items: center; font-size: 0.9rem; }
         .absence-item:last-child { border-bottom: none; }
         .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 2px 8px; margin-right: 8px; font-weight: 600; }
-        
-        /* Nút hành động nhỏ */
         .btn-action { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; }
         .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
         .btn-note { width: auto; border-radius: 12px; background: #e7f1ff; color: #0d6efd; padding: 0 10px; border: none; font-size: 0.8rem; }
-        
-        /* Trạng thái cảnh báo */
         .alert-row { background-color: #fff5f5 !important; }
         .alert-row td:first-child { border-left: 5px solid #dc3545; }
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
@@ -43,7 +32,6 @@
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
         <div class="container">
             <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD</span>
-            
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải dữ liệu...</div>
@@ -94,8 +82,7 @@
 
         <div class="d-flex flex-wrap gap-2 mb-3 justify-content-between">
             <div class="d-flex gap-2 flex-wrap">
-                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render()">
-                    </select>
+                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render()"></select>
                 <input type="text" class="form-control w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm tên hoặc MSSV...">
                 <select class="form-select w-auto text-primary fw-bold" id="subFilter" onchange="renderTable()">
                     <option value="all">Tất cả môn</option>
@@ -114,12 +101,7 @@
         <div class="table-card">
             <table class="table table-hover align-middle mb-0" id="mainTable">
                 <thead class="table-light">
-                    <tr>
-                        <th class="text-center" width="5%">STT</th>
-                        <th width="30%">Sinh viên</th>
-                        <th width="55%">Chi tiết (Ngày - Buổi - Lý do)</th>
-                        <th class="text-center" width="10%">Tổng Vắng</th>
-                    </tr>
+                    <tr><th class="text-center" width="5%">STT</th><th width="30%">Sinh viên</th><th width="55%">Chi tiết (Ngày - Buổi - Lý do)</th><th class="text-center" width="10%">Tổng Vắng</th></tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr><td colspan="4" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
@@ -133,214 +115,175 @@
             <div class="modal-content">
                 <div class="modal-body text-center p-4">
                     <img id="proofImg" class="img-fluid rounded shadow" style="display:none; max-height: 80vh;">
-                    <div id="noProof" class="py-5 text-muted" style="display:none">
-                        <i class="fas fa-file-slash fs-1 mb-3"></i>
-                        <h5>Không có minh chứng</h5>
-                        <p class="small">Sinh viên chưa nộp minh chứng cho buổi vắng này.</p>
-                    </div>
+                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có minh chứng</h5></div>
                 </div>
             </div>
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // --- PHẦN 1: KHỞI TẠO & GỌI API ---
-    let db = {}; // Biến chứa dữ liệu tải từ server
+    <script>
+        let db = {}; 
+        let allSubjectsInfo = []; // Lưu thông tin môn để lấy tên GV
 
-    async function init() {
-        try {
-            // 1. Tạo sẵn danh sách học kỳ cố định (HK1, HK2, HK3)
-            const fixedSemesters = ["HK1", "HK2", "HK3"];
-            const semSelect = document.getElementById('semFilter');
-            semSelect.innerHTML = '';
+        async function init() {
+            try {
+                // 1. Tạo danh sách kỳ
+                const semSelect = document.getElementById('semFilter');
+                semSelect.innerHTML = '';
+                ["HK1", "HK2", "HK3"].forEach(sem => semSelect.add(new Option(sem, sem)));
+
+                // 2. Lấy dữ liệu Dashboard
+                const res = await fetch('/api/data/dashboard');
+                if(!res.ok) throw new Error('Lỗi Server');
+                db = await res.json();
+
+                // 3. Lấy thêm thông tin môn học để có Tên GV
+                const resSub = await fetch('/api/data/subjects');
+                if(resSub.ok) allSubjectsInfo = await resSub.json();
+
+                render();
+            } catch (error) { console.error(error); render(); }
+        }
+
+        function render() {
+            const sem = document.getElementById('semFilter').value;
+            const currentData = db[sem] || { total: 0, subjects: [], data: [] };
+
+            document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
+            document.getElementById('totalCount').innerText = currentData.total || 0;
+
+            const subSelect = document.getElementById('subFilter');
+            subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
+            if (currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+
+            renderTable(currentData);
+            renderWarningCards(currentData.data);
+        }
+
+        function renderTable(currentData) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (!currentData.data || currentData.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu.</td></tr>';
+                document.getElementById('warningCount').innerText = 0;
+                document.getElementById('subWarningCount').innerText = 0;
+                return;
+            }
+
+            const search = document.getElementById('search').value.toLowerCase();
+            const subFilter = document.getElementById('subFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
             
-            fixedSemesters.forEach(sem => {
-                const opt = document.createElement('option');
-                opt.value = sem;
-                opt.text = sem; // Hiển thị: HK1, HK2...
-                semSelect.add(opt);
+            let stt = 1, warnCount = 0, subWarnSet = new Set();
+
+            currentData.data.forEach(sv => {
+                if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
+                const visibleDetails = sv.details.filter(d => subFilter === 'all' || d.sub === subFilter);
+                let total = visibleDetails.length;
+                let isWarning = total >= 2;
+                
+                if (statusFilter === 'warning' && !isWarning) return;
+                if (total === 0 && subFilter !== 'all') return;
+
+                if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
+
+                const rowClass = isWarning ? 'alert-row' : '';
+                const totalColor = isWarning ? 'text-danger' : (total > 0 ? 'text-warning-emphasis' : 'text-success');
+                
+                let detailsHtml = visibleDetails.length ? visibleDetails.map(d => `
+                    <div class="absence-item">
+                        <span class="badge-sub">${d.sub}</span> <span class="me-auto">${d.date}</span>
+                        <div class="d-flex gap-1">
+                            ${d.reason ? `<button class="btn-action btn-note" title="${d.reason}"><i class="far fa-comment-alt"></i></button>` : ''}
+                            <button class="btn-action" onclick="viewProof('${d.proof}')"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>`).join('') : '<span class="text-muted small fst-italic">Không vắng buổi nào</span>';
+
+                const html = `
+                    <tr class="${rowClass}">
+                        <td class="text-center fw-bold text-muted">${stt++}</td>
+                        <td><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted">${sv.mssv}</div></td>
+                        <td>${detailsHtml}</td>
+                        <td class="text-center fw-bold fs-5 ${totalColor}">${total}</td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', html);
             });
 
-            // 2. Gọi API lấy dữ liệu thật
-            const res = await fetch('/api/data/dashboard');
-            if(!res.ok) throw new Error('Lỗi kết nối Server');
-            
-            db = await res.json();
-
-            // 3. Hiển thị dữ liệu (Mặc định sẽ hiện HK1 vì nó đứng đầu danh sách)
-            render();
-
-        } catch (error) {
-            console.error(error);
-            // Nếu lỗi server vẫn hiện khung web rỗng để không bị vỡ giao diện
-            render(); 
-        }
-    }
-
-    // --- PHẦN 2: LOGIC HIỂN THỊ (RENDER) ---
-    function render() {
-        const sem = document.getElementById('semFilter').value; // Lấy giá trị HK đang chọn (VD: HK2)
-        
-        // Lấy dữ liệu của HK đó. Nếu không có (undefined) thì tạo dữ liệu rỗng (0)
-        // Đây là bước quan trọng để chuyển sang HK2, HK3 không bị lỗi
-        const currentData = db[sem] || { total: 0, subjects: [], data: [] };
-
-        // Cập nhật thống kê
-        document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
-        document.getElementById('totalCount').innerText = currentData.total || 0;
-
-        // Cập nhật Select Môn học
-        const subSelect = document.getElementById('subFilter');
-        subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
-        
-        if (currentData.subjects && currentData.subjects.length > 0) {
-            currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+            document.getElementById('warningCount').innerText = warnCount;
+            document.getElementById('subWarningCount').innerText = subWarnSet.size;
         }
 
-        renderTable(currentData);
-        renderWarningCards(currentData.data);
-    }
-
-    function renderTable(currentData) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-
-        // Nếu không có dữ liệu sinh viên nào trong kỳ này
-        if (!currentData.data || currentData.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu cảnh báo cho học kỳ này.</td></tr>';
-            // Reset các số liệu về 0
-            document.getElementById('warningCount').innerText = 0;
-            document.getElementById('subWarningCount').innerText = 0;
-            return;
-        }
-
-        const search = document.getElementById('search').value.toLowerCase();
-        const subFilter = document.getElementById('subFilter').value;
-        const statusFilter = document.getElementById('statusFilter').value;
-        
-        let stt = 1;
-        let warnCount = 0;
-        let subWarnSet = new Set();
-
-        currentData.data.forEach(sv => {
-            // 1. Lọc theo tên/MSSV
-            if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
+        // --- HÀM RENDER THẺ CẢNH BÁO (ĐÃ CÓ TÊN GV) ---
+        function renderWarningCards(data) {
+            const container = document.getElementById('warningSubjectList');
+            container.innerHTML = '';
             
-            // 2. Lọc chi tiết vắng theo môn đã chọn
-            const visibleDetails = sv.details.filter(d => subFilter === 'all' || d.sub === subFilter);
-            
-            // 3. Logic trạng thái
-            let total = visibleDetails.length;
-            let isWarning = total >= 2;
-            
-            if (statusFilter === 'warning' && !isWarning) return;
-            if (total === 0 && subFilter !== 'all') return;
-
-            // Đếm thống kê
-            if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
-
-            // 4. Tạo HTML
-            const rowClass = isWarning ? 'alert-row' : '';
-            const totalColor = isWarning ? 'text-danger' : (total > 0 ? 'text-warning-emphasis' : 'text-success');
-            
-            let detailsHtml = visibleDetails.length ? visibleDetails.map(d => `
-                <div class="absence-item">
-                    <span class="badge-sub">${d.sub}</span> <span class="me-auto">${d.date}</span>
-                    <div class="d-flex gap-1">
-                        ${d.reason ? `<button class="btn-action btn-note" title="${d.reason}"><i class="far fa-comment-alt"></i></button>` : ''}
-                        <button class="btn-action" onclick="viewProof('${d.proof}')" title="Xem minh chứng"><i class="fas fa-eye"></i></button>
-                    </div>
-                </div>`).join('') : '<span class="text-muted small fst-italic">Không vắng buổi nào</span>';
-
-            const html = `
-                <tr class="${rowClass}">
-                    <td class="text-center fw-bold text-muted">${stt++}</td>
-                    <td>
-                        <div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div>
-                        <div class="small text-muted">${sv.mssv}</div>
-                    </td>
-                    <td>${detailsHtml}</td>
-                    <td class="text-center fw-bold fs-5 ${totalColor}">${total}</td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', html);
-        });
-
-        document.getElementById('warningCount').innerText = warnCount;
-        document.getElementById('subWarningCount').innerText = subWarnSet.size;
-    }
-
-    function renderWarningCards(data) {
-        const container = document.getElementById('warningSubjectList');
-        container.innerHTML = '';
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
-            return;
-        }
-        
-        const subCounts = {};
-        data.forEach(sv => {
-            const grouped = {};
-            sv.details.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
-            for (let sub in grouped) {
-                if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
+                return;
             }
-        });
+            
+            const subCounts = {};
+            data.forEach(sv => {
+                const grouped = {};
+                sv.details.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
+                for (let sub in grouped) if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
+            });
 
-        if(Object.keys(subCounts).length === 0) {
-            container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
-            return;
-        }
+            if(Object.keys(subCounts).length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
+                return;
+            }
 
-        for (let [sub, count] of Object.entries(subCounts)) {
-            container.insertAdjacentHTML('beforeend', `
-                <div class="col-md-4 col-sm-6">
-                    <div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${sub}')">
-                        <div class="fw-bold text-dark">${sub}</div>
-                        <div class="text-end">
-                            <span class="badge bg-danger">${count} SV</span>
-                            <div class="small text-danger mt-1 fw-bold" style="font-size: 0.7rem;">Xem <i class="fas fa-arrow-right"></i></div>
+            for (let [subName, count] of Object.entries(subCounts)) {
+                // Tìm tên GV từ danh sách môn đã load
+                const subInfo = allSubjectsInfo.find(s => s.subject_name === subName);
+                const teacherName = subInfo && subInfo.teacher_name ? subInfo.teacher_name : "Chưa cập nhật";
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${subName}')">
+                            <div>
+                                <div class="fw-bold text-dark">${subName}</div>
+                                <div class="small text-muted"><i class="fas fa-chalkboard-teacher"></i> GV: ${teacherName}</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-danger">${count} SV</span>
+                                <div class="small text-danger mt-1 fw-bold" style="font-size: 0.7rem;">Xem <i class="fas fa-arrow-right"></i></div>
+                            </div>
                         </div>
-                    </div>
-                </div>`);
+                    </div>`);
+            }
         }
-    }
 
-    // --- PHẦN 3: CÁC HÀM TIỆN ÍCH ---
-    function quickFilter(sub) {
-        document.getElementById('subFilter').value = sub;
-        document.getElementById('statusFilter').value = 'warning';
-        // Gọi lại renderTable với dữ liệu hiện tại
-        const sem = document.getElementById('semFilter').value;
-        renderTable(db[sem] || { data: [] });
-        document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
-    }
+        function quickFilter(sub) {
+            document.getElementById('subFilter').value = sub;
+            document.getElementById('statusFilter').value = 'warning';
+            renderTable(db[document.getElementById('semFilter').value]);
+            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
+        }
 
-    function viewProof(url) {
-        const modal = new bootstrap.Modal(document.getElementById('proofModal'));
-        const img = document.getElementById('proofImg');
-        const none = document.getElementById('noProof');
-        
-        if (url && (url.match(/\.(jpeg|jpg|gif|png)$/i) || url.startsWith('blob:'))) {
-            img.src = url; img.style.display = 'block'; none.style.display = 'none';
-            modal.show();
-        } else if (url) {
-            window.open(url, '_blank'); 
-        } else {
-            img.style.display = 'none'; none.style.display = 'block';
+        function viewProof(url) {
+            const modal = new bootstrap.Modal(document.getElementById('proofModal'));
+            const img = document.getElementById('proofImg');
+            const none = document.getElementById('noProof');
+            if (url && (url.match(/\.(jpeg|jpg|gif|png)$/i) || url.startsWith('blob:'))) {
+                img.src = url; img.style.display = 'block'; none.style.display = 'none';
+            } else {
+                img.style.display = 'none'; none.style.display = 'block';
+            }
             modal.show();
         }
-    }
 
-    function exportExcel() {
-        const table = document.getElementById("mainTable");
-        const wb = XLSX.utils.table_to_book(table, {sheet: "Báo Cáo Vắng"});
-        XLSX.writeFile(wb, "Danh_Sach_Canh_Bao.xlsx");
-    }
+        function exportExcel() {
+            const table = document.getElementById("mainTable");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Báo Cáo"});
+            XLSX.writeFile(wb, "Danh_Sach_Canh_Bao.xlsx");
+        }
 
-    init();
-</script>
+        init();
+    </script>
 </body>
 </html>
