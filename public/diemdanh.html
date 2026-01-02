@@ -2,130 +2,110 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Điểm Danh Sinh Viên</title>
+    <title>Điểm Danh - Lớp 25TH01</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="auth.js"></script>
     <style>
-        :root { --primary-color: #0d6efd; --danger-bg: #fff0f3; --danger-border: #ffccd5; }
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; }
+        :root { --primary-color: #3459e6; --danger-color: #e6344a; --danger-bg-light: #fff0f3; --bg-body: #f4f7fa; --bg-white: #ffffff; --text-dark: #2c3e50; --text-muted: #64748b; --border-color: #e2e8f0; --header-bg-tint: #ebf3ff; }
+        body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
+        .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .scrollable-controls { background: var(--bg-white); padding-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .lbl-caption { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .form-control-fixed, .form-select-fixed { height: 42px; }
+        .student-row { background: var(--bg-white); border-bottom: 1px solid var(--border-color); padding: 18px 15px; display: flex; flex-direction: column; }
+        .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
+        .row-main-content { display: flex; align-items: center; width: 100%; }
+        .col-stt { width: 50px; text-align: center; font-weight: bold; color: #666; }
+        .col-info { flex-grow: 1; padding-left: 20px; }
+        .col-action { width: 85px; text-align: center; }
+        .field-name { font-weight: bold; font-size: 1.05rem; }
+        .field-mssv { color: #666; font-size: 0.9rem; }
+        .field-class { font-size: 0.85rem; color: var(--primary-color); }
+        .note-input-group { display: none; margin-top: 10px; width: 100%; }
+        .is-absent .note-input-group { display: block; }
+        .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         
-        /* CĂN GIỮA TIÊU ĐỀ MÔN HỌC */
-        .page-header-title { text-align: center; flex-grow: 1; font-weight: 700; color: #333; font-size: 1.2rem; }
-        
-        /* THANH CÔNG CỤ (FILTERS) */
-        .filter-bar { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .form-select-sm, .form-control-sm { height: 38px; }
+        /* CSS NÚT EXCEL */
+        .btn-excel { background-color: #1D6F42 !important; color: white !important; border: 1px solid #1D6F42 !important; }
+        .btn-excel:hover { opacity: 0.9; }
 
-        /* BẢNG ĐIỂM DANH */
-        .table-custom thead th { background-color: #f1f5f9; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; padding: 12px; border-bottom: 2px solid #e2e8f0; vertical-align: middle; }
-        .student-row { border-bottom: 1px solid #f0f0f0; transition: all 0.2s; }
-        .student-row:hover { background-color: #f9fafb; }
-        
-        /* HIỆU ỨNG KHI VẮNG */
-        .student-row.is-absent { background-color: var(--danger-bg); }
-        .student-row.is-absent td { color: #d63384; font-weight: 500; }
-        
-        /* CHECKBOX CUSTOM */
-        .form-check-input { width: 1.4em; height: 1.4em; cursor: pointer; border: 2px solid #ccc; }
-        .is-absent .form-check-input { background-color: #dc3545; border-color: #dc3545; }
-
-        .sticky-header { background: white; position: sticky; top: 0; z-index: 1000; padding: 10px 0; border-bottom: 1px solid #eee; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .bottom-bar { position: fixed; bottom: 0; width: 100%; left: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+        /* CSS MỚI: EMPTY STATE */
+        .empty-state { padding: 40px 20px; text-align: center; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #studentListContainer { min-height: 100px; } 
     </style>
 </head>
 <body>
 
     <div class="sticky-header">
         <div class="container d-flex align-items-center">
-            <a href="index.html" class="btn btn-outline-secondary btn-sm me-3 border-0"><i class="fas fa-arrow-left fa-lg"></i></a>
-            <div class="page-header-title" id="displaySubjectName">--</div>
-            <div class="ms-auto" style="width: 40px;"></div> </div>
+            <a href="index.html" class="btn btn-light btn-sm me-3 rounded-circle shadow-sm border"><i class="fas fa-arrow-left text-primary"></i></a>
+            <h4 class="mb-0 fw-bold text-dark">Điểm Danh</h4>
+            <div class="ms-auto"><span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill" id="displaySubjectName">--</span></div>
+        </div>
     </div>
 
-    <div class="container mt-4">
-        <div class="filter-bar">
-            <div class="row g-2 align-items-center">
-                <div class="col-auto">
-                    <select class="form-select text-primary fw-bold" id="semesterSelect" onchange="filterSubjectsBySemester()">
+    <div class="scrollable-controls">
+        <div class="container">
+            <div class="card bg-light p-3 mb-4 border-0 shadow-sm">
+                <label class="lbl-caption">Học Kỳ & Môn học</label> 
+                <div class="input-group mb-3 shadow-sm">
+                    <select class="form-select form-control-fixed fw-bold text-success border-0" id="semesterSelect" onchange="filterSubjectsBySemester()" style="max-width: 130px;">
                         <option value="HK1">HK1</option>
                         <option value="HK2">HK2</option>
                         <option value="HK3">HK3</option>
                     </select>
+                    <button class="btn btn-success" onclick="openAddSubjectModal()" title="Thêm môn"><i class="fas fa-plus"></i></button>
+                    <select class="form-select form-control-fixed fw-bold text-primary border-0" id="subjectSelect" onchange="changeSubject()"></select>
+                    
+                    <button class="btn btn-warning" onclick="openEditSubjectModal()" title="Sửa/Xóa môn"><i class="fas fa-pen text-white"></i></button>
+                    
+                    <button class="btn btn-excel" id="btnImportExcel" onclick="importClassList()"><i class="fas fa-file-excel"></i> Danh sách lớp</button>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
-                
-                <div class="col">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Tìm tên hoặc MSSV..." onkeyup="filterList()">
-                </div>
-
-                <div class="col-auto" style="min-width: 200px;">
-                    <select class="form-select text-primary fw-bold" id="subjectSelect" onchange="changeSubject()"></select>
-                </div>
-
-                <div class="col-auto">
-                    <select class="form-select text-secondary fw-bold" id="statusFilter" onchange="filterList()">
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="absent">Chỉ hiện Vắng</option>
-                    </select>
-                </div>
+                <div class="text-muted small mb-2"><i class="fas fa-chalkboard-teacher me-1"></i> <span id="displayTeacherName">--</span></div>
             </div>
-            
-            <div class="row g-2 mt-2 align-items-center">
-                <div class="col-auto"><label class="small fw-bold text-muted me-2">Ngày:</label></div>
-                <div class="col-auto"><input type="date" class="form-control fw-bold" id="todayDate"></div>
-                
-                <div class="col-auto ms-3"><label class="small fw-bold text-muted me-2">Buổi:</label></div>
-                <div class="col-auto">
-                    <select class="form-select fw-bold" id="sessionTime">
-                        <option>Sáng</option><option>Chiều</option><option>Tối</option>
-                    </select>
-                </div>
 
-                <div class="col text-end">
-                    <input type="file" id="fileInput" hidden onchange="handleFileSelect(event)">
-                    <button class="btn btn-success me-2" onclick="document.getElementById('fileInput').click()"><i class="fas fa-file-excel"></i> Nhập Excel</button>
-                    <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="submitAttendance()"><i class="fas fa-save me-1"></i> LƯU ĐIỂM DANH</button>
-                </div>
-            </div>
-            <div class="mt-1 text-muted small text-end"><i class="fas fa-user-tie me-1"></i> <span id="displayTeacherName">--</span></div>
-        </div>
-
-        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                <span class="fw-bold text-secondary">DANH SÁCH SINH VIÊN</span>
-                <span class="badge bg-light text-dark border">Sĩ số: <b id="studentCount">0</b></span>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-custom table-hover mb-0 align-middle">
-                    <thead>
-                        <tr>
-                            <th class="text-center" width="60">STT</th>
-                            <th>Họ và Tên</th>
-                            <th>Mã Số SV</th>
-                            <th>Lớp</th>
-                            <th class="text-center" width="120">Vắng</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentListContainer">
-                        </tbody>
-                </table>
-            </div>
-            
-            <div id="emptyState" class="text-center py-5 d-none">
-                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                <p class="text-muted fw-bold">Chưa có dữ liệu sinh viên.</p>
-                <button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('fileInput').click()">Nhập từ Excel ngay</button>
+            <div class="row g-3">
+                <div class="col-6"><label class="lbl-caption">Ngày</label><input type="date" class="form-control fw-bold" id="todayDate"></div>
+                <div class="col-6"><label class="lbl-caption">Buổi</label><select class="form-select fw-bold text-primary" id="sessionTime"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
             </div>
         </div>
     </div>
 
-    <div class="bottom-bar d-flex justify-content-between align-items-center">
-        <div><span class="badge bg-secondary" id="syncStatus">Sẵn sàng</span></div>
-        <div>Tổng vắng: <span class="text-danger fw-bold fs-3" id="countAbsent">0</span> sinh viên</div>
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between mb-3"><span class="text-muted">Sĩ số: <b id="studentCount">0</b></span></div>
+        
+        <div class="mb-3"><input type="text" class="form-control" id="searchInput" onkeyup="filterList()" placeholder="Tìm tên hoặc MSSV..."></div>
+
+        <div class="shadow rounded-4 bg-white" id="studentListContainer">
+            </div>
     </div>
 
-    <div class="modal fade" id="addSubjectModal">
+    <div class="bottom-bar-wrapper">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div><span class="text-muted small fw-bold text-uppercase">Vắng:</span> <span class="fw-bold text-danger fs-3" id="countAbsent">0</span></div>
+            <button class="btn btn-primary btn-lg px-5 fw-bold rounded-pill shadow" onclick="submitAttendance()">LƯU LẠI</button>
         </div>
+    </div>
+
+    <div class="modal fade" id="addSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn Mới</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+        <div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="newSubjectName"></div>
+        <div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="newTeacherName" placeholder="VD: Nguyễn Văn A"></div>
+        <div class="row g-2"><div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="newStartDate"></div><div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="newEndDate"></div></div>
+    </div><div class="modal-footer border-0"><button class="btn btn-success w-100 fw-bold" onclick="saveNewSubject()">Thêm mới</button></div></div></div></div>
+
+    <div class="modal fade" id="editSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-warning">Cập nhật môn</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+        <div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="editSubjectName"></div>
+        <div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="editTeacherName"></div>
+        <div class="row g-2"><div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="editStartDate"></div><div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="editEndDate"></div></div>
+    </div><div class="modal-footer border-0 d-flex justify-content-between">
+        <button class="btn btn-outline-danger" onclick="deleteSubject()"><i class="fas fa-trash"></i> Xóa Môn này</button>
+        <button class="btn btn-primary fw-bold" onclick="saveEditedSubject()">Lưu thay đổi</button>
+    </div></div></div></div>
+
+    <div class="modal fade" id="editStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body"><input type="hidden" id="editStudentId"><div class="mb-3"><label>Tên</label><input type="text" class="form-control fw-bold" id="editStudentName"></div><div class="row"><div class="col-6"><label>MSSV</label><input type="text" class="form-control" id="editStudentMSSV"></div><div class="col-6"><label>Lớp</label><input type="text" class="form-control" id="editStudentClass"></div></div></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveEditedStudent()">Cập nhật</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -133,7 +113,7 @@
         let allSubjects = [];
         let currentStudents = [];
 
-        // --- 1. LẮNG NGHE SỰ KIỆN ĐỔI NGÀY/BUỔI ---
+        // Lắng nghe sự kiện thay đổi Ngày và Buổi để load lại dữ liệu
         document.getElementById('todayDate').addEventListener('change', reloadData);
         document.getElementById('sessionTime').addEventListener('change', reloadData);
 
@@ -143,19 +123,21 @@
                 allSubjects = await res.json();
                 if(!document.getElementById('semesterSelect').value) document.getElementById('semesterSelect').value = "HK1";
                 filterSubjectsBySemester();
-            } catch (e) { console.error(e); }
+            } catch (error) { console.error("Lỗi:", error); }
         }
 
         function filterSubjectsBySemester() {
             const sem = document.getElementById('semesterSelect').value;
             const select = document.getElementById('subjectSelect');
             select.innerHTML = '';
-            
             const filtered = allSubjects.filter(s => (s.semester || 'HK1') === sem);
-            if(filtered.length === 0) {
+            
+            if (filtered.length === 0) {
                 select.innerHTML = '<option value="">-- Trống --</option>';
-                document.getElementById('displaySubjectName').innerText = "Chưa có môn học";
-                currentStudents = []; renderList();
+                document.getElementById('displaySubjectName').innerText = "--";
+                document.getElementById('displayTeacherName').innerText = "--";
+                currentStudents = [];
+                renderList();
                 return;
             }
 
@@ -166,208 +148,250 @@
         async function changeSubject() {
             const id = document.getElementById('subjectSelect').value;
             if(!id) return;
-            
             const sub = allSubjects.find(s => s.id == id);
+            
             if(sub) {
                 document.getElementById('displaySubjectName').innerText = sub.subject_name;
-                document.getElementById('displayTeacherName').innerText = sub.teacher_name || "Chưa cập nhật GV";
+                document.getElementById('displayTeacherName').innerText = sub.teacher_name ? "GV: " + sub.teacher_name : "GV: Chưa cập nhật";
             }
 
-            // 1. Load danh sách SV của môn này
+            // 1. Lấy danh sách sinh viên
             try {
                 const res = await fetch(`/api/data/students/${id}`);
                 currentStudents = await res.json();
-            } catch(e) { currentStudents = []; }
+            } catch (e) { currentStudents = []; }
 
-            // 2. Render bảng (ban đầu tất cả có mặt)
+            // 2. Render danh sách sinh viên trước
             renderList();
 
-            // 3. Gọi API kiểm tra xem ngày này đã lưu điểm danh chưa
+            // 3. Sau đó tải trạng thái điểm danh (nếu có) đè lên
             await loadSavedAttendance();
         }
 
+        // Hàm gom gọn để gọi khi đổi ngày/buổi
         function reloadData() {
-            if(currentStudents.length > 0) loadSavedAttendance();
+            // Không cần tải lại danh sách sinh viên, chỉ cần tải lại trạng thái điểm danh
+            if (currentStudents.length > 0) {
+                loadSavedAttendance(); 
+            }
         }
 
-        // --- HÀM QUAN TRỌNG: LOAD DỮ LIỆU TỪ DB LÊN GIAO DIỆN ---
+        // --- HÀM QUAN TRỌNG: TẢI TRẠNG THÁI CŨ ---
         async function loadSavedAttendance() {
             const subjectId = document.getElementById('subjectSelect').value;
             const date = document.getElementById('todayDate').value;
             const session = document.getElementById('sessionTime').value;
-            
-            // Bước 1: Reset toàn bộ về trạng thái "Có mặt"
-            document.querySelectorAll('.student-row').forEach(r => {
-                r.classList.remove('is-absent');
-                r.querySelector('.absent-chk').checked = false;
-                r.querySelector('.reason-input').value = '';
-                r.querySelector('.reason-box').classList.add('d-none');
+
+            if (!subjectId || !date) return;
+
+            // Reset toàn bộ về trạng thái "Có mặt" trước khi fill dữ liệu mới
+            document.querySelectorAll('.student-row').forEach(row => {
+                row.classList.remove('is-absent');
+                row.querySelector('.form-check-input').checked = false;
+                row.querySelector('.txt-reason').value = '';
             });
             updateCount();
-            document.getElementById('syncStatus').innerText = "Đang kiểm tra...";
 
             try {
-                // Bước 2: Gọi API Check
-                const res = await fetch(`/api/data/attendance/check?subject_id=${subjectId}&session_date=${date}&session_time=${session}`);
-                if(res.ok) {
+                // Gọi API kiểm tra xem ngày này đã điểm danh chưa
+                const url = `/api/data/attendance/check?subject_id=${subjectId}&session_date=${date}&session_time=${session}`;
+                const res = await fetch(url);
+                
+                if (res.ok) {
                     const savedData = await res.json();
                     
-                    if(savedData.length > 0) {
-                        // Bước 3: Nếu có dữ liệu cũ, map vào bảng
-                        savedData.forEach(rec => {
-                            if(rec.is_absent) {
-                                // Tìm dòng có data-id trùng với student_id
-                                const row = document.getElementById(`row-${rec.student_id}`);
-                                if(row) {
+                    // Nếu có dữ liệu, map vào giao diện
+                    if (savedData && savedData.length > 0) {
+                        savedData.forEach(record => {
+                            // Chỉ xử lý nếu is_absent = 1
+                            if (record.is_absent == 1) {
+                                const row = document.querySelector(`.student-row[data-id="${record.student_id}"]`);
+                                if (row) {
                                     row.classList.add('is-absent');
-                                    row.querySelector('.absent-chk').checked = true;
-                                    
-                                    // Điền lý do và hiển thị ô nhập
-                                    const reasonInput = row.querySelector('.reason-input');
-                                    reasonInput.value = rec.reason || '';
-                                    if(rec.reason) row.querySelector('.reason-box').classList.remove('d-none');
+                                    row.querySelector('.form-check-input').checked = true;
+                                    row.querySelector('.txt-reason').value = record.reason || '';
                                 }
                             }
                         });
-                        updateCount();
-                        document.getElementById('syncStatus').innerText = "Dữ liệu đã lưu";
-                        document.getElementById('syncStatus').className = "badge bg-success";
-                    } else {
-                        document.getElementById('syncStatus').innerText = "Chưa điểm danh";
-                        document.getElementById('syncStatus').className = "badge bg-warning text-dark";
+                        updateCount(); // Cập nhật lại số vắng trên thanh tổng kết
                     }
                 }
-            } catch(e) { console.error("Lỗi load check:", e); }
+            } catch (error) {
+                console.error("Chưa có dữ liệu điểm danh hoặc lỗi server:", error);
+            }
         }
+        // ------------------------------------------
 
         function renderList() {
             const list = document.getElementById('studentListContainer');
             list.innerHTML = '';
             document.getElementById('studentCount').innerText = currentStudents.length;
 
-            if(currentStudents.length === 0) {
-                document.getElementById('emptyState').classList.remove('d-none');
+            if (currentStudents.length === 0) {
+                list.innerHTML = `<div class="empty-state"><p class="text-muted fw-bold">Chưa có dữ liệu sinh viên.</p><button class="btn btn-sm btn-outline-primary" onclick="importClassList()">Nhập ngay</button></div>`;
+                document.getElementById('countAbsent').innerText = 0;
                 return;
             }
-            document.getElementById('emptyState').classList.add('d-none');
-
-            currentStudents.forEach((sv, i) => {
-                const tr = document.createElement('tr');
-                tr.className = 'student-row';
-                tr.id = `row-${sv.id}`; // ID để tìm kiếm khi load lại dữ liệu
-                tr.dataset.name = sv.full_name.toLowerCase();
-                tr.dataset.mssv = sv.mssv.toLowerCase();
-                
-                tr.innerHTML = `
-                    <td class="text-center fw-bold text-muted">${i+1}</td>
-                    <td>
-                        <div class="fw-bold text-dark">${sv.full_name}</div>
-                        <div class="reason-box mt-1 d-none">
-                            <input type="text" class="form-control form-control-sm reason-input text-danger" placeholder="Nhập lý do vắng (VD: Ốm)...">
-                        </div>
-                    </td>
-                    <td>${sv.mssv}</td>
-                    <td class="text-primary fw-bold small">${sv.class_name}</td>
-                    <td class="text-center">
-                        <input type="checkbox" class="form-check-input absent-chk" onchange="toggleAbsent(${sv.id})">
-                    </td>
-                `;
-                list.appendChild(tr);
-            });
-            updateCount();
-        }
-
-        function toggleAbsent(id) {
-            const row = document.getElementById(`row-${id}`);
-            const chk = row.querySelector('.absent-chk');
-            const reasonBox = row.querySelector('.reason-box');
             
-            if(chk.checked) {
-                row.classList.add('is-absent');
-                reasonBox.classList.remove('d-none');
-                reasonBox.querySelector('input').focus();
-            } else {
-                row.classList.remove('is-absent');
-                reasonBox.classList.add('d-none');
-                reasonBox.querySelector('input').value = ''; // Xóa lý do nếu bỏ tích
-            }
+            currentStudents.forEach((sv, i) => {
+                const html = `
+                <div class="student-row" id="row-${sv.id}" data-id="${sv.id}">
+                    <div class="row-main-content">
+                        <div class="col-stt">${i+1}</div>
+                        <div class="col-info">
+                            <div class="field-name">${sv.full_name} <i class="fas fa-pen text-muted ms-2" style="cursor:pointer; font-size:0.8rem" onclick="openEditStudent(${sv.id})"></i></div>
+                            <div class="field-mssv">${sv.mssv}</div>
+                            <div class="field-class">${sv.class_name}</div>
+                        </div>
+                        <div class="col-action"><input type="checkbox" class="form-check-input" onchange="toggleAbs(${sv.id})"></div>
+                    </div>
+                    <div class="note-input-group"><input type="text" class="form-control form-control-sm txt-reason" placeholder="Lý do..."></div>
+                </div>`;
+                list.insertAdjacentHTML('beforeend', html);
+            });
             updateCount();
         }
 
-        function updateCount() {
-            const count = document.querySelectorAll('.absent-chk:checked').length;
-            document.getElementById('countAbsent').innerText = count;
-        }
+        function toggleAbs(id) { document.getElementById(`row-${id}`).classList.toggle('is-absent'); updateCount(); }
+        function updateCount() { document.getElementById('countAbsent').innerText = document.querySelectorAll('.is-absent').length; }
 
-        function filterList() {
-            const txt = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value; // all hoặc absent
-
-            document.querySelectorAll('.student-row').forEach(row => {
-                const name = row.dataset.name;
-                const mssv = row.dataset.mssv;
-                const isAbsent = row.classList.contains('is-absent');
-
-                let matchText = name.includes(txt) || mssv.includes(txt);
-                let matchStatus = (status === 'all') || (status === 'absent' && isAbsent);
-
-                row.style.display = (matchText && matchStatus) ? '' : 'none';
-            });
-        }
-
-        async function submitAttendance() {
-            const data = Array.from(document.querySelectorAll('.student-row')).map(row => {
-                const id = row.id.replace('row-', '');
-                const isAbsent = row.querySelector('.absent-chk').checked;
-                const reason = row.querySelector('.reason-input').value;
-                return { student_id: id, is_absent: isAbsent ? 1 : 0, reason: reason };
-            });
-
-            try {
-                await fetch('/api/data/attendance', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        subject_id: document.getElementById('subjectSelect').value,
-                        session_date: document.getElementById('todayDate').value,
-                        session_time: document.getElementById('sessionTime').value,
-                        attendance_data: data
-                    })
-                });
-                alert('Đã lưu dữ liệu thành công!');
-                loadSavedAttendance(); // Load lại để cập nhật trạng thái
-            } catch(e) { alert('Lỗi khi lưu'); }
-        }
-
-        // Logic Import Excel (Giữ nguyên)
+        // --- CÁC HÀM KHÁC GIỮ NGUYÊN ---
+        function importClassList() { document.getElementById('fileInput').click(); }
+        
         function handleFileSelect(e) {
+            // (Giữ nguyên logic import cũ của bạn ở đây)
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const wb = XLSX.read(evt.target.result, {type: 'array'});
                 const ws = wb.Sheets[wb.SheetNames[0]];
-                const data = XLSX.utils.sheet_to_json(ws); // Simplest read
-                // Mapper logic here (giống code cũ của bạn)
-                const students = data.map(row => ({
-                    mssv: row['Mã SV'] || row['MSSV'],
-                    full_name: row['Họ tên'] || row['Họ và tên'],
-                    class_name: '25TH' // Demo
-                })).filter(s => s.mssv && s.full_name);
-                
-                if(students.length > 0) sendImport(students);
+                const aoa = XLSX.utils.sheet_to_json(ws, {header: 1});
+                let headerIdx = 0;
+                for(let i=0; i<Math.min(aoa.length, 20); i++) {
+                    if(aoa[i] && aoa[i].some(c => c && /mã\s*sv|mssv/i.test(c.toString()))) { headerIdx = i; break; }
+                }
+                const data = XLSX.utils.sheet_to_json(ws, {range: headerIdx});
+                const students = data.map(row => {
+                    let mssv = ''; for(let k in row) if(/mã\s*sv|mssv/i.test(k)) mssv = row[k];
+                    let name = ''; 
+                    let ho = '', ten = '';
+                    for(let k in row) {
+                        if(/họ\s*sv|họ\s*đệm/i.test(k)) ho = row[k];
+                        if(/tên\s*sv|tên/i.test(k) && !/họ/i.test(k)) ten = row[k]; 
+                        if(/họ\s*và\s*tên|họ\s*tên/i.test(k)) name = row[k];
+                    }
+                    if(!name && (ho || ten)) name = (ho + ' ' + ten).trim();
+                    let lop = '25TH'; for(let k in row) if(/lớp/i.test(k)) lop = row[k];
+                    return { mssv: mssv, full_name: name, class_name: lop };
+                }).filter(s => s.mssv && s.full_name);
+
+                if(students.length > 0 && confirm(`Tìm thấy ${students.length} SV. Nhập?`)) sendImport(students);
             };
             reader.readAsArrayBuffer(file);
             e.target.value = '';
         }
-        
+
         async function sendImport(students) {
             const subId = document.getElementById('subjectSelect').value;
-            await fetch('/api/data/students/import', {
+            try {
+                const res = await fetch('/api/data/students/import', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ subject_id: subId, students: students })
+                });
+                const d = await res.json();
+                alert(d.message); changeSubject();
+            } catch (err) { alert("Lỗi import"); }
+        }
+
+        async function saveNewSubject() {
+            const name = document.getElementById('newSubjectName').value;
+            const teacher = document.getElementById('newTeacherName').value;
+            const sem = document.getElementById('semesterSelect').value;
+            const start = document.getElementById('newStartDate').value;
+            const end = document.getElementById('newEndDate').value;
+            await fetch('/api/data/subjects', {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ subject_id: subId, students: students })
+                body: JSON.stringify({ subject_name: name, teacher_name: teacher, semester: sem, start_date: start, end_date: end })
             });
-            alert("Đã nhập danh sách!"); changeSubject();
+            bootstrap.Modal.getInstance(document.getElementById('addSubjectModal')).hide(); init();
+        }
+        
+        // (Các hàm modal Edit/Delete giữ nguyên như cũ...)
+        function openEditSubjectModal() {
+            const id = document.getElementById('subjectSelect').value;
+            const sub = allSubjects.find(s => s.id == id);
+            document.getElementById('editSubjectName').value = sub.subject_name;
+            document.getElementById('editTeacherName').value = sub.teacher_name || '';
+            document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : '';
+            document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : '';
+            new bootstrap.Modal(document.getElementById('editSubjectModal')).show();
+        }
+
+        async function saveEditedSubject() {
+             const id = document.getElementById('subjectSelect').value;
+             const name = document.getElementById('editSubjectName').value;
+             const teacher = document.getElementById('editTeacherName').value;
+             const start = document.getElementById('editStartDate').value;
+             const end = document.getElementById('editEndDate').value;
+             await fetch(`/api/data/subjects/${id}`, {
+                 method: 'PUT', headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify({ subject_name: name, teacher_name: teacher, start_date: start, end_date: end })
+             });
+             bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); init();
+        }
+
+        async function deleteSubject() {
+            const id = document.getElementById('subjectSelect').value;
+            if(confirm("Xóa môn này?")) {
+                await fetch(`/api/data/subjects/${id}`, { method: 'DELETE' });
+                bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); init();
+            }
+        }
+        
+        function openEditStudent(id) { 
+             const s = currentStudents.find(x => x.id == id);
+             document.getElementById('editStudentId').value = id;
+             document.getElementById('editStudentName').value = s.full_name;
+             document.getElementById('editStudentMSSV').value = s.mssv;
+             document.getElementById('editStudentClass').value = s.class_name;
+             new bootstrap.Modal(document.getElementById('editStudentModal')).show();
+        }
+
+        async function saveEditedStudent() {
+            const id = document.getElementById('editStudentId').value;
+            const body = {
+                full_name: document.getElementById('editStudentName').value,
+                mssv: document.getElementById('editStudentMSSV').value,
+                class_name: document.getElementById('editStudentClass').value
+            };
+            await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+            bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject();
+        }
+
+        async function submitAttendance() {
+            const data = Array.from(document.querySelectorAll('.student-row')).map(r => ({
+                student_id: r.dataset.id,
+                is_absent: r.classList.contains('is-absent') ? 1 : 0,
+                reason: r.querySelector('.txt-reason').value
+            }));
+            await fetch('/api/data/attendance', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    subject_id: document.getElementById('subjectSelect').value,
+                    session_date: document.getElementById('todayDate').value,
+                    session_time: document.getElementById('sessionTime').value,
+                    attendance_data: data
+                })
+            });
+            alert("Đã lưu điểm danh!");
+        }
+
+        function filterList() {
+            const txt = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.student-row').forEach(r => {
+                r.style.display = r.innerText.toLowerCase().includes(txt) ? 'flex' : 'none';
+            });
         }
 
         init();
