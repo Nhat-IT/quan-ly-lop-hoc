@@ -62,8 +62,19 @@ class LoginApp {
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
             // THÀNH CÔNG
+            // ... đoạn gọi API ...
+
+            if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
+                        
+            // --- ĐOẠN CẦN SỬA LẠI ---
+            // Lưu thông tin user
             localStorage.setItem('currentUser', JSON.stringify(data.user));
+            // [MỚI] Lưu thời gian bắt đầu hoạt động
+            localStorage.setItem('lastActivity', Date.now());
+
             this.showSuccess();
+
+            // ...
             
         } catch (err) {
             this.showError('password', err.message);
