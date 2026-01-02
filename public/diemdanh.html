@@ -11,14 +11,17 @@
         :root { --primary-color: #3459e6; --danger-color: #e6344a; --danger-bg-light: #fff0f3; --bg-body: #f4f7fa; --bg-white: #ffffff; --text-dark: #2c3e50; --border-color: #e2e8f0; }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
-        /* HEADER CĂN GIỮA */
+        /* 1. HEADER CHỈNH SỬA: TITLE NGAY SAU MŨI TÊN */
         .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .header-content { display: flex; align-items: center; justify-content: space-between; position: relative; }
-        .page-title { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 800; color: var(--primary-color); font-size: 1.25rem; white-space: nowrap; }
-
+        
         .scrollable-controls { background: var(--bg-white); padding-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
         .form-control-fixed, .form-select-fixed { height: 42px; }
+
+        /* BOX THÔNG TIN RIÊNG BIỆT */
+        .info-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 15px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+        .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
+        .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* BẢNG & CỘT */
         .list-header { 
@@ -34,12 +37,14 @@
         
         .row-main-content { display: flex; align-items: center; width: 100%; }
 
-        /* CĂN CHỈNH KÍCH THƯỚC CỘT (Đã dịch sang trái) */
+        /* 2. CĂN CHỈNH CỘT: CĂN GIỮA MÃ SV VÀ LỚP */
         .col-stt { width: 50px; text-align: center; font-weight: bold; color: #666; flex-shrink: 0; }
-        .col-name { flex: 2; padding-left: 10px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        /* Dịch cột MSSV và Lớp sang trái bằng cách dùng text-start và padding */
-        .col-mssv { width: 150px; text-align: left; padding-left: 10px; color: #666; font-family: monospace; font-size: 0.95rem; flex-shrink: 0; }
-        .col-class { width: 100px; text-align: left; padding-left: 10px; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+        .col-name { flex: 1; padding-left: 15px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        
+        /* Căn giữa Mã số và Lớp */
+        .col-mssv { width: 160px; text-align: center; color: #666; font-family: monospace; font-size: 0.95rem; flex-shrink: 0; }
+        .col-class { width: 120px; text-align: center; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+        
         .col-action { width: 80px; text-align: center; flex-shrink: 0; }
 
         .note-input-group { display: none; margin-top: 8px; margin-left: 50px; margin-right: 15px; }
@@ -53,20 +58,18 @@
 <body>
 
     <div class="sticky-header">
-        <div class="container header-content">
-            <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border"><i class="fas fa-arrow-left text-primary"></i></a>
-            
-            <div class="page-title" id="displaySubjectName">--</div>
-
-            <div style="width: 32px;"></div>
+        <div class="container d-flex align-items-center">
+            <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border me-3"><i class="fas fa-arrow-left text-primary"></i></a>
+            <h4 class="mb-0 fw-bold text-dark">Điểm Danh</h4>
+            <div class="ms-auto"><span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill" id="displaySubjectName">--</span></div>
         </div>
     </div>
 
     <div class="scrollable-controls">
         <div class="container">
-            <div class="card bg-light p-3 mb-4 border-0 shadow-sm">
+            <div class="card bg-light p-3 mb-3 border-0 shadow-sm">
                 <label class="lbl-caption">Học Kỳ & Môn học</label> 
-                <div class="input-group mb-3 shadow-sm">
+                <div class="input-group shadow-sm">
                     <select class="form-select form-control-fixed fw-bold text-success border-0" id="semesterSelect" onchange="filterSubjectsBySemester()" style="max-width: 130px;">
                         <option value="HK1">HK1</option>
                         <option value="HK2">HK2</option>
@@ -78,15 +81,31 @@
                     <button class="btn btn-excel" id="btnImportExcel" onclick="importClassList()"><i class="fas fa-file-excel"></i> Danh sách</button>
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
-                
-                <div class="d-flex justify-content-between align-items-center text-muted small">
-                    <span><i class="fas fa-chalkboard-teacher me-1"></i> <span id="displayTeacherName">--</span></span>
-                    <span><i class="far fa-calendar-alt me-1"></i> <span id="displayDateRange">--</span></span>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-md-6 col-12">
+                    <div class="info-box">
+                        <div class="info-label"><i class="fas fa-chalkboard-teacher me-1"></i> Giảng viên</div>
+                        <div class="info-value" id="displayTeacherName">--</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="info-box">
+                        <div class="info-label"><i class="far fa-calendar-check me-1"></i> Ngày bắt đầu</div>
+                        <div class="info-value text-success" id="displayStartDate">--</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="info-box">
+                        <div class="info-label"><i class="far fa-calendar-times me-1"></i> Ngày kết thúc</div>
+                        <div class="info-value text-danger" id="displayEndDate">--</div>
+                    </div>
                 </div>
             </div>
 
             <div class="row g-3">
-                <div class="col-6"><label class="lbl-caption">Ngày</label><input type="date" class="form-control fw-bold" id="todayDate"></div>
+                <div class="col-6"><label class="lbl-caption">Ngày điểm danh</label><input type="date" class="form-control fw-bold" id="todayDate"></div>
                 <div class="col-6"><label class="lbl-caption">Buổi</label><select class="form-select fw-bold text-primary" id="sessionTime"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
             </div>
         </div>
@@ -112,7 +131,8 @@
             <div class="list-header">
                 <div class="col-stt">STT</div>
                 <div class="col-name">Họ và Tên</div>
-                <div class="col-mssv">Mã số sinh viên</div> <div class="col-class">Lớp</div>
+                <div class="col-mssv">Mã số sinh viên</div>
+                <div class="col-class">Lớp</div>
                 <div class="col-action">Vắng</div>
             </div>
             <div id="listBody"></div>
@@ -162,7 +182,7 @@
 
         async function init() {
             try {
-                // --- XỬ LÝ DASHBOARD: Kiểm tra URL có parameter 'semester' không ---
+                // Dashboard Logic
                 const urlParams = new URLSearchParams(window.location.search);
                 const dashboardSem = urlParams.get('semester');
                 if(dashboardSem) {
@@ -172,7 +192,6 @@
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 
-                // Nếu chưa có học kỳ, mặc định HK1
                 if(!document.getElementById('semesterSelect').value) document.getElementById('semesterSelect').value = "HK1";
                 
                 filterSubjectsBySemester();
@@ -193,13 +212,18 @@
             
             if (filtered.length === 0) {
                 select.innerHTML = '<option value="">-- Trống --</option>';
-                document.getElementById('displaySubjectName').innerText = "--";
-                document.getElementById('displayTeacherName').innerText = "--";
-                document.getElementById('displayDateRange').innerText = "--";
+                resetInfo();
                 currentStudents = []; renderList(); return;
             }
             filtered.forEach(s => select.add(new Option(s.subject_name, s.id)));
             changeSubject();
+        }
+
+        function resetInfo() {
+            document.getElementById('displaySubjectName').innerText = "--";
+            document.getElementById('displayTeacherName').innerText = "--";
+            document.getElementById('displayStartDate').innerText = "--";
+            document.getElementById('displayEndDate').innerText = "--";
         }
 
         async function changeSubject() {
@@ -207,15 +231,12 @@
             if(!id) return;
             const sub = allSubjects.find(s => s.id == id);
             
-            // Cập nhật thông tin Header và Card
+            // Cập nhật thông tin vào 3 ô riêng biệt
             if(sub) {
                 document.getElementById('displaySubjectName').innerText = sub.subject_name;
-                document.getElementById('displayTeacherName').innerText = sub.teacher_name ? "GV: " + sub.teacher_name : "GV: Chưa cập nhật";
-                
-                // Hiển thị ngày bắt đầu - kết thúc
-                let sDate = sub.start_date ? new Date(sub.start_date).toLocaleDateString('vi-VN') : '...';
-                let eDate = sub.end_date ? new Date(sub.end_date).toLocaleDateString('vi-VN') : '...';
-                document.getElementById('displayDateRange').innerText = `${sDate} - ${eDate}`;
+                document.getElementById('displayTeacherName').innerText = sub.teacher_name || "Chưa cập nhật";
+                document.getElementById('displayStartDate').innerText = sub.start_date ? new Date(sub.start_date).toLocaleDateString('vi-VN') : '...';
+                document.getElementById('displayEndDate').innerText = sub.end_date ? new Date(sub.end_date).toLocaleDateString('vi-VN') : '...';
             }
 
             try {
@@ -224,19 +245,18 @@
             } catch (e) { currentStudents = []; }
             
             renderList();
-            await loadSavedAttendance(); // Quan trọng: Load lại trạng thái điểm danh
+            await loadSavedAttendance();
         }
 
         function reloadData() { if (currentStudents.length > 0) loadSavedAttendance(); }
 
-        // Load trạng thái đã lưu từ DB
         async function loadSavedAttendance() {
             const subjectId = document.getElementById('subjectSelect').value;
             const date = document.getElementById('todayDate').value;
             const session = document.getElementById('sessionTime').value;
             if (!subjectId || !date) return;
 
-            // Reset
+            // Reset về mặc định (bỏ tích hết)
             document.querySelectorAll('.student-row').forEach(row => {
                 row.classList.remove('is-absent');
                 row.querySelector('.form-check-input').checked = false;
@@ -250,6 +270,7 @@
                     const savedData = await res.json();
                     if (savedData && savedData.length > 0) {
                         savedData.forEach(record => {
+                            // Nếu DB báo vắng (is_absent = 1) -> Tích ô checkbox
                             if (record.is_absent == 1) {
                                 const row = document.querySelector(`.student-row[data-id="${record.student_id}"]`);
                                 if (row) {
@@ -291,11 +312,24 @@
                         <div class="col-class">${sv.class_name}</div>
                         <div class="col-action"><input type="checkbox" class="form-check-input" onchange="toggleAbs(${sv.id})"></div>
                     </div>
-                    <div class="note-input-group"><input type="text" class="form-control form-control-sm txt-reason" placeholder="Lý do..."></div>
+                    <div class="note-input-group"><input type="text" class="form-control form-control-sm txt-reason" placeholder="Lý do vắng (nếu có)..."></div>
                 </div>`;
                 listBody.insertAdjacentHTML('beforeend', html);
             });
             updateCount();
+        }
+
+        // Logic Checkbox: Nếu người dùng bấm tích, nó sẽ cập nhật class is-absent
+        // Khi lưu, hệ thống sẽ quét class này để quyết định 1 (Vắng) hay 0 (Có mặt)
+        function toggleAbs(id) { 
+            document.getElementById(`row-${id}`).classList.toggle('is-absent'); 
+            updateCount(); 
+        }
+
+        function updateCount() { 
+            // Đếm số lượng checkbox đang được tích
+            const count = document.querySelectorAll('.student-row .form-check-input:checked').length;
+            document.getElementById('countAbsent').innerText = count; 
         }
 
         function updateClassFilter() {
@@ -325,8 +359,6 @@
             });
         }
 
-        function toggleAbs(id) { document.getElementById(`row-${id}`).classList.toggle('is-absent'); updateCount(); }
-        function updateCount() { document.getElementById('countAbsent').innerText = document.querySelectorAll('.is-absent').length; }
         function importClassList() { document.getElementById('fileInput').click(); }
         function handleFileSelect(e) { /* Logic import giữ nguyên */ const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(evt) { const wb = XLSX.read(evt.target.result, {type: 'array'}); const ws = wb.Sheets[wb.SheetNames[0]]; const aoa = XLSX.utils.sheet_to_json(ws, {header: 1}); let headerIdx = 0; for(let i=0; i<Math.min(aoa.length, 20); i++) { if(aoa[i] && aoa[i].some(c => c && /mã\s*sv|mssv/i.test(c.toString()))) { headerIdx = i; break; } } const data = XLSX.utils.sheet_to_json(ws, {range: headerIdx}); const students = data.map(row => { let mssv = ''; for(let k in row) if(/mã\s*sv|mssv/i.test(k)) mssv = row[k]; let name = ''; let ho = '', ten = ''; for(let k in row) { if(/họ\s*sv|họ\s*đệm/i.test(k)) ho = row[k]; if(/tên\s*sv|tên/i.test(k) && !/họ/i.test(k)) ten = row[k]; if(/họ\s*và\s*tên|họ\s*tên/i.test(k)) name = row[k]; } if(!name && (ho || ten)) name = (ho + ' ' + ten).trim(); let lop = '25TH'; for(let k in row) if(/lớp/i.test(k)) lop = row[k]; return { mssv: mssv, full_name: name, class_name: lop }; }).filter(s => s.mssv && s.full_name); if(students.length > 0 && confirm(`Tìm thấy ${students.length} SV. Nhập?`)) sendImport(students); }; reader.readAsArrayBuffer(file); e.target.value = ''; }
         async function sendImport(students) { const subId = document.getElementById('subjectSelect').value; try { const res = await fetch('/api/data/students/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject_id: subId, students: students }) }); const d = await res.json(); alert(d.message); changeSubject(); } catch (err) { alert("Lỗi import"); } }
@@ -373,7 +405,6 @@
         function openEditStudent(id) { const s = currentStudents.find(x => x.id == id); document.getElementById('editStudentId').value = id; document.getElementById('editStudentName').value = s.full_name; document.getElementById('editStudentMSSV').value = s.mssv; document.getElementById('editStudentClass').value = s.class_name; new bootstrap.Modal(document.getElementById('editStudentModal')).show(); }
         async function saveEditedStudent() { const id = document.getElementById('editStudentId').value; const body = { full_name: document.getElementById('editStudentName').value, mssv: document.getElementById('editStudentMSSV').value, class_name: document.getElementById('editStudentClass').value }; await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}); bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject(); }
         
-        // --- NÚT LƯU ĐÃ SỬA: HIỆU ỨNG LOADING ---
         async function submitAttendance() {
             const btn = document.getElementById('btnSave');
             const originalText = btn.innerText;
@@ -382,7 +413,8 @@
 
             const data = Array.from(document.querySelectorAll('.student-row')).map(r => ({ 
                 student_id: r.dataset.id, 
-                is_absent: r.classList.contains('is-absent') ? 1 : 0, 
+                // Quan trọng: Kiểm tra trạng thái của checkbox (checked = 1)
+                is_absent: r.querySelector('.form-check-input').checked ? 1 : 0, 
                 reason: r.querySelector('.txt-reason').value 
             })); 
 
@@ -397,7 +429,6 @@
                     }) 
                 });
                 alert("Đã lưu điểm danh thành công!");
-                // Không cần reload trang, chỉ cần load lại trạng thái
                 await loadSavedAttendance();
             } catch(e) {
                 alert("Lỗi kết nối khi lưu!");
