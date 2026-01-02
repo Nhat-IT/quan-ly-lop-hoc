@@ -158,13 +158,55 @@
         .list-header .col-action { text-align: center; }
         .list-header .col-name { text-align: center; }
 
-        .note-input-group { display: none; margin-top: 8px; margin-left: 50px; margin-right: 15px; }
-        .is-absent .note-input-group { display: block; }
-        .proof-upload-section { margin-top: 8px; }
-        .proof-preview { margin-top: 8px; max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid #ddd; }
-        .proof-preview img { width: 100%; height: auto; border-radius: 4px; }
-        .proof-file-name { font-size: 0.85rem; color: #666; margin-top: 4px; }
-        .btn-remove-proof { margin-left: 8px; }
+        .note-input-group { 
+            display: none !important; 
+            margin-top: 12px; 
+            margin-left: 50px; 
+            margin-right: 15px; 
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .student-row.is-absent .note-input-group { 
+            display: block !important; 
+        }
+        .proof-upload-section { 
+            margin-top: 12px; 
+        }
+        .proof-upload-section label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        .proof-file-input {
+            cursor: pointer;
+        }
+        .proof-preview { 
+            margin-top: 8px; 
+            max-width: 200px; 
+            max-height: 150px; 
+            border-radius: 4px; 
+            border: 1px solid #ddd;
+            padding: 4px;
+            background: white;
+        }
+        .proof-preview img { 
+            width: 100%; 
+            height: auto; 
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .proof-file-name { 
+            font-size: 0.85rem; 
+            color: #666; 
+            margin-top: 4px; 
+        }
+        .btn-remove-proof { 
+            margin-left: 8px;
+            margin-top: 4px;
+        }
 
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         .btn-excel { background-color: #1D6F42 !important; color: white !important; border: 1px solid #1D6F42 !important; }
