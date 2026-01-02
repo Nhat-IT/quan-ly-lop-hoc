@@ -51,36 +51,112 @@
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* BẢNG & CỘT */
-        .list-header { 
-            background-color: #e9ecef; color: #495057; font-weight: bold; padding: 12px 0; 
-            border-radius: 8px 8px 0 0; display: flex; align-items: center; border: 1px solid var(--border-color); border-bottom: none;
-        }
-        .student-row { 
-            background: var(--bg-white); border: 1px solid var(--border-color); border-top: none; 
-            padding: 12px 0; display: flex; flex-direction: column; transition: background 0.2s; 
-        }
-        .student-row:hover { background-color: #f8f9fa; }
-        .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
-        
-        .row-main-content { display: flex; align-items: center; width: 100%; }
+        /* ==============================
+        BẢNG ĐIỂM DANH – GRID CHUẨN
+        ============================== */
 
-        /* 2. CĂN CHỈNH CỘT: CĂN GIỮA MÃ SV VÀ LỚP */
-        .col-stt { width: 50px; text-align: center; font-weight: bold; color: #666; flex-shrink: 0; padding: 0 10px; }
-        .col-name { flex: 1; padding: 0 15px; font-weight: 600; color: var(--text-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: left; }
+        /* HEADER */
+        .list-header { 
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 700;
+            padding: 12px 0;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+
+            display: grid;
+            grid-template-columns:
+                50px     /* STT */
+                0.5fr      /* Họ và tên */
+                160px    /* MSSV */
+                120px    /* Lớp */
+                150px;    /* Vắng */
+            align-items: center;
+        }
+
+        /* STUDENT ROW */
+        .student-row { 
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            padding: 0;
+            transition: background 0.2s;
+        }
+
+        .student-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .student-row.is-absent {
+            background-color: var(--danger-bg-light);
+            border-left: 4px solid var(--danger-color);
+        }
+
         
-        /* Căn giữa Mã số và Lớp */
-        .col-mssv { width: 160px; text-align: center; color: #666; font-family: monospace; font-size: 0.95rem; flex-shrink: 0; padding: 0 10px; }
-        .col-class { width: 120px; text-align: center; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; flex-shrink: 0; padding: 0 10px; }
+        /* NỘI DUNG CHÍNH CỦA 1 DÒNG */
+        .row-main-content {
+            display: grid;            
+            grid-template-columns:
+                50px
+                0.5fr
+                160px
+                120px
+                150px;
+            align-items: center;
+            width: 100%;
+            padding: 12px 0; 
+        }
+
+        /* CỘT */
+        .col-stt,
+        .col-mssv,
+        .col-class,
+        .col-action,
+        .col-name {
+            text-align: center;
+        }
+
+        .col-name {
+            padding: 0 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+        }
+            
+        :root {
+            --student-grid:
+                60px   /* STT */
+                2fr    /* Họ và Tên */
+                2fr    /* MSSV */
+                1.5fr  /* Lớp */
+                1fr;   /* Vắng */
+        }
         
-        .col-action { width: 80px; text-align: center; flex-shrink: 0; padding: 0 10px; }
+        .list-header,
+        .row-main-content {
+            display: grid;
+            grid-template-columns: var(--student-grid);
+            align-items: center;
+            width: 100%;
+        }
+        
+                
+        .list-header,
+        .row-main-content {
+            display: grid;
+            grid-template-columns: var(--student-grid);
+            align-items: center;
+        }
+        
         
         /* Căn chỉnh header để match với data */
         .list-header .col-stt,
         .list-header .col-mssv,
         .list-header .col-class,
         .list-header .col-action { text-align: center; }
-        .list-header .col-name { text-align: left; }
+        .list-header .col-name { text-align: center; }
 
         .note-input-group { display: none; margin-top: 8px; margin-left: 50px; margin-right: 15px; }
         .is-absent .note-input-group { display: block; }
@@ -88,6 +164,28 @@
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         .btn-excel { background-color: #1D6F42 !important; color: white !important; border: 1px solid #1D6F42 !important; }
         .empty-state { padding: 40px; text-align: center; }
+
+        .col-action {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Checkbox lớn – dễ thao tác */
+        .col-action input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        
+        /* Mobile: to hơn nữa */
+        @media (max-width: 768px) {
+            .col-action input[type="checkbox"] {
+                width: 26px;
+                height: 26px;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -171,6 +269,8 @@
         </div>
 
         <div id="studentListContainer">
+
+            <!-- HEADER -->
             <div class="list-header">
                 <div class="col-stt">STT</div>
                 <div class="col-name">Họ và Tên</div>
@@ -178,8 +278,23 @@
                 <div class="col-class">Lớp</div>
                 <div class="col-action">Vắng</div>
             </div>
-            <div id="listBody"></div>
+        
+            <!-- BODY -->
+            <div id="listBody">  
+                <div class="student-row">
+                    <div class="row-main-content">
+                        <div class="col-stt">1</div>
+                        <div class="col-name">Nguyễn Văn A</div>
+                        <div class="col-mssv">20201234</div>
+                        <div class="col-class">CTK43</div>
+                        <div class="col-action">
+                            <input type="checkbox">
+                        </div>
+                    </div>
+                </div>                          
+            </div>
         </div>
+        
     </div>
 
     <div class="bottom-bar-wrapper">
