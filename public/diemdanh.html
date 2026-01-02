@@ -167,7 +167,6 @@
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 
-                // Mặc định chọn HK1 nếu chưa có
                 if(!document.getElementById('semesterSelect').value) {
                     document.getElementById('semesterSelect').value = "HK1";
                 }
@@ -185,6 +184,7 @@
             if (filtered.length === 0) {
                 selectSubject.innerHTML = '<option value="">-- Không có môn --</option>';
                 document.getElementById('studentListContainer').innerHTML = '<div class="text-center py-5 text-muted">Chưa có môn học nào trong học kỳ này.</div>';
+                document.getElementById('studentCount').innerText = "0";
                 return;
             }
 
@@ -217,7 +217,7 @@
             } catch (error) { alert("Lỗi tải sinh viên"); }
         }
 
-        // 3. RENDER DANH SÁCH
+        // 3. HIỂN THỊ DANH SÁCH
         function renderStudentList(students) {
             const container = document.getElementById('studentListContainer');
             container.innerHTML = "";
@@ -266,7 +266,7 @@
             document.getElementById('countAbsent').innerText = count;
         }
 
-        // 4. LƯU ĐIỂM DANH
+        // 4. LƯU ĐIỂM DANH (CỐT LÕI)
         async function submitAttendance() {
             const subjectId = document.getElementById('subjectSelect').value;
             const date = document.getElementById('todayDate').value;
@@ -297,13 +297,13 @@
 
                 if(res.ok) {
                     alert("✅ Đã lưu điểm danh thành công!");
-                    window.location.href = '/index.html';
+                    window.location.href = '/index.html'; // Quay về dashboard
                 } else alert("❌ Lỗi khi lưu dữ liệu!");
             } catch (err) { console.error(err); alert("Lỗi kết nối server!"); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
 
-        // 5. CÁC CHỨC NĂNG THÊM/SỬA
+        // 5. CHỨC NĂNG THÊM MÔN
         function openAddSubjectModal() { new bootstrap.Modal(document.getElementById('addSubjectModal')).show(); }
         
         async function saveNewSubject() {
@@ -327,6 +327,7 @@
             } else alert("Lỗi thêm môn");
         }
 
+        // 6. CHỨC NĂNG SỬA MÔN
         function openEditSubjectModal() {
             const subjectId = document.getElementById('subjectSelect').value;
             const subject = allSubjects.find(s => s.id == subjectId);
@@ -355,6 +356,7 @@
             } else alert("Lỗi cập nhật");
         }
 
+        // 7. CHỨC NĂNG SỬA SINH VIÊN
         function openEditStudentModal(id) {
             const sv = currentStudents.find(s => s.id == id);
             if(!sv) return;
