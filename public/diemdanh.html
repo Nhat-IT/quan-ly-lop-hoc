@@ -8,7 +8,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="auth.js"></script>
     <style>
-        /* ... (Giữ lại các CSS cũ của bạn) ... */
         :root { --primary-color: #3459e6; --danger-color: #e6344a; --danger-bg-light: #fff0f3; --bg-body: #f4f7fa; --bg-white: #ffffff; --text-dark: #2c3e50; --text-muted: #64748b; --border-color: #e2e8f0; --header-bg-tint: #ebf3ff; }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
@@ -31,6 +30,10 @@
         /* CSS NÚT EXCEL */
         .btn-excel { background-color: #1D6F42 !important; color: white !important; border: 1px solid #1D6F42 !important; }
         .btn-excel:hover { opacity: 0.9; }
+
+        /* CSS MỚI: EMPTY STATE */
+        .empty-state { padding: 40px 20px; text-align: center; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #studentListContainer { min-height: 100px; } 
     </style>
 </head>
 <body>
@@ -58,7 +61,7 @@
                     
                     <button class="btn btn-warning" onclick="openEditSubjectModal()" title="Sửa/Xóa môn"><i class="fas fa-pen text-white"></i></button>
                     
-                    <button class="btn btn-excel" onclick="importClassList()"><i class="fas fa-file-excel"></i> Danh sách lớp</button>
+                    <button class="btn btn-excel" id="btnImportExcel" onclick="importClassList()"><i class="fas fa-file-excel"></i> Danh sách lớp</button>
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
                 <div class="text-muted small mb-2"><i class="fas fa-chalkboard-teacher me-1"></i> <span id="displayTeacherName">--</span></div>
@@ -76,7 +79,8 @@
         
         <div class="mb-3"><input type="text" class="form-control" id="searchInput" onkeyup="filterList()" placeholder="Tìm tên hoặc MSSV..."></div>
 
-        <div class="shadow rounded-4 bg-white" id="studentListContainer"></div>
+        <div class="shadow rounded-4 bg-white" id="studentListContainer">
+            </div>
     </div>
 
     <div class="bottom-bar-wrapper">
@@ -128,7 +132,8 @@
                 select.innerHTML = '<option value="">-- Trống --</option>';
                 document.getElementById('displaySubjectName').innerText = "--";
                 document.getElementById('displayTeacherName').innerText = "--";
-                document.getElementById('studentListContainer').innerHTML = '';
+                currentStudents = []; // Reset danh sách sinh viên
+                renderList(); // Render lại (sẽ hiển thị Empty State)
                 return;
             }
 
@@ -144,22 +149,44 @@
             
             if(sub) {
                 document.getElementById('displaySubjectName').innerText = sub.subject_name;
-                // Hiển thị tên GV
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name ? "GV: " + sub.teacher_name : "GV: Chưa cập nhật";
-                document.getElementById('startDate').value = sub.start_date ? sub.start_date.split('T')[0] : '';
-                document.getElementById('endDate').value = sub.end_date ? sub.end_date.split('T')[0] : '';
+                if(document.getElementById('newStartDate')) { // Tránh lỗi null nếu không mở modal
+                     // Lưu thông tin date vào bộ nhớ nếu cần dùng sau
+                }
             }
 
-            const res = await fetch(`/api/data/students/${id}`);
-            currentStudents = await res.json();
+            try {
+                const res = await fetch(`/api/data/students/${id}`);
+                currentStudents = await res.json();
+            } catch (e) {
+                currentStudents = [];
+            }
             renderList();
         }
 
+        // --- HÀM RENDER ĐÃ SỬA ---
         function renderList() {
             const list = document.getElementById('studentListContainer');
             list.innerHTML = '';
             document.getElementById('studentCount').innerText = currentStudents.length;
+
+            // Nếu không có sinh viên: Hiển thị Empty State
+            if (currentStudents.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted fw-bold">Chưa có dữ liệu sinh viên.</p>
+                        <p class="small text-muted mb-3">Vui lòng chọn file Excel để nhập danh sách.</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="importClassList()">
+                            <i class="fas fa-file-excel me-1"></i> Nhập ngay
+                        </button>
+                    </div>
+                `;
+                document.getElementById('countAbsent').innerText = 0;
+                return;
+            }
             
+            // Nếu có sinh viên: Hiển thị danh sách
             currentStudents.forEach((sv, i) => {
                 const html = `
                 <div class="student-row" id="row-${sv.id}" data-id="${sv.id}">
@@ -182,8 +209,9 @@
         function toggleAbs(id) { document.getElementById(`row-${id}`).classList.toggle('is-absent'); updateCount(); }
         function updateCount() { document.getElementById('countAbsent').innerText = document.querySelectorAll('.is-absent').length; }
 
-        // --- IMPORT EXCEL (ĐÃ SỬA CHO FILE CỦA BẠN) ---
+        // --- IMPORT EXCEL ---
         function importClassList() { document.getElementById('fileInput').click(); }
+        
         function handleFileSelect(e) {
             const file = e.target.files[0];
             if(!file) return;
@@ -192,7 +220,7 @@
                 const wb = XLSX.read(evt.target.result, {type: 'array'});
                 const ws = wb.Sheets[wb.SheetNames[0]];
                 
-                // 1. Tìm dòng chứa tiêu đề "Mã SV"
+                // 1. Tìm Header
                 const aoa = XLSX.utils.sheet_to_json(ws, {header: 1});
                 let headerIdx = 0;
                 for(let i=0; i<Math.min(aoa.length, 20); i++) {
@@ -204,53 +232,73 @@
                 
                 // 2. Map dữ liệu
                 const students = data.map(row => {
-                    // Tìm MSSV
                     let mssv = '';
                     for(let k in row) if(/mã\s*sv|mssv/i.test(k)) mssv = row[k];
 
-                    // Tìm Họ Tên (Ghép Họ + Tên nếu tách riêng)
                     let name = '';
                     let ho = '', ten = '';
                     for(let k in row) {
                         if(/họ\s*sv|họ\s*đệm/i.test(k)) ho = row[k];
-                        if(/tên\s*sv|tên/i.test(k) && !/họ/i.test(k)) ten = row[k]; // Tránh trùng
+                        if(/tên\s*sv|tên/i.test(k) && !/họ/i.test(k)) ten = row[k]; 
                         if(/họ\s*và\s*tên|họ\s*tên/i.test(k)) name = row[k];
                     }
                     if(!name && (ho || ten)) name = (ho + ' ' + ten).trim();
 
-                    // Tìm Lớp
                     let lop = '25TH';
                     for(let k in row) if(/lớp/i.test(k)) lop = row[k];
 
                     return { mssv: mssv, full_name: name, class_name: lop };
                 }).filter(s => s.mssv && s.full_name);
 
-                if(students.length === 0) return alert("Không tìm thấy dữ liệu! File cần có cột Mã SV, Họ SV, Tên SV.");
+                if(students.length === 0) return alert("Không tìm thấy dữ liệu! File cần có cột MSSV và Họ Tên.");
                 
-                if(confirm(`Tìm thấy ${students.length} SV. Nhập?`)) sendImport(students);
+                if(confirm(`Tìm thấy ${students.length} sinh viên. Bạn có muốn lưu vào danh sách không?`)) {
+                    sendImport(students);
+                }
             };
             reader.readAsArrayBuffer(file);
-            e.target.value = '';
+            e.target.value = ''; // Reset input
         }
 
+        // --- HÀM SEND IMPORT ĐÃ SỬA ---
         async function sendImport(students) {
             const subId = document.getElementById('subjectSelect').value;
-            const res = await fetch('/api/data/students/import', {
-                method: 'POST', headers: {'Content-Type': 'json'},
-                body: JSON.stringify({ subject_id: subId, students })
-            }); // Note: Content-Type shorthand might fail, fixed below
+            const btn = document.getElementById('btnImportExcel');
+            const originalText = btn.innerHTML;
             
-            // Fix fetch
-            await fetch('/api/data/students/import', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ subject_id: subId, students })
-            }).then(r => r.json()).then(d => { alert(d.message); changeSubject(); });
+            // Hiệu ứng loading
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/data/students/import', {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, // Header chuẩn
+                    body: JSON.stringify({ subject_id: subId, students: students })
+                });
+                
+                const result = await res.json();
+                
+                if(res.ok) {
+                    alert(result.message || "Nhập danh sách thành công!");
+                    await changeSubject(); // Load lại danh sách ngay lập tức
+                } else {
+                    alert("Lỗi server: " + (result.message || "Không thể lưu."));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi kết nối! Vui lòng kiểm tra lại server.");
+            } finally {
+                // Trả lại nút bấm
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
-        // --- THÊM / SỬA / XÓA MÔN ---
+        // --- CÁC HÀM CRUD MÔN & SINH VIÊN ---
         async function saveNewSubject() {
             const name = document.getElementById('newSubjectName').value;
-            const teacher = document.getElementById('newTeacherName').value; // Lấy tên GV
+            const teacher = document.getElementById('newTeacherName').value;
             const sem = document.getElementById('semesterSelect').value;
             const start = document.getElementById('newStartDate').value;
             const end = document.getElementById('newEndDate').value;
@@ -267,16 +315,16 @@
             const id = document.getElementById('subjectSelect').value;
             const sub = allSubjects.find(s => s.id == id);
             document.getElementById('editSubjectName').value = sub.subject_name;
-            document.getElementById('editTeacherName').value = sub.teacher_name || ''; // Điền tên GV cũ
-            document.getElementById('editStartDate').value = sub.start_date.split('T')[0];
-            document.getElementById('editEndDate').value = sub.end_date.split('T')[0];
+            document.getElementById('editTeacherName').value = sub.teacher_name || '';
+            document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : '';
+            document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : '';
             new bootstrap.Modal(document.getElementById('editSubjectModal')).show();
         }
 
         async function saveEditedSubject() {
             const id = document.getElementById('subjectSelect').value;
             const name = document.getElementById('editSubjectName').value;
-            const teacher = document.getElementById('editTeacherName').value; // Lấy tên GV mới
+            const teacher = document.getElementById('editTeacherName').value;
             const start = document.getElementById('editStartDate').value;
             const end = document.getElementById('editEndDate').value;
             
@@ -288,22 +336,18 @@
             init();
         }
 
-        // --- HÀM XÓA MÔN MỚI ---
         async function deleteSubject() {
             const id = document.getElementById('subjectSelect').value;
-            const name = document.getElementById('editSubjectName').value;
-            
-            if(confirm(`CẢNH BÁO: Bạn có chắc muốn xóa môn "${name}"?\nToàn bộ sinh viên và dữ liệu điểm danh của môn này sẽ bị mất vĩnh viễn!`)) {
+            if(confirm(`CẢNH BÁO: Xóa môn này sẽ mất hết dữ liệu điểm danh!\nBạn chắc chắn chứ?`)) {
                 const res = await fetch(`/api/data/subjects/${id}`, { method: 'DELETE' });
                 if(res.ok) {
-                    alert("Đã xóa môn học!");
+                    alert("Đã xóa!");
                     bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide();
                     init();
                 } else alert("Lỗi khi xóa");
             }
         }
 
-        // --- CÁC HÀM KHÁC (Giữ nguyên logic) ---
         function openEditStudent(id) { 
             const s = currentStudents.find(x => x.id == id);
             document.getElementById('editStudentId').value = id;
@@ -312,6 +356,7 @@
             document.getElementById('editStudentClass').value = s.class_name;
             new bootstrap.Modal(document.getElementById('editStudentModal')).show();
         }
+
         async function saveEditedStudent() {
             const id = document.getElementById('editStudentId').value;
             const body = {
@@ -323,6 +368,7 @@
             bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide();
             changeSubject();
         }
+
         async function submitAttendance() {
             const data = Array.from(document.querySelectorAll('.student-row')).map(r => ({
                 student_id: r.dataset.id,
@@ -338,9 +384,10 @@
                     attendance_data: data
                 })
             });
-            alert("Đã lưu!");
-            window.location.href = '/index.html';
+            alert("Đã lưu điểm danh!");
+            window.location.href = 'index.html'; // Sửa lại đường dẫn quay về
         }
+
         function filterList() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             document.querySelectorAll('.student-row').forEach(r => {
