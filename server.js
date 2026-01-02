@@ -52,22 +52,20 @@ app.get('/api/data/attendance/check', async (req, res) => {
     try {
         const { subject_id, session_date, session_time } = req.query;
         
-        // Query này giả định bạn có bảng 'attendance_records' lưu chi tiết từng sinh viên
-        // Cần join bảng sessions và details (tùy cấu trúc DB của bạn)
-        // Ví dụ đơn giản:
+        // Query đúng với bảng attendance_records (theo db.sql)
         const sql = `
-            SELECT d.student_id, d.is_absent, d.reason 
+            SELECT ar.student_id, ar.is_absent, ar.reason 
             FROM attendance_sessions s
-            JOIN attendance_details d ON s.id = d.session_id
+            JOIN attendance_records ar ON s.id = ar.session_id
             WHERE s.subject_id = ? AND s.session_date = ? AND s.session_time = ?
         `;
         
-        // Thực thi SQL (ví dụ dùng mysql2/sqlite)
-        const [rows] = await db.execute(sql, [subject_id, session_date, session_time]);
+        // Thực thi SQL
+        const [rows] = await db.query(sql, [subject_id, session_date, session_time]);
         
         res.json(rows); // Trả về mảng: [{student_id: 1, is_absent: 1, reason: 'ốm'}, ...]
     } catch (error) {
-        console.error(error);
+        console.error('Lỗi khi lấy dữ liệu điểm danh:', error);
         res.status(500).json([]);
     }
 });
