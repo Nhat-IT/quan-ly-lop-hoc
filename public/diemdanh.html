@@ -10,6 +10,23 @@
     <script src="auth.js"></script>
     
     <style>
+        /* CSS CHO NÚT EXCEL */
+        .btn-excel {
+            background-color: #1D6F42 !important; /* Màu xanh chuẩn Excel */
+            color: white !important;
+            border: 1px solid #1D6F42 !important;
+            transition: none !important; /* Tắt hiệu ứng chuyển động */
+        }
+
+        /* KHI DI CHUỘT VÀO: GIỮ NGUYÊN MÀU */
+        .btn-excel:hover, .btn-excel:active, .btn-excel:focus {
+            background-color: #1D6F42 !important; /* Vẫn giữ màu cũ */
+            color: white !important;
+            border-color: #1D6F42 !important;
+            transform: none !important; /* Không phóng to/thu nhỏ */
+            box-shadow: none !important; /* Không đổ bóng */
+        }
+        
         :root { --primary-color: #3459e6; --danger-color: #e6344a; --danger-bg-light: #fff0f3; --bg-body: #f4f7fa; --bg-white: #ffffff; --text-dark: #2c3e50; --text-muted: #64748b; --border-color: #e2e8f0; --header-bg-tint: #ebf3ff; }
         body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
@@ -76,9 +93,10 @@
                     <select class="form-select form-control-fixed fw-bold text-primary border-0" id="subjectSelect" onchange="changeSubject()" style="background: white;">
                         </select>
                     <button class="btn btn-warning" onclick="openEditSubjectModal()" title="Sửa môn đang chọn"><i class="fas fa-pen text-white"></i></button>
-                    <button class="btn btn-outline-primary bg-white border-0" onclick="importClassList()">
-                        <i class="fas fa-file-import"></i> Danh sách lớp
+                    <button class="btn btn-excel" onclick="importClassList()">
+                        <i class="fas fa-file-excel"></i> Danh sách lớp
                     </button>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleFileSelect(event)">
 
 <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
