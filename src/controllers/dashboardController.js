@@ -2,8 +2,8 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // 1. Lấy tổng số sinh viên toàn trường
-        const [countResult] = await db.query('SELECT COUNT(*) as total FROM students');
+        // 1. Lấy tổng số sinh viên của 2 lớp 25TH01 và 25TH02
+        const [countResult] = await db.query('SELECT COUNT(*) as total FROM students WHERE class_name IN ("25TH01", "25TH02")');
         const totalStudents = countResult[0].total;
 
         // 2. Lấy danh sách tất cả các lượt vắng (kèm thông tin SV, Môn, Buổi)
@@ -58,14 +58,18 @@ exports.getDashboardData = async (req, res) => {
                 result[sem].data.push(studentMap[key]);
             }
 
-            // Format ngày tháng (YYYY-MM-DD -> DD/MM)
+            // Format ngày tháng (YYYY-MM-DD -> dd/mm/yyyy)
             const dateObj = new Date(row.session_date);
-            const dateStr = `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = dateObj.getFullYear();
+            const dateStr = `${day}/${month}/${year}`;
 
-            // Thêm chi tiết vắng
+            // Thêm chi tiết vắng với các trường riêng biệt
             studentMap[key].details.push({
                 sub: row.subject_name,
-                date: `${dateStr} - ${row.session_time}`,
+                date: dateStr,
+                session_time: row.session_time,
                 reason: row.reason || "",
                 proof: row.proof_image_url || ""
             });
