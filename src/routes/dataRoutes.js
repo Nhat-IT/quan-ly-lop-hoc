@@ -13,18 +13,12 @@ router.put('/subjects/:id', dataController.updateSubject);
 router.delete('/subjects/:id', dataController.deleteSubject);
 
 // --- Sinh viên API ---
+router.get('/students/count-special', dataController.countSpecialStudents); // <--- MỚI: API đếm SV
 router.get('/students/:subjectId', dataController.getStudentsBySubject);
+router.post('/students/import', dataController.importStudents);
 router.put('/students/:id', dataController.updateStudent);
 
 // --- Điểm danh API ---
 router.post('/attendance', dataController.saveAttendance);
-
-module.exports = router;
-
-// ...
-router.post('/attendance', dataController.saveAttendance);
-
-// API MỚI: Import sinh viên
-router.post('/students/import', dataController.importStudents); // <--- THÊM DÒNG NÀY
 
 module.exports = router;
