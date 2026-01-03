@@ -110,7 +110,7 @@
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
         @media (max-width: 768px) { .col-action input[type="checkbox"] { width: 26px; height: 26px; } }
 
-        /* --- CSS CHO DROPDOWN LỌC LỚP (ĐÃ SỬA) --- */
+        /* --- CSS CHO DROPDOWN LỌC LỚP --- */
         .dropdown-menu-filter {
             max-height: 300px;
             overflow-y: auto;
@@ -122,7 +122,6 @@
             max-width: 90vw; /* Không bao giờ vượt quá chiều rộng màn hình */
         }
 
-        /* Căn chỉnh từng dòng chọn */
         .dropdown-menu-filter li {
             list-style: none;
         }
@@ -141,7 +140,6 @@
             background-color: #f1f5f9; /* Màu nền khi di chuột */
         }
 
-        /* Checkbox */
         .dropdown-menu-filter .form-check-input {
             margin-top: 0;
             margin-left: 0 !important; /* Bỏ lề âm mặc định của Bootstrap */
@@ -159,7 +157,6 @@
             border-color: var(--primary-color);
         }
 
-        /* Nhãn (Tên lớp) */
         .dropdown-menu-filter .form-check-label {
             cursor: pointer;
             font-weight: 500;
@@ -171,18 +168,37 @@
             text-overflow: ellipsis; /* Hiện dấu ... nếu tên quá dài */
         }
 
-        /* Đường kẻ phân cách */
         .dropdown-menu-filter .dropdown-divider {
             margin: 6px 0;
             border-top: 1px solid #f1f5f9;
         }
 
-        /* Responsive: Căn phải dropdown trên màn hình nhỏ để không bị tràn ra ngoài phải */
         @media (max-width: 576px) {
             .dropdown-menu-filter {
                 width: 100%; /* Trên mobile thì full chiều rộng nút */
                 min-width: 200px;
             }
+        }
+
+        /* --- CSS CHO NÚT SỬA (CHỈ HIỆN KHI HOVER) --- */
+        .col-name .edit-icon {
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-left: 10px;
+        }
+
+        .col-name:hover .edit-icon {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .col-name .edit-icon:hover {
+            color: var(--primary-color);
+            transform: scale(1.2);
         }
     </style>
 </head>
@@ -297,7 +313,8 @@
     <div class="modal fade" id="addSubjectModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn Mới</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="newSubjectName"></div><div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="newTeacherName"></div><div class="row g-2"><div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="newStartDate"></div><div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="newEndDate"></div></div></div><div class="modal-footer border-0"><button class="btn btn-success w-100 fw-bold" onclick="saveNewSubject()">Thêm mới</button></div></div></div></div>
     <div class="modal fade" id="editSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-warning">Cập nhật môn</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="editSubjectName"></div><div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="editTeacherName"></div><div class="row g-2"><div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="editStartDate"></div><div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="editEndDate"></div></div></div><div class="modal-footer border-0 d-flex justify-content-between"><button class="btn btn-outline-danger" onclick="deleteSubject()"><i class="fas fa-trash"></i> Xóa Môn</button><button class="btn btn-primary fw-bold" onclick="saveEditedSubject()">Lưu thay đổi</button></div></div></div></div>
     <div class="modal fade" id="addStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Sinh Viên</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="small fw-bold text-muted">Họ và Tên</label><input type="text" class="form-control fw-bold" id="newStudentName"></div><div class="row"><div class="col-6"><label class="small fw-bold text-muted">MSSV</label><input type="text" class="form-control" id="newStudentMSSV"></div><div class="col-6"><label class="small fw-bold text-muted">Lớp</label><input type="text" class="form-control" id="newStudentClass" placeholder="25TH01 hoặc 25TH02"></div></div></div><div class="modal-footer border-0"><button class="btn btn-success w-100 fw-bold" onclick="saveNewStudent()">Thêm mới</button></div></div></div></div>
-    <div class="modal fade" id="editStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body"><input type="hidden" id="editStudentId"><div class="mb-3"><label>Tên</label><input type="text" class="form-control fw-bold" id="editStudentName"></div><div class="row"><div class="col-6"><label>MSSV</label><input type="text" class="form-control" id="editStudentMSSV"></div><div class="col-6"><label>Lớp</label><input type="text" class="form-control" id="editStudentClass"></div></div></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveEditedStudent()">Cập nhật</button></div></div></div></div>
+    
+    <div class="modal fade" id="editStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body"><input type="hidden" id="editStudentId"><div class="mb-3"><label>Tên</label><input type="text" class="form-control fw-bold" id="editStudentName"></div><div class="row"><div class="col-6"><label>MSSV</label><input type="text" class="form-control" id="editStudentMSSV"></div><div class="col-6"><label>Lớp</label><input type="text" class="form-control" id="editStudentClass"></div></div></div><div class="modal-footer d-flex justify-content-between"><button class="btn btn-outline-danger" onclick="deleteStudent()"><i class="fas fa-trash-alt"></i> Xóa SV</button><button class="btn btn-primary px-4" onclick="saveEditedStudent()">Cập nhật</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -450,7 +467,10 @@
                      data-mssv="${sv.mssv.toLowerCase()}">
                     <div class="row-main-content">
                         <div class="col-stt">${i+1}</div>
-                        <div class="col-name">${sv.full_name} <i class="fas fa-pen text-muted ms-2" style="cursor:pointer; font-size:0.8rem" onclick="openEditStudent(${sv.id})"></i></div>
+                        <div class="col-name">
+                            ${sv.full_name} 
+                            <i class="fas fa-pen edit-icon" onclick="openEditStudent(${sv.id})"></i>
+                        </div>
                         <div class="col-mssv">${sv.mssv}</div>
                         <div class="col-class">${sv.class_name}</div>
                         <div class="col-action"><input type="checkbox" class="form-check-input" onchange="toggleAbs(${sv.id})"></div>
@@ -536,13 +556,11 @@
             }
         }
 
-        // --- HÀM LỌC ĐÃ CẬP NHẬT: TÌM NHIỀU NGƯỜI BẰNG DẤU PHẨY ---
+        // --- HÀM LỌC ---
         function filterList() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            // Tách chuỗi thành mảng, xóa khoảng trắng thừa
             const searchTerms = searchInput.split(',').map(term => term.trim()).filter(term => term !== '');
 
-            // Lấy danh sách lớp được tích chọn
             const checkedBoxes = document.querySelectorAll('.class-checkbox:checked');
             const selectedClasses = Array.from(checkedBoxes).map(cb => cb.value);
             
@@ -554,16 +572,13 @@
                 const mssv = r.getAttribute('data-mssv');
                 const studentClass = r.getAttribute('data-class');
                 
-                // Logic tìm kiếm đa từ khóa
                 let matchText = false;
                 if (searchTerms.length === 0) {
-                    matchText = true; // Nếu không nhập gì thì coi như khớp
+                    matchText = true; 
                 } else {
-                    // Nếu có nhập, dòng này phải chứa ÍT NHẤT 1 từ khóa
                     matchText = searchTerms.some(term => name.includes(term) || mssv.includes(term));
                 }
 
-                // Logic lọc lớp
                 const matchClass = showAllClasses || selectedClasses.includes(studentClass);
                 
                 const isVisible = matchText && matchClass;
@@ -718,6 +733,29 @@
             await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); 
             bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); 
             changeSubject(); 
+        }
+
+        // [MỚI] Hàm Xóa Sinh viên
+        async function deleteStudent() {
+            const id = document.getElementById('editStudentId').value;
+            const name = document.getElementById('editStudentName').value;
+            
+            if (confirm(`CẢNH BÁO QUAN TRỌNG:\n\nBạn có chắc muốn xóa sinh viên "${name}" không?\nToàn bộ dữ liệu điểm danh của sinh viên này sẽ bị mất vĩnh viễn!`)) {
+                try {
+                    const res = await fetch(`/api/data/students/${id}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    
+                    if (res.ok) {
+                        alert(data.message);
+                        bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide();
+                        changeSubject(); // Tải lại danh sách
+                    } else {
+                        alert("Lỗi: " + data.message);
+                    }
+                } catch (err) {
+                    alert("Lỗi kết nối server!");
+                }
+            }
         }
 
         function exportToExcel() {

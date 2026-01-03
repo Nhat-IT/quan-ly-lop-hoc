@@ -13,10 +13,11 @@ router.put('/subjects/:id', dataController.updateSubject);
 router.delete('/subjects/:id', dataController.deleteSubject);
 
 // --- Sinh viên API ---
-router.get('/students/count-special', dataController.countSpecialStudents); // <--- MỚI: API đếm SV
+router.get('/students/count-special', dataController.countSpecialStudents);
 router.get('/students/:subjectId', dataController.getStudentsBySubject);
 router.post('/students/import', dataController.importStudents);
 router.put('/students/:id', dataController.updateStudent);
+router.delete('/students/:id', dataController.deleteStudent); // [MỚI] Route xóa sinh viên
 
 // --- Điểm danh API ---
 router.post('/attendance', dataController.saveAttendance);

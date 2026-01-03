@@ -151,3 +151,37 @@ exports.countSpecialStudents = async (req, res) => {
         res.status(500).json({ message: 'Lỗi đếm sinh viên' });
     }
 };
+// 10. Lấy danh sách môn
+exports.getSubjects = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM subjects ORDER BY id DESC');
+        res.json(rows);
+    } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
+};
+
+// 11.[MỚI] Xóa sinh viên (Thêm vào cuối file)
+exports.deleteStudent = async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        
+        // Xóa dữ liệu điểm danh của SV này trước
+        await connection.query('DELETE FROM attendance_records WHERE student_id = ?', [id]);
+        
+        // Xóa khỏi lớp học (enrollments)
+        await connection.query('DELETE FROM enrollments WHERE student_id = ?', [id]);
+        
+        // Cuối cùng xóa thông tin sinh viên
+        await connection.query('DELETE FROM students WHERE id = ?', [id]);
+
+        await connection.commit();
+        res.json({ message: 'Đã xóa sinh viên thành công!' });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi xóa sinh viên' });
+    } finally {
+        connection.release();
+    }
+};
