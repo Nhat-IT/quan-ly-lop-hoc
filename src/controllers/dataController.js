@@ -8,7 +8,7 @@ exports.getSubjects = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
-// 2. Thêm môn (Cập nhật thêm teacher_name)
+// 2. Thêm môn
 exports.createSubject = async (req, res) => {
     const { subject_name, teacher_name, semester, start_date, end_date } = req.body;
     try {
@@ -20,7 +20,7 @@ exports.createSubject = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi thêm môn' }); }
 };
 
-// 3. Sửa môn (Cập nhật thêm teacher_name)
+// 3. Sửa môn
 exports.updateSubject = async (req, res) => {
     const { id } = req.params;
     const { subject_name, teacher_name, start_date, end_date } = req.body;
@@ -33,36 +33,27 @@ exports.updateSubject = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật' }); }
 };
 
-// 4. [MỚI] Xóa môn học (Xóa sạch dữ liệu liên quan)
+// 4. Xóa môn
 exports.deleteSubject = async (req, res) => {
     const { id } = req.params;
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
-
-        // Xóa điểm danh
         await connection.query('DELETE FROM attendance_records WHERE session_id IN (SELECT id FROM attendance_sessions WHERE subject_id = ?)', [id]);
         await connection.query('DELETE FROM attendance_sessions WHERE subject_id = ?', [id]);
-        
-        // Xóa sinh viên khỏi môn (enrollments)
         await connection.query('DELETE FROM enrollments WHERE subject_id = ?', [id]);
-        
-        // Cuối cùng xóa môn
         await connection.query('DELETE FROM subjects WHERE id = ?', [id]);
-
         await connection.commit();
-        res.json({ message: 'Đã xóa môn học và dữ liệu liên quan.' });
+        res.json({ message: 'Đã xóa môn học.' });
     } catch (error) {
         await connection.rollback();
-        console.error(error);
         res.status(500).json({ message: 'Lỗi khi xóa môn học' });
     } finally {
         connection.release();
     }
 };
 
-// ... (Giữ nguyên các hàm getStudentsBySubject, updateStudent, saveAttendance, importStudents cũ)
-// Giữ nguyên phần importStudents cũ ở câu trả lời trước, hoặc copy lại nếu cần
+// 5. Lấy danh sách SV theo môn
 exports.getStudentsBySubject = async (req, res) => {
     const { subjectId } = req.params;
     try {
@@ -71,6 +62,8 @@ exports.getStudentsBySubject = async (req, res) => {
         res.json(rows);
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
+
+// 6. Cập nhật thông tin SV
 exports.updateStudent = async (req, res) => {
     const { id } = req.params;
     const { full_name, mssv, class_name } = req.body;
@@ -79,13 +72,13 @@ exports.updateStudent = async (req, res) => {
         res.json({ message: 'Cập nhật SV thành công' });
     } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật SV' }); }
 };
+
+// 7. Lưu điểm danh
 exports.saveAttendance = async (req, res) => {
     const { subject_id, session_date, session_time, attendance_data } = req.body;
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
-        
-        // 1. Tìm hoặc tạo session
         const [sessions] = await connection.query(
             'SELECT id FROM attendance_sessions WHERE subject_id=? AND session_date=? AND session_time=?', 
             [subject_id, session_date, session_time]
@@ -101,10 +94,8 @@ exports.saveAttendance = async (req, res) => {
             sessionId = result.insertId;
         }
         
-        // 2. Xóa tất cả records cũ của session này (1 query thay vì N queries)
         await connection.query('DELETE FROM attendance_records WHERE session_id=?', [sessionId]);
         
-        // 3. Batch insert tất cả records (1 query thay vì N queries)
         if (attendance_data.length > 0) {
             const values = attendance_data.map(record => [
                 sessionId,
@@ -113,16 +104,13 @@ exports.saveAttendance = async (req, res) => {
                 record.reason || '',
                 record.proof_image_url || null
             ]);
-            
             const placeholders = values.map(() => '(?, ?, ?, ?, ?)').join(', ');
             const flatValues = values.flat();
-            
             await connection.query(
                 `INSERT INTO attendance_records (session_id, student_id, is_absent, reason, proof_image_url) VALUES ${placeholders}`,
                 flatValues
             );
         }
-        
         await connection.commit();
         res.json({ message: 'Lưu điểm danh thành công!' });
     } catch (error) {
@@ -133,6 +121,8 @@ exports.saveAttendance = async (req, res) => {
         connection.release();
     }
 };
+
+// 8. Import sinh viên từ Excel
 exports.importStudents = async (req, res) => {
     const { subject_id, students } = req.body;
     const connection = await db.getConnection();
@@ -148,4 +138,16 @@ exports.importStudents = async (req, res) => {
         await connection.commit();
         res.json({ message: `Đã import thành công ${students.length} sinh viên!` });
     } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi import' }); } finally { connection.release(); }
+};
+
+// 9. Đếm tổng sinh viên (API bạn đang thiếu)
+exports.countSpecialStudents = async (req, res) => {
+    try {
+        const sql = "SELECT COUNT(*) as total FROM students WHERE class_name IN ('25TH01', '25TH02')";
+        const [rows] = await db.query(sql);
+        res.json({ total: rows[0].total });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi đếm sinh viên' });
+    }
 };
