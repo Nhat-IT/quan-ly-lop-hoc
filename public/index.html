@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Quản Lý Lớp Học</title>
+    <title>Dashboard Quản Lý Sinh Viên</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -20,7 +20,6 @@
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
         .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .absence-item { border-bottom: 1px dashed #eee; padding: 6px 0; display: flex; align-items: center; font-size: 0.9rem; }
-        .absence-item:last-child { border-bottom: none; }
         .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 2px 8px; margin-right: 8px; font-weight: 600; }
         .btn-action { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; }
         .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
@@ -34,7 +33,7 @@
 <body>
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
         <div class="container">
-            <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> Dashboard quản lý lớp học</span>
+            <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD QUẢN LÝ SINH VIÊN</span>
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải dữ liệu...</div>
@@ -53,7 +52,7 @@
                 <div class="card stat-card h-100">
                     <div class="card-body d-flex align-items-center">
                         <div class="icon-box bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-users"></i></div>
-                        <div><h6 class="text-muted small fw-bold">TỔNG SINH VIÊN</h6><h3 class="fw-bold mb-0" id="totalCount">--</h3></div>
+                        <div><h6 class="text-muted small fw-bold">TỔNG SINH VIÊN (25TH01-02)</h6><h3 class="fw-bold mb-0" id="totalCount">--</h3></div>
                     </div>
                 </div>
             </div>
@@ -78,8 +77,7 @@
         <div class="card mb-4 border-0 shadow-sm" id="detailSection">
             <div class="card-header bg-white fw-bold border-0 pt-3"><i class="fas fa-list-ul text-secondary me-2"></i> MÔN HỌC CÓ SINH VIÊN BỊ CẢNH BÁO</div>
             <div class="card-body pt-0">
-                <div class="row g-3" id="warningSubjectList">
-                    </div>
+                <div class="row g-3" id="warningSubjectList"></div>
             </div>
         </div>
 
@@ -136,7 +134,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let db = {}; 
-        let allSubjectsInfo = []; // Lưu thông tin môn để lấy tên GV
+        let allSubjectsInfo = []; 
 
         async function init() {
             try {
@@ -145,27 +143,23 @@
                 semSelect.innerHTML = '';
                 ["HK1", "HK2", "HK3"].forEach(sem => semSelect.add(new Option(sem, sem)));
                 
-                // Đặt giá trị mặc định là HK1 nếu chưa có
-                if (!semSelect.value) {
-                    semSelect.value = 'HK1';
-                }
+                // 2. Lấy lại học kỳ đã chọn trước đó nếu có
+                const savedSem = localStorage.getItem('currentSemester');
+                if (savedSem) semSelect.value = savedSem;
+                else semSelect.value = 'HK1';
 
-                // 2. Lấy dữ liệu Dashboard
+                // 3. Lấy dữ liệu Dashboard
                 const res = await fetch('/api/data/dashboard');
                 if(!res.ok) throw new Error('Lỗi Server');
                 db = await res.json();
 
-                // 3. Lấy thêm thông tin môn học để có Tên GV
+                // 4. Lấy thêm thông tin môn học
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
 
-                // 4. Cập nhật link Điểm danh ngay sau khi load
-                updateDiemDanhLink();
-                
                 render();
             } catch (error) { 
                 console.error(error); 
-                // Vẫn cố gắng render với dữ liệu rỗng
                 db = {};
                 render(); 
             }
@@ -173,34 +167,36 @@
 
         function render() {
             const sem = document.getElementById('semFilter').value;
+            // [QUAN TRỌNG] Lưu học kỳ hiện tại để trang Điểm danh biết
+            localStorage.setItem('currentSemester', sem);
+            
+            // Cập nhật nút Điểm danh với tham số URL để chắc chắn
+            updateDiemDanhLink();
+
             const currentData = db[sem] || { total: 0, subjects: [], data: [] };
 
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
-            // Hiển thị tổng số sinh viên của 2 lớp 25TH01 và 25TH02
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
-            // Lưu học kỳ hiện tại vào localStorage
-            localStorage.setItem('currentSemester', sem);
-            
-            // Cập nhật link Điểm danh với tham số semester
-            const btnDiemDanh = document.getElementById('btnDiemDanh');
-            if (btnDiemDanh) {
-                btnDiemDanh.href = `diemdanh.html?semester=${sem}`;
-            }
-
             const subSelect = document.getElementById('subFilter');
+            const currentSubVal = subSelect.value; // Giữ lại giá trị filter môn đang chọn nếu có
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
             if (currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+            
+            // Restore lại filter môn nếu môn đó vẫn tồn tại trong danh sách mới
+            if (currentSubVal && currentSubVal !== 'all' && currentData.subjects.includes(currentSubVal)) {
+                 subSelect.value = currentSubVal;
+            }
 
             renderTable(currentData);
             renderWarningCards(currentData.data);
         }
         
-        // Đảm bảo link Điểm danh được cập nhật ngay khi trang load
         function updateDiemDanhLink() {
             const sem = document.getElementById('semFilter').value;
             const btnDiemDanh = document.getElementById('btnDiemDanh');
             if (btnDiemDanh) {
+                // Truyền học kỳ qua URL để trang Điểm danh bắt được ngay
                 btnDiemDanh.href = `diemdanh.html?semester=${sem}`;
             }
         }
@@ -210,7 +206,7 @@
             tbody.innerHTML = '';
 
             if (!currentData.data || currentData.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng học.</td></tr>';
                 document.getElementById('warningCount').innerText = 0;
                 document.getElementById('subWarningCount').innerText = 0;
                 return;
@@ -236,7 +232,6 @@
                 const rowClass = isWarning ? 'alert-row' : '';
                 const totalColor = isWarning ? 'text-danger' : (total > 0 ? 'text-warning-emphasis' : 'text-success');
                 
-                // Tạo một dòng cho mỗi chi tiết vắng
                 if (visibleDetails.length > 0) {
                     visibleDetails.forEach((d, idx) => {
                         const isFirstRow = idx === 0;
@@ -256,19 +251,7 @@
                         tbody.insertAdjacentHTML('beforeend', html);
                     });
                 } else {
-                    // Nếu không có chi tiết nhưng vẫn hiển thị (trường hợp filter)
-                    const html = `
-                        <tr class="${rowClass}">
-                            <td class="text-center fw-bold text-muted">${stt++}</td>
-                            <td><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted">${sv.mssv}</div></td>
-                            <td><span class="text-muted small fst-italic">-</span></td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td class="text-center">-</td>
-                            <td class="text-center">-</td>
-                            <td class="text-center"><span class="fw-bold fs-5 ${totalColor}">${total}</span></td>
-                        </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', html);
+                     // Trường hợp vắng 0 nhưng vẫn hiện tên (nếu logic cho phép, ở đây code hiện tại của bạn chỉ lọc sv vắng nên ít khi vào đây)
                 }
             });
 
@@ -276,15 +259,12 @@
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
         }
 
-        // --- HÀM RENDER THẺ CẢNH BÁO (ĐÃ CÓ TÊN GV) ---
+        // --- Render thẻ cảnh báo ---
         function renderWarningCards(data) {
             const container = document.getElementById('warningSubjectList');
             container.innerHTML = '';
             
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
-                return;
-            }
+            if (!data || data.length === 0) return;
             
             const subCounts = {};
             data.forEach(sv => {
@@ -299,7 +279,6 @@
             }
 
             for (let [subName, count] of Object.entries(subCounts)) {
-                // Tìm tên GV từ danh sách môn đã load
                 const subInfo = allSubjectsInfo.find(s => s.subject_name === subName);
                 const teacherName = subInfo && subInfo.teacher_name ? subInfo.teacher_name : "Chưa cập nhật";
 
