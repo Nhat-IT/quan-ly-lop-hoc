@@ -109,6 +109,22 @@
         .col-action { display: flex; justify-content: center; align-items: center; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
         @media (max-width: 768px) { .col-action input[type="checkbox"] { width: 26px; height: 26px; } }
+
+        /* Dropdown custom */
+        .dropdown-menu-filter {
+            min-width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .dropdown-menu-filter .form-check {
+            padding: 5px 10px;
+            margin-bottom: 0;
+            border-radius: 4px;
+        }
+        .dropdown-menu-filter .form-check:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -180,11 +196,17 @@
             <div class="col-md-8 col-7">
                 <input type="text" class="form-control" id="searchInput" onkeyup="filterList()" placeholder="Tìm theo Tên hoặc MSSV...">
             </div>
-            <div class="col-md-4 col-5">
-                <select class="form-select fw-bold text-primary" id="classFilter" multiple onchange="filterList()" style="height: auto; min-height: 80px;">
-                    <option value="">Tất cả lớp</option>
-                </select>
-                <small class="text-muted d-block mt-1">Giữ Ctrl/Cmd để chọn nhiều lớp</small>
+            
+            <div class="col-md-4 col-5 d-flex gap-2 align-items-start">
+                <div class="dropdown flex-grow-1">
+                    <button class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center fw-bold" type="button" id="classFilterBtn" data-bs-toggle="dropdown" aria-expanded="false" style="height: 42px;">
+                        <span id="selectedClassLabel">Tất cả lớp</span>
+                        <i class="fas fa-chevron-down small"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-filter shadow w-100" id="classFilterMenu" aria-labelledby="classFilterBtn">
+                        </ul>
+                </div>
+                <button class="btn btn-primary" onclick="filterList()" style="height: 42px; min-width: 80px;"><i class="fas fa-filter me-1"></i> Lọc</button>
             </div>
         </div>
 
@@ -227,31 +249,23 @@
 
         async function init() {
             try {
-                // 1. Xác định Học kỳ cần load
-                // Ưu tiên lấy từ URL (do index.html truyền qua) -> sau đó đến LocalStorage -> Mặc định HK1
                 const urlParams = new URLSearchParams(window.location.search);
                 let selectedSem = urlParams.get('semester');
                 if (!selectedSem) selectedSem = localStorage.getItem('currentSemester');
                 if (!selectedSem) selectedSem = 'HK1';
                 
-                // 2. Tải danh sách tất cả môn học từ Server
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 
-                // 3. Set giá trị cho Select box và trigger load môn học
                 const semesterSelect = document.getElementById('semesterSelect');
                 if (semesterSelect) {
                     semesterSelect.value = selectedSem;
-                    // Gọi hàm lọc môn ngay lập tức (không cần setTimeout) vì allSubjects đã có dữ liệu
                     filterSubjectsBySemester();
                 }
             } catch (error) { 
                 console.error("Lỗi khởi tạo:", error); 
-                // Fallback nếu lỗi
                 const semesterSelect = document.getElementById('semesterSelect');
-                if (semesterSelect && !semesterSelect.value) {
-                    semesterSelect.value = 'HK1';
-                }
+                if (semesterSelect && !semesterSelect.value) semesterSelect.value = 'HK1';
             }
         }
 
@@ -260,7 +274,6 @@
             const select = document.getElementById('subjectSelect');
             select.innerHTML = '';
             
-            // Lọc môn học theo kỳ
             const filtered = allSubjects.filter(s => (s.semester || 'HK1') === sem);
             
             if (filtered.length === 0) {
@@ -271,10 +284,7 @@
                 return;
             }
             
-            // Đổ dữ liệu vào select môn
             filtered.forEach(s => select.add(new Option(s.subject_name, s.id)));
-            
-            // Tự động chọn môn đầu tiên và tải sinh viên
             changeSubject();
         }
 
@@ -300,7 +310,6 @@
             }
 
             try {
-                // Tải sinh viên của môn đó
                 const res = await fetch(`/api/data/students/${id}`);
                 currentStudents = await res.json();
             } catch (e) { currentStudents = []; }
@@ -317,7 +326,6 @@
             const session = document.getElementById('sessionTime').value;
             if (!subjectId || !date) return;
 
-            // Reset UI
             document.querySelectorAll('.student-row').forEach(row => {
                 row.classList.remove('is-absent');
                 row.querySelector('.form-check-input').checked = false;
@@ -360,15 +368,18 @@
             const listBody = document.getElementById('listBody');
             listBody.innerHTML = '';
             document.getElementById('studentCount').innerText = currentStudents.length;
-            document.getElementById('filteredCount').innerText = currentStudents.length;
-            updateClassFilter();
+            
+            // Xây dựng dropdown bộ lọc lớp
+            updateClassFilterDropdown();
 
             if (currentStudents.length === 0) {
                 listBody.innerHTML = `<div class="empty-state"><p class="text-muted fw-bold">Chưa có dữ liệu sinh viên.</p><button class="btn btn-sm btn-outline-primary" onclick="importClassList()">Nhập ngay</button></div>`;
                 document.getElementById('countAbsent').innerText = 0;
+                document.getElementById('filteredCount').innerText = 0;
                 return;
             }
             
+            // Render danh sách (ban đầu hiển thị tất cả)
             currentStudents.forEach((sv, i) => {
                 const html = `
                 <div class="student-row" id="row-${sv.id}" 
@@ -395,6 +406,88 @@
                 listBody.insertAdjacentHTML('beforeend', html);
             });
             updateCount();
+            document.getElementById('filteredCount').innerText = currentStudents.length;
+        }
+
+        // --- HÀM MỚI: TẠO DROPDOWN LỌC LỚP ---
+        function updateClassFilterDropdown() {
+            const uniqueClasses = [...new Set(currentStudents.map(s => s.class_name))].sort();
+            const menu = document.getElementById('classFilterMenu');
+            menu.innerHTML = `
+                <li>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="chk-all" onchange="toggleAllClasses(this)">
+                        <label class="form-check-label fw-bold" for="chk-all">Chọn tất cả</label>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+            `;
+
+            uniqueClasses.forEach(c => {
+                menu.insertAdjacentHTML('beforeend', `
+                    <li>
+                        <div class="form-check">
+                            <input class="form-check-input class-checkbox" type="checkbox" value="${c}" id="chk-${c}" onchange="updateDropdownLabel()">
+                            <label class="form-check-label" for="chk-${c}">${c}</label>
+                        </div>
+                    </li>
+                `);
+            });
+            updateDropdownLabel();
+        }
+
+        function toggleAllClasses(source) {
+            const checkboxes = document.querySelectorAll('.class-checkbox');
+            checkboxes.forEach(chk => chk.checked = source.checked);
+            updateDropdownLabel();
+        }
+
+        function updateDropdownLabel() {
+            const checked = document.querySelectorAll('.class-checkbox:checked');
+            const label = document.getElementById('selectedClassLabel');
+            if (checked.length === 0) {
+                label.innerText = "Tất cả lớp";
+                document.getElementById('chk-all').checked = false;
+            } else {
+                const totalCheckboxes = document.querySelectorAll('.class-checkbox').length;
+                if (checked.length === totalCheckboxes) {
+                    label.innerText = "Tất cả lớp";
+                    document.getElementById('chk-all').checked = true;
+                } else {
+                    label.innerText = `Đã chọn (${checked.length})`;
+                    document.getElementById('chk-all').checked = false;
+                }
+            }
+        }
+
+        function filterList() {
+            const txt = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Lấy danh sách lớp được tích chọn
+            const checkedBoxes = document.querySelectorAll('.class-checkbox:checked');
+            const selectedClasses = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            // Logic: Nếu không chọn lớp nào (hoặc chọn tất cả thông qua nút all nhưng thực tế là check hết), 
+            // ta coi như hiển thị hết nếu label là "Tất cả lớp" hoặc selectedClasses rỗng?
+            // Tốt nhất: Nếu mảng selectedClasses rỗng -> Hiển thị hết.
+            
+            const showAll = selectedClasses.length === 0;
+            
+            let visibleCount = 0;
+            document.querySelectorAll('.student-row').forEach(r => {
+                const name = r.getAttribute('data-name');
+                const mssv = r.getAttribute('data-mssv');
+                const studentClass = r.getAttribute('data-class');
+                
+                const matchText = !txt || name.includes(txt) || mssv.includes(txt);
+                const matchClass = showAll || selectedClasses.includes(studentClass);
+                
+                const isVisible = matchText && matchClass;
+                r.style.display = isVisible ? 'block' : 'none'; // student-row là div nên block hoặc flex
+                if (isVisible) visibleCount++;
+            });
+            
+            document.getElementById('filteredCount').innerText = visibleCount;
         }
 
         function toggleAbs(id) { 
@@ -405,45 +498,6 @@
         function updateCount() { 
             const count = document.querySelectorAll('.student-row .form-check-input:checked').length;
             document.getElementById('countAbsent').innerText = count; 
-        }
-
-        function updateClassFilter() {
-            const classFilter = document.getElementById('classFilter');
-            const uniqueClasses = [...new Set(currentStudents.map(s => s.class_name))];
-            classFilter.innerHTML = '<option value="">Tất cả lớp</option>';
-            uniqueClasses.forEach(c => {
-                const option = document.createElement('option');
-                option.value = c;
-                option.innerText = c;
-                classFilter.appendChild(option);
-            });
-        }
-
-        function filterList() {
-            const txt = document.getElementById('searchInput').value.toLowerCase();
-            const classFilter = document.getElementById('classFilter');
-            
-            // Lấy danh sách lớp đã chọn (hỗ trợ multiple select)
-            let selectedClasses = [];
-            const selectedOptions = Array.from(classFilter.selectedOptions);
-            selectedClasses = selectedOptions.map(opt => opt.value).filter(v => v && v !== '');
-            
-            // Nếu không có lớp nào được chọn hoặc chọn "Tất cả lớp", hiển thị tất cả
-            const showAll = selectedClasses.length === 0 || selectedClasses.includes('');
-            
-            let visibleCount = 0;
-            document.querySelectorAll('.student-row').forEach(r => {
-                const name = r.getAttribute('data-name');
-                const mssv = r.getAttribute('data-mssv');
-                const studentClass = r.getAttribute('data-class');
-                const matchText = !txt || name.includes(txt) || mssv.includes(txt);
-                const matchClass = showAll || selectedClasses.includes(studentClass);
-                const isVisible = matchText && matchClass;
-                r.style.display = isVisible ? 'flex' : 'none';
-                if (isVisible) visibleCount++;
-            });
-            
-            document.getElementById('filteredCount').innerText = visibleCount;
         }
 
         function importClassList() { document.getElementById('fileInput').click(); }
@@ -462,7 +516,7 @@
                 const data = XLSX.utils.sheet_to_json(ws, {range: headerIdx}); 
                 const students = data.map(row => { 
                     let mssv = ''; for(let k in row) if(/mã\s*sv|mssv/i.test(k)) mssv = row[k]; 
-                    let name = ''; let ho = '', ten = ''; for(let k in row) { if(/họ\s*sv|họ\s*đệm/i.test(k)) ho = row[k]; if(/tên\s*sv|tên/i.test(k) && !/họ/i.test(k)) ten = row[k]; if(/họ\s*và\s*tên|họ\s*tên/i.test(k)) name = row[k]; } 
+                    let name = ''; let ho = '', ten = ''; for(let k in row) { if(/họ\s*sv|họ\s*đệm/i.test(k)) ho = row[k]; if(/tên\s*sv|tên/i.test(k)) ten = row[k]; if(/họ\s*và\s*tên|họ\s*tên/i.test(k)) name = row[k]; } 
                     if(!name && (ho || ten)) name = (ho + ' ' + ten).trim(); 
                     let lop = '25TH'; for(let k in row) if(/lớp/i.test(k)) lop = row[k]; 
                     return { mssv: mssv, full_name: name, class_name: lop }; 
@@ -494,7 +548,6 @@
                 body: JSON.stringify({ subject_name: name, teacher_name: teacher, semester: sem, start_date: start, end_date: end })
             });
             bootstrap.Modal.getInstance(document.getElementById('addSubjectModal')).hide();
-            // Load lại danh sách môn
             const res = await fetch('/api/data/subjects');
             allSubjects = await res.json();
             filterSubjectsBySemester();
@@ -518,8 +571,6 @@
              const end = document.getElementById('editEndDate').value;
              await fetch(`/api/data/subjects/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject_name: name, teacher_name: teacher, start_date: start, end_date: end }) });
              bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); 
-             
-             // Refresh data
              const res = await fetch('/api/data/subjects');
              allSubjects = await res.json();
              filterSubjectsBySemester();
@@ -530,8 +581,6 @@
             if(confirm("Xóa môn này?")) { 
                 await fetch(`/api/data/subjects/${id}`, { method: 'DELETE' }); 
                 bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); 
-                
-                // Refresh data
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 filterSubjectsBySemester();
@@ -551,34 +600,19 @@
             const className = document.getElementById('newStudentClass').value.trim();
             const subjectId = document.getElementById('subjectSelect').value;
 
-            if (!name || !mssv || !className) {
-                alert('Vui lòng điền đầy đủ thông tin!');
-                return;
-            }
-
-            if (!subjectId) {
-                alert('Vui lòng chọn môn học trước!');
-                return;
-            }
+            if (!name || !mssv || !className) return alert('Vui lòng điền đầy đủ thông tin!');
+            if (!subjectId) return alert('Vui lòng chọn môn học trước!');
 
             try {
                 const students = [{ mssv, full_name: name, class_name: className }];
-                const res = await fetch('/api/data/students/import', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ subject_id: subjectId, students })
-                });
+                const res = await fetch('/api/data/students/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject_id: subjectId, students }) });
                 const data = await res.json();
                 if (res.ok) {
                     alert('Thêm sinh viên thành công!');
                     bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
                     changeSubject();
-                } else {
-                    alert(data.message || 'Lỗi khi thêm sinh viên');
-                }
-            } catch (err) {
-                alert('Lỗi kết nối!');
-            }
+                } else alert(data.message || 'Lỗi khi thêm sinh viên');
+            } catch (err) { alert('Lỗi kết nối!'); }
         }
 
         function openEditStudent(id) { 
@@ -597,33 +631,18 @@
                 mssv: document.getElementById('editStudentMSSV').value, 
                 class_name: document.getElementById('editStudentClass').value 
             }; 
-            await fetch(`/api/data/students/${id}`, { 
-                method: 'PUT', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(body)
-            }); 
+            await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); 
             bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); 
             changeSubject(); 
         }
 
         function exportToExcel() {
-            if (currentStudents.length === 0) {
-                alert('Không có dữ liệu để xuất!');
-                return;
-            }
-
+            if (currentStudents.length === 0) return alert('Không có dữ liệu để xuất!');
             const subjectName = document.getElementById('displaySubjectName').innerText || 'DanhSachSinhVien';
-            const data = currentStudents.map((sv, idx) => ({
-                'STT': idx + 1,
-                'Họ và Tên': sv.full_name,
-                'MSSV': sv.mssv,
-                'Lớp': sv.class_name
-            }));
-
+            const data = currentStudents.map((sv, idx) => ({ 'STT': idx + 1, 'Họ và Tên': sv.full_name, 'MSSV': sv.mssv, 'Lớp': sv.class_name }));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Danh sách');
-            
             const fileName = `${subjectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(wb, fileName);
         }
