@@ -78,6 +78,11 @@ app.get(['/login', '/login.html', '/login/'], (req, res) => {
     res.redirect('/login/login.html');
 });
 
+// Xử lý favicon.ico để tránh lỗi 404
+app.get('/favicon.ico', (req, res) => {
+    res.status(204).end(); // No Content - không trả về gì cả
+});
+
 // API: Upload file minh chứng (PHẢI ĐẶT TRƯỚC app.listen)
 app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
     try {
