@@ -406,13 +406,17 @@
                 }
                 
                 // Gọi filterSubjectsBySemester để load môn học của học kỳ đã chọn
-                filterSubjectsBySemester();
+                // Đảm bảo gọi sau khi đã set value
+                setTimeout(() => {
+                    filterSubjectsBySemester();
+                }, 100);
             } catch (error) { 
                 console.error("Lỗi:", error); 
                 // Nếu có lỗi, vẫn cố gắng set học kỳ mặc định
                 const semesterSelect = document.getElementById('semesterSelect');
                 if (semesterSelect && !semesterSelect.value) {
                     semesterSelect.value = 'HK1';
+                    filterSubjectsBySemester();
                 }
             }
         }

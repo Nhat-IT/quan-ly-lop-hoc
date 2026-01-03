@@ -176,6 +176,7 @@
             const currentData = db[sem] || { total: 0, subjects: [], data: [] };
 
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
+            // Hiển thị tổng số sinh viên của 2 lớp 25TH01 và 25TH02
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
             // Lưu học kỳ hiện tại vào localStorage
