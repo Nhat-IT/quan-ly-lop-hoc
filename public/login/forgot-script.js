@@ -13,6 +13,32 @@ class ForgotApp {
         this.step2.addEventListener('submit', (e) => { e.preventDefault(); this.changePass(); });
         
         document.querySelectorAll('input').forEach(i => i.setAttribute('placeholder', ' '));
+        
+        // Setup password toggle buttons
+        this.setupPasswordToggles();
+    }
+    
+    setupPasswordToggles() {
+        const newPassToggle = document.getElementById('newPassToggle');
+        const confirmPassToggle = document.getElementById('confirmPassToggle');
+        const newPassInput = document.getElementById('newPass');
+        const confirmPassInput = document.getElementById('confirmPass');
+        
+        if (newPassToggle && newPassInput) {
+            newPassToggle.addEventListener('click', () => {
+                const isPass = newPassInput.type === 'password';
+                newPassInput.type = isPass ? 'text' : 'password';
+                newPassToggle.classList.toggle('toggle-visible', isPass);
+            });
+        }
+        
+        if (confirmPassToggle && confirmPassInput) {
+            confirmPassToggle.addEventListener('click', () => {
+                const isPass = confirmPassInput.type === 'password';
+                confirmPassInput.type = isPass ? 'text' : 'password';
+                confirmPassToggle.classList.toggle('toggle-visible', isPass);
+            });
+        }
     }
     
     // --- BƯỚC 1: GỌI API KIỂM TRA USER ---
@@ -28,7 +54,7 @@ class ForgotApp {
 
         try {
             // Gọi API Backend thật
-            const res = await fetch('http://localhost:3000/api/auth/verify-user', {
+            const res = await fetch('/api/auth/verify-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: userVal })
@@ -61,14 +87,26 @@ class ForgotApp {
         const p2 = document.getElementById('confirmPass').value;
         const btn = document.getElementById('btnStep2');
         
-        if(p1.length < 6) return this.showErr(document.getElementById('newPass'), document.getElementById('newPassError'), 'Mật khẩu > 6 ký tự');
-        if(p1 !== p2) return this.showErr(document.getElementById('confirmPass'), document.getElementById('confirmPassError'), 'Mật khẩu không khớp');
+        // Kiểm tra username có tồn tại không
+        if (!this.currentUsername) {
+            alert('Lỗi: Không tìm thấy thông tin người dùng. Vui lòng thử lại từ đầu.');
+            window.location.reload();
+            return;
+        }
+        
+        // Validation
+        if (!p1 || p1.length < 6) {
+            return this.showErr(document.getElementById('newPass'), document.getElementById('newPassError'), 'Mật khẩu phải có ít nhất 6 ký tự');
+        }
+        if (p1 !== p2) {
+            return this.showErr(document.getElementById('confirmPass'), document.getElementById('confirmPassError'), 'Mật khẩu không khớp');
+        }
         
         this.loading(btn, true);
 
         try {
             // Gọi API Backend thật
-            const res = await fetch('http://localhost:3000/api/auth/reset-password', {
+            const res = await fetch('/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -76,6 +114,8 @@ class ForgotApp {
                     newPassword: p1 
                 })
             });
+            
+            const data = await res.json();
 
             if (res.ok) {
                 this.step2.style.display = 'none';
@@ -84,7 +124,8 @@ class ForgotApp {
                 
                 setTimeout(() => window.location.href = 'login.html', 2000);
             } else {
-                alert('Có lỗi xảy ra khi đổi mật khẩu.');
+                const errorMsg = data.message || 'Có lỗi xảy ra khi đổi mật khẩu.';
+                this.showErr(document.getElementById('newPass'), document.getElementById('newPassError'), errorMsg);
             }
         } catch (error) {
             alert('Lỗi kết nối Server');

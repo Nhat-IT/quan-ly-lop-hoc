@@ -172,7 +172,8 @@
 
     <div class="container mt-4 mb-5">
         <div class="d-flex justify-content-between mb-3 align-items-end">
-            <span class="text-muted">Sĩ số: <b id="studentCount">0</b></span>
+            <span class="text-muted">Sĩ số: <b id="studentCount">0</b> | Đang hiển thị: <b id="filteredCount">0</b></span>
+            <button class="btn btn-success btn-sm" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Thêm SV</button>
         </div>
         
         <div class="row g-2 mb-3">
@@ -180,9 +181,10 @@
                 <input type="text" class="form-control" id="searchInput" onkeyup="filterList()" placeholder="Tìm theo Tên hoặc MSSV...">
             </div>
             <div class="col-md-4 col-5">
-                <select class="form-select fw-bold text-primary" id="classFilter" onchange="filterList()">
+                <select class="form-select fw-bold text-primary" id="classFilter" multiple onchange="filterList()" style="height: auto; min-height: 80px;">
                     <option value="">Tất cả lớp</option>
                 </select>
+                <small class="text-muted d-block mt-1">Giữ Ctrl/Cmd để chọn nhiều lớp</small>
             </div>
         </div>
 
@@ -199,14 +201,18 @@
     </div>
 
     <div class="bottom-bar-wrapper">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div><span class="text-muted small fw-bold text-uppercase">Vắng:</span> <span class="fw-bold text-danger fs-3" id="countAbsent">0</span></div>
-            <button class="btn btn-primary btn-lg px-5 fw-bold rounded-pill shadow" id="btnSave" onclick="submitAttendance()">LƯU LẠI</button>
+        <div class="container d-flex justify-content-between align-items-center gap-3">
+            <div><span class="text-muted small fw-bold text-uppercase" style="font-size: 0.9rem;">Vắng:</span> <span class="fw-bold text-danger" style="font-size: 1.5rem;" id="countAbsent">0</span></div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success btn-sm px-3 fw-bold rounded-pill" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                <button class="btn btn-primary px-4 fw-bold rounded-pill shadow" id="btnSave" onclick="submitAttendance()">LƯU LẠI</button>
+            </div>
         </div>
     </div>
 
     <div class="modal fade" id="addSubjectModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn Mới</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="newSubjectName"></div><div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="newTeacherName"></div><div class="row g-2"><div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="newStartDate"></div><div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="newEndDate"></div></div></div><div class="modal-footer border-0"><button class="btn btn-success w-100 fw-bold" onclick="saveNewSubject()">Thêm mới</button></div></div></div></div>
     <div class="modal fade" id="editSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-warning">Cập nhật môn</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="small fw-bold text-muted">Tên môn học</label><input type="text" class="form-control fw-bold" id="editSubjectName"></div><div class="mb-3"><label class="small fw-bold text-muted">Giảng viên (GV)</label><input type="text" class="form-control" id="editTeacherName"></div><div class="row g-2"><div class="col-6"><label class="small text-muted">Bắt đầu</label><input type="date" class="form-control" id="editStartDate"></div><div class="col-6"><label class="small text-muted">Kết thúc</label><input type="date" class="form-control" id="editEndDate"></div></div></div><div class="modal-footer border-0 d-flex justify-content-between"><button class="btn btn-outline-danger" onclick="deleteSubject()"><i class="fas fa-trash"></i> Xóa Môn</button><button class="btn btn-primary fw-bold" onclick="saveEditedSubject()">Lưu thay đổi</button></div></div></div></div>
+    <div class="modal fade" id="addStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Sinh Viên</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="small fw-bold text-muted">Họ và Tên</label><input type="text" class="form-control fw-bold" id="newStudentName"></div><div class="row"><div class="col-6"><label class="small fw-bold text-muted">MSSV</label><input type="text" class="form-control" id="newStudentMSSV"></div><div class="col-6"><label class="small fw-bold text-muted">Lớp</label><input type="text" class="form-control" id="newStudentClass" placeholder="25TH01 hoặc 25TH02"></div></div></div><div class="modal-footer border-0"><button class="btn btn-success w-100 fw-bold" onclick="saveNewStudent()">Thêm mới</button></div></div></div></div>
     <div class="modal fade" id="editStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body"><input type="hidden" id="editStudentId"><div class="mb-3"><label>Tên</label><input type="text" class="form-control fw-bold" id="editStudentName"></div><div class="row"><div class="col-6"><label>MSSV</label><input type="text" class="form-control" id="editStudentMSSV"></div><div class="col-6"><label>Lớp</label><input type="text" class="form-control" id="editStudentClass"></div></div></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveEditedStudent()">Cập nhật</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -354,6 +360,7 @@
             const listBody = document.getElementById('listBody');
             listBody.innerHTML = '';
             document.getElementById('studentCount').innerText = currentStudents.length;
+            document.getElementById('filteredCount').innerText = currentStudents.length;
             updateClassFilter();
 
             if (currentStudents.length === 0) {
@@ -402,7 +409,6 @@
 
         function updateClassFilter() {
             const classFilter = document.getElementById('classFilter');
-            const currentFilter = classFilter.value;
             const uniqueClasses = [...new Set(currentStudents.map(s => s.class_name))];
             classFilter.innerHTML = '<option value="">Tất cả lớp</option>';
             uniqueClasses.forEach(c => {
@@ -411,20 +417,33 @@
                 option.innerText = c;
                 classFilter.appendChild(option);
             });
-            if (uniqueClasses.includes(currentFilter)) classFilter.value = currentFilter;
         }
 
         function filterList() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
-            const filterClass = document.getElementById('classFilter').value;
+            const classFilter = document.getElementById('classFilter');
+            
+            // Lấy danh sách lớp đã chọn (hỗ trợ multiple select)
+            let selectedClasses = [];
+            const selectedOptions = Array.from(classFilter.selectedOptions);
+            selectedClasses = selectedOptions.map(opt => opt.value).filter(v => v && v !== '');
+            
+            // Nếu không có lớp nào được chọn hoặc chọn "Tất cả lớp", hiển thị tất cả
+            const showAll = selectedClasses.length === 0 || selectedClasses.includes('');
+            
+            let visibleCount = 0;
             document.querySelectorAll('.student-row').forEach(r => {
                 const name = r.getAttribute('data-name');
                 const mssv = r.getAttribute('data-mssv');
                 const studentClass = r.getAttribute('data-class');
-                const matchText = name.includes(txt) || mssv.includes(txt);
-                const matchClass = filterClass === "" || studentClass === filterClass;
-                r.style.display = (matchText && matchClass) ? 'flex' : 'none';
+                const matchText = !txt || name.includes(txt) || mssv.includes(txt);
+                const matchClass = showAll || selectedClasses.includes(studentClass);
+                const isVisible = matchText && matchClass;
+                r.style.display = isVisible ? 'flex' : 'none';
+                if (isVisible) visibleCount++;
             });
+            
+            document.getElementById('filteredCount').innerText = visibleCount;
         }
 
         function importClassList() { document.getElementById('fileInput').click(); }
@@ -519,8 +538,95 @@
             }
         }
         
-        function openEditStudent(id) { const s = currentStudents.find(x => x.id == id); document.getElementById('editStudentId').value = id; document.getElementById('editStudentName').value = s.full_name; document.getElementById('editStudentMSSV').value = s.mssv; document.getElementById('editStudentClass').value = s.class_name; new bootstrap.Modal(document.getElementById('editStudentModal')).show(); }
-        async function saveEditedStudent() { const id = document.getElementById('editStudentId').value; const body = { full_name: document.getElementById('editStudentName').value, mssv: document.getElementById('editStudentMSSV').value, class_name: document.getElementById('editStudentClass').value }; await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}); bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject(); }
+        function openAddStudentModal() {
+            document.getElementById('newStudentName').value = '';
+            document.getElementById('newStudentMSSV').value = '';
+            document.getElementById('newStudentClass').value = '';
+            new bootstrap.Modal(document.getElementById('addStudentModal')).show();
+        }
+
+        async function saveNewStudent() {
+            const name = document.getElementById('newStudentName').value.trim();
+            const mssv = document.getElementById('newStudentMSSV').value.trim();
+            const className = document.getElementById('newStudentClass').value.trim();
+            const subjectId = document.getElementById('subjectSelect').value;
+
+            if (!name || !mssv || !className) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+
+            if (!subjectId) {
+                alert('Vui lòng chọn môn học trước!');
+                return;
+            }
+
+            try {
+                const students = [{ mssv, full_name: name, class_name: className }];
+                const res = await fetch('/api/data/students/import', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ subject_id: subjectId, students })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Thêm sinh viên thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide();
+                    changeSubject();
+                } else {
+                    alert(data.message || 'Lỗi khi thêm sinh viên');
+                }
+            } catch (err) {
+                alert('Lỗi kết nối!');
+            }
+        }
+
+        function openEditStudent(id) { 
+            const s = currentStudents.find(x => x.id == id); 
+            document.getElementById('editStudentId').value = id; 
+            document.getElementById('editStudentName').value = s.full_name; 
+            document.getElementById('editStudentMSSV').value = s.mssv; 
+            document.getElementById('editStudentClass').value = s.class_name; 
+            new bootstrap.Modal(document.getElementById('editStudentModal')).show(); 
+        }
+        
+        async function saveEditedStudent() { 
+            const id = document.getElementById('editStudentId').value; 
+            const body = { 
+                full_name: document.getElementById('editStudentName').value, 
+                mssv: document.getElementById('editStudentMSSV').value, 
+                class_name: document.getElementById('editStudentClass').value 
+            }; 
+            await fetch(`/api/data/students/${id}`, { 
+                method: 'PUT', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(body)
+            }); 
+            bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); 
+            changeSubject(); 
+        }
+
+        function exportToExcel() {
+            if (currentStudents.length === 0) {
+                alert('Không có dữ liệu để xuất!');
+                return;
+            }
+
+            const subjectName = document.getElementById('displaySubjectName').innerText || 'DanhSachSinhVien';
+            const data = currentStudents.map((sv, idx) => ({
+                'STT': idx + 1,
+                'Họ và Tên': sv.full_name,
+                'MSSV': sv.mssv,
+                'Lớp': sv.class_name
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Danh sách');
+            
+            const fileName = `${subjectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
         
         async function handleProofUpload(studentId, input) {
             const file = input.files[0];

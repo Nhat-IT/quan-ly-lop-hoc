@@ -13,6 +13,14 @@ class LoginApp {
         this.form.addEventListener('submit', (e) => { e.preventDefault(); this.handleSubmit(); });
         this.setupToggle();
         
+        // Khôi phục username nếu đã lưu
+        const rememberedUsername = localStorage.getItem('rememberedUsername');
+        if (rememberedUsername) {
+            this.usernameInput.value = rememberedUsername;
+            const rememberCheckbox = document.getElementById('remember');
+            if (rememberCheckbox) rememberCheckbox.checked = true;
+        }
+        
         [this.usernameInput, this.passwordInput].forEach(inp => {
             inp.setAttribute('placeholder', ' ');
             inp.addEventListener('input', () => this.clearError(inp.id));
@@ -61,16 +69,17 @@ class LoginApp {
             
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
-            // THÀNH CÔNG
-            // ... đoạn gọi API ...
-
-            if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
-                        
-            // --- ĐOẠN CẦN SỬA LẠI ---
             // Lưu thông tin user
             localStorage.setItem('currentUser', JSON.stringify(data.user));
-            // [MỚI] Lưu thời gian bắt đầu hoạt động
             localStorage.setItem('lastActivity', Date.now());
+            
+            // Xử lý nhớ mật khẩu
+            const rememberCheckbox = document.getElementById('remember');
+            if (rememberCheckbox && rememberCheckbox.checked) {
+                localStorage.setItem('rememberedUsername', username);
+            } else {
+                localStorage.removeItem('rememberedUsername');
+            }
 
             this.showSuccess();
 

@@ -41,10 +41,27 @@ exports.verifyUser = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     const { username, newPassword } = req.body;
     try {
+        // Kiểm tra đầu vào
+        if (!username || !newPassword) {
+            return res.status(400).json({ message: 'Thiếu thông tin username hoặc mật khẩu mới' });
+        }
+        
+        // Kiểm tra độ dài mật khẩu
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Mật khẩu phải có ít nhất 6 ký tự' });
+        }
+        
+        // Kiểm tra user có tồn tại không
+        const [userRows] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+        if (userRows.length === 0) {
+            return res.status(404).json({ message: 'Tên đăng nhập không tồn tại' });
+        }
+        
         // Cập nhật mật khẩu mới vào Database thật
         await db.query('UPDATE users SET password = ? WHERE username = ?', [newPassword, username]);
         res.json({ message: 'Đổi mật khẩu thành công!' });
     } catch (error) {
+        console.error('Reset password error:', error);
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };

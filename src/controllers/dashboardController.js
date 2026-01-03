@@ -22,11 +22,14 @@ exports.getDashboardData = async (req, res) => {
 
         // 2. Lấy danh sách tất cả học kỳ có trong hệ thống
         const [semesters] = await db.query('SELECT DISTINCT semester FROM subjects WHERE semester IS NOT NULL');
-        const allSemesters = semesters.map(s => s.semester);
+        const dbSemesters = semesters.map(s => s.semester);
+        // Đảm bảo luôn có HK1, HK2, HK3
+        const allSemesters = ['HK1', 'HK2', 'HK3'];
+        const uniqueSemesters = [...new Set([...allSemesters, ...dbSemesters])];
 
         // 3. Tính tổng số sinh viên theo từng học kỳ (sinh viên đăng ký môn trong học kỳ đó)
         const semesterTotals = {};
-        for (const sem of allSemesters) {
+        for (const sem of uniqueSemesters) {
             const [countResult] = await db.query(`
                 SELECT COUNT(DISTINCT e.student_id) as total 
                 FROM enrollments e
@@ -90,9 +93,12 @@ exports.getDashboardData = async (req, res) => {
         });
 
         // 5. Đảm bảo tất cả học kỳ đều có trong result (kể cả khi không có dữ liệu vắng)
-        for (const sem of allSemesters) {
+        for (const sem of uniqueSemesters) {
             if (!result[sem]) {
                 result[sem] = { total: semesterTotals[sem] || 0, subjects: [], data: [] };
+            } else {
+                // Đảm bảo total luôn được cập nhật đúng
+                result[sem].total = semesterTotals[sem] || 0;
             }
         }
 
