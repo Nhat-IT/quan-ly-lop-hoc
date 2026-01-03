@@ -82,15 +82,27 @@
             padding: 12px 0; 
         }
 
+        /* [ĐÃ CHỈNH SỬA] Căn chỉnh cột */
         .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
-        /* [CẬP NHẬT] Đã sửa font-weight từ 600 thành 700 (đậm) */
-        .col-name { padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; text-align: left; }
+        
+        /* Đẩy tên sang phải 40px cho đẹp mắt */
+        .col-name { 
+            padding-left: 40px; 
+            padding-right: 10px;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            font-weight: 700; 
+            text-align: left; 
+        }
             
         :root { --student-grid: 60px 2fr 2fr 1.5fr 1fr; }
         .list-header, .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; }
         
+        /* Căn chỉnh Header bảng cho khớp với nội dung */
         .list-header .col-stt, .list-header .col-mssv, .list-header .col-class, .list-header .col-action { text-align: center; }
-        .list-header .col-name { text-align: center; }
+        /* Header Tên cũng căn trái và thụt vào để thẳng hàng với tên SV */
+        .list-header .col-name { text-align: left; padding-left: 40px; }
 
         .note-input-group { display: none !important; margin-top: 12px; margin-left: 50px; margin-right: 15px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
@@ -119,16 +131,14 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            width: 260px; /* Chiều rộng cố định vừa phải */
-            max-width: 90vw; /* Không bao giờ vượt quá chiều rộng màn hình */
+            width: 260px; 
+            max-width: 90vw; 
         }
 
-        .dropdown-menu-filter li {
-            list-style: none;
-        }
+        .dropdown-menu-filter li { list-style: none; }
 
         .dropdown-menu-filter .form-check {
-            display: flex; /* Dùng flex để căn hàng ngang */
+            display: flex; 
             align-items: center;
             padding: 8px 12px;
             margin: 0;
@@ -137,18 +147,16 @@
             transition: background-color 0.15s ease;
         }
 
-        .dropdown-menu-filter .form-check:hover {
-            background-color: #f1f5f9; /* Màu nền khi di chuột */
-        }
+        .dropdown-menu-filter .form-check:hover { background-color: #f1f5f9; }
 
         .dropdown-menu-filter .form-check-input {
             margin-top: 0;
-            margin-left: 0 !important; /* Bỏ lề âm mặc định của Bootstrap */
-            margin-right: 12px; /* Khoảng cách giữa checkbox và chữ */
-            float: none; /* Bỏ float mặc định */
+            margin-left: 0 !important; 
+            margin-right: 12px; 
+            float: none; 
             width: 18px;
             height: 18px;
-            flex-shrink: 0; /* Không bị co lại */
+            flex-shrink: 0; 
             cursor: pointer;
             border: 1.5px solid #cbd5e1;
         }
@@ -164,21 +172,15 @@
             color: #334155;
             font-size: 0.95rem;
             flex-grow: 1;
-            white-space: nowrap; /* Giữ chữ trên 1 dòng */
+            white-space: nowrap; 
             overflow: hidden;
-            text-overflow: ellipsis; /* Hiện dấu ... nếu tên quá dài */
+            text-overflow: ellipsis; 
         }
 
-        .dropdown-menu-filter .dropdown-divider {
-            margin: 6px 0;
-            border-top: 1px solid #f1f5f9;
-        }
+        .dropdown-menu-filter .dropdown-divider { margin: 6px 0; border-top: 1px solid #f1f5f9; }
 
         @media (max-width: 576px) {
-            .dropdown-menu-filter {
-                width: 100%; /* Trên mobile thì full chiều rộng nút */
-                min-width: 200px;
-            }
+            .dropdown-menu-filter { width: 100%; min-width: 200px; }
         }
 
         /* --- CSS CHO NÚT SỬA (CHỈ HIỆN KHI HOVER) --- */
@@ -192,15 +194,8 @@
             margin-left: 10px;
         }
 
-        .col-name:hover .edit-icon {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .col-name .edit-icon:hover {
-            color: var(--primary-color);
-            transform: scale(1.2);
-        }
+        .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
+        .col-name .edit-icon:hover { color: var(--primary-color); transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -491,7 +486,7 @@
             document.getElementById('filteredCount').innerText = currentStudents.length;
         }
 
-        // --- HÀM TẠO DROPDOWN (Đã cập nhật cấu trúc HTML) ---
+        // --- HÀM TẠO DROPDOWN ---
         function updateClassFilterDropdown() {
             const uniqueClasses = [...new Set(currentStudents.map(s => s.class_name))].sort();
             const menu = document.getElementById('classFilterMenu');
@@ -528,7 +523,6 @@
             event.stopPropagation();
         }
 
-        // Ngăn dropdown đóng khi click vào bên trong
         document.getElementById('classFilterMenu').addEventListener('click', function(e) {
             e.stopPropagation();
         });
@@ -557,7 +551,7 @@
             }
         }
 
-        // --- HÀM LỌC ĐÃ CẬP NHẬT: TÌM NHIỀU NGƯỜI BẰNG DẤU PHẨY ---
+        // --- HÀM LỌC ---
         function filterList() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
             const searchTerms = searchInput.split(',').map(term => term.trim()).filter(term => term !== '');
