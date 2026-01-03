@@ -392,14 +392,26 @@
                     selectedSem = 'HK1';
                 }
                 
-                // Đặt giá trị cho select
-                document.getElementById('semesterSelect').value = selectedSem;
-
+                // Lấy dữ liệu môn học trước
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 
+                // Đặt giá trị cho select SAU KHI đã load dữ liệu
+                const semesterSelect = document.getElementById('semesterSelect');
+                if (semesterSelect) {
+                    semesterSelect.value = selectedSem;
+                }
+                
+                // Gọi filterSubjectsBySemester để load môn học của học kỳ đã chọn
                 filterSubjectsBySemester();
-            } catch (error) { console.error("Lỗi:", error); }
+            } catch (error) { 
+                console.error("Lỗi:", error); 
+                // Nếu có lỗi, vẫn cố gắng set học kỳ mặc định
+                const semesterSelect = document.getElementById('semesterSelect');
+                if (semesterSelect && !semesterSelect.value) {
+                    semesterSelect.value = 'HK1';
+                }
+            }
         }
 
         function openAddSubjectModal() {
