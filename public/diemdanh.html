@@ -83,6 +83,7 @@
         }
 
         .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
+        /* [CẬP NHẬT] Đã sửa font-weight từ 600 thành 700 (đậm) */
         .col-name { padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; text-align: left; }
             
         :root { --student-grid: 60px 2fr 2fr 1.5fr 1fr; }
@@ -556,7 +557,7 @@
             }
         }
 
-        // --- HÀM LỌC ---
+        // --- HÀM LỌC ĐÃ CẬP NHẬT: TÌM NHIỀU NGƯỜI BẰNG DẤU PHẨY ---
         function filterList() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
             const searchTerms = searchInput.split(',').map(term => term.trim()).filter(term => term !== '');
