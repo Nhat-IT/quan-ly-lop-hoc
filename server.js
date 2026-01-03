@@ -78,11 +78,7 @@ app.get(['/login', '/login.html', '/login/'], (req, res) => {
     res.redirect('/login/login.html');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server đang chạy tại: http://localhost:${PORT}`);
-});
-
-// API: Upload file minh chứng
+// API: Upload file minh chứng (PHẢI ĐẶT TRƯỚC app.listen)
 app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
     try {
         if (!req.file) {
@@ -96,7 +92,7 @@ app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
     }
 });
 
-// API: Lấy dữ liệu điểm danh cũ của một môn vào ngày/buổi cụ thể
+// API: Lấy dữ liệu điểm danh cũ của một môn vào ngày/buổi cụ thể (PHẢI ĐẶT TRƯỚC app.listen)
 app.get('/api/data/attendance/check', async (req, res) => {
     try {
         const { subject_id, session_date, session_time } = req.query;
@@ -117,4 +113,9 @@ app.get('/api/data/attendance/check', async (req, res) => {
         console.error('Lỗi khi lấy dữ liệu điểm danh:', error);
         res.status(500).json([]);
     }
+});
+
+// Khởi động server (PHẢI ĐẶT CUỐI CÙNG)
+app.listen(PORT, () => {
+    console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 });
