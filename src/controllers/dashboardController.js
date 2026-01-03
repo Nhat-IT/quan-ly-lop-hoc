@@ -2,11 +2,7 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // 1. Lấy tổng số sinh viên của 2 lớp 25TH01 và 25TH02
-        const [countResult] = await db.query('SELECT COUNT(*) as total FROM students WHERE class_name IN ("25TH01", "25TH02")');
-        const totalStudents = countResult[0].total;
-
-        // 2. Lấy danh sách tất cả các lượt vắng (kèm thông tin SV, Môn, Buổi)
+        // 1. Lấy danh sách tất cả các lượt vắng (kèm thông tin SV, Môn, Buổi)
         // Chỉ lấy những dòng có is_absent = 1 (Vắng)
         const sql = `
             SELECT 
@@ -24,13 +20,31 @@ exports.getDashboardData = async (req, res) => {
         
         const [absences] = await db.query(sql);
 
-        // 3. Xử lý dữ liệu để gom nhóm theo Học kỳ (HK1, HK2...) cho giống cấu trúc Frontend cần
+        // 2. Lấy danh sách tất cả học kỳ có trong hệ thống
+        const [semesters] = await db.query('SELECT DISTINCT semester FROM subjects WHERE semester IS NOT NULL');
+        const allSemesters = semesters.map(s => s.semester);
+
+        // 3. Tính tổng số sinh viên theo từng học kỳ (sinh viên đăng ký môn trong học kỳ đó)
+        const semesterTotals = {};
+        for (const sem of allSemesters) {
+            const [countResult] = await db.query(`
+                SELECT COUNT(DISTINCT e.student_id) as total 
+                FROM enrollments e
+                JOIN subjects sub ON e.subject_id = sub.id
+                JOIN students st ON e.student_id = st.id
+                WHERE sub.semester = ? AND st.class_name IN ('25TH01', '25TH02')
+            `, [sem]);
+            semesterTotals[sem] = countResult[0].total || 0;
+        }
+
+        // 4. Xử lý dữ liệu để gom nhóm theo Học kỳ (HK1, HK2...) cho giống cấu trúc Frontend cần
         const result = {};
 
         // Helper để tạo cấu trúc mặc định nếu chưa có
         const initSemester = (sem) => {
             if (!result[sem]) {
-                result[sem] = { total: totalStudents, subjects: [], data: [] };
+                // Lấy tổng số sinh viên của học kỳ đó (hoặc 0 nếu chưa có)
+                result[sem] = { total: semesterTotals[sem] || 0, subjects: [], data: [] };
             }
         };
 
@@ -74,6 +88,13 @@ exports.getDashboardData = async (req, res) => {
                 proof: row.proof_image_url || ""
             });
         });
+
+        // 5. Đảm bảo tất cả học kỳ đều có trong result (kể cả khi không có dữ liệu vắng)
+        for (const sem of allSemesters) {
+            if (!result[sem]) {
+                result[sem] = { total: semesterTotals[sem] || 0, subjects: [], data: [] };
+            }
+        }
 
         res.json(result);
 
