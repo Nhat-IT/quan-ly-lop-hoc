@@ -53,24 +53,49 @@ exports.deleteSubject = async (req, res) => {
     }
 };
 
-// 5. Lấy danh sách SV theo môn
+// 5. Lấy danh sách SV theo môn (CẬP NHẬT: Lấy thêm e.learning_group)
 exports.getStudentsBySubject = async (req, res) => {
     const { subjectId } = req.params;
     try {
-        const sql = `SELECT s.id, s.mssv, s.full_name, s.class_name FROM students s JOIN enrollments e ON s.id = e.student_id WHERE e.subject_id = ?`;
+        // Thêm e.learning_group vào câu SELECT
+        const sql = `SELECT s.id, s.mssv, s.full_name, s.class_name, e.learning_group 
+                     FROM students s 
+                     JOIN enrollments e ON s.id = e.student_id 
+                     WHERE e.subject_id = ?`;
         const [rows] = await db.query(sql, [subjectId]);
         res.json(rows);
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
-// 6. Cập nhật thông tin SV
+// 6. Cập nhật thông tin SV (CẬP NHẬT: Cho phép sửa Nhóm học)
 exports.updateStudent = async (req, res) => {
     const { id } = req.params;
-    const { full_name, mssv, class_name } = req.body;
+    // Nhận thêm subject_id và learning_group từ client
+    const { full_name, mssv, class_name, subject_id, learning_group } = req.body; 
+    
+    const connection = await db.getConnection();
     try {
-        await db.query('UPDATE students SET full_name=?, mssv=?, class_name=? WHERE id=?', [full_name, mssv, class_name, id]);
+        await connection.beginTransaction();
+
+        // 1. Cập nhật thông tin cơ bản
+        await connection.query('UPDATE students SET full_name=?, mssv=?, class_name=? WHERE id=?', [full_name, mssv, class_name, id]);
+
+        // 2. Cập nhật nhóm học trong bảng enrollments (nếu có gửi subject_id)
+        if (subject_id && learning_group) {
+            await connection.query(
+                'UPDATE enrollments SET learning_group=? WHERE student_id=? AND subject_id=?', 
+                [learning_group, id, subject_id]
+            );
+        }
+
+        await connection.commit();
         res.json({ message: 'Cập nhật SV thành công' });
-    } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật SV' }); }
+    } catch (error) { 
+        await connection.rollback();
+        res.status(500).json({ message: 'Lỗi cập nhật SV' }); 
+    } finally {
+        connection.release();
+    }
 };
 
 // 7. Lưu điểm danh (Cập nhật thêm learning_group)
