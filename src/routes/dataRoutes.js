@@ -22,4 +22,10 @@ router.delete('/students/:id', dataController.deleteStudent); // [MỚI] Route x
 // --- Điểm danh API ---
 router.post('/attendance', dataController.saveAttendance);
 
+// ...
+router.post('/attendance', dataController.saveAttendance);
+
+// [MỚI] Route quản lý nhóm
+router.post('/groups/manage', dataController.manageGroup);
+
 module.exports = router;

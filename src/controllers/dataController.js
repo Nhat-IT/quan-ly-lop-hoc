@@ -217,3 +217,65 @@ exports.deleteStudent = async (req, res) => {
         connection.release();
     }
 };
+
+// ... (Các hàm cũ)
+
+// [MỚI] Quản lý Nhóm (Đổi tên hoặc Xóa)
+exports.manageGroup = async (req, res) => {
+    const { action, subject_id, group_name, new_group_name } = req.body;
+    const connection = await db.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+
+        if (action === 'rename') {
+            // 1. Cập nhật bảng sinh viên (enrollments)
+            await connection.query(
+                'UPDATE enrollments SET learning_group = ? WHERE subject_id = ? AND learning_group = ?',
+                [new_group_name, subject_id, group_name]
+            );
+            // 2. Cập nhật bảng lịch sử điểm danh (attendance_sessions)
+            await connection.query(
+                'UPDATE attendance_sessions SET learning_group = ? WHERE subject_id = ? AND learning_group = ?',
+                [new_group_name, subject_id, group_name]
+            );
+            
+            await connection.commit();
+            res.json({ message: `Đã đổi tên thành "${new_group_name}"` });
+
+        } else if (action === 'delete') {
+            // Xóa nhóm nghĩa là set NULL cho sinh viên thuộc nhóm đó (về trạng thái chưa phân nhóm)
+            await connection.query(
+                'UPDATE enrollments SET learning_group = NULL WHERE subject_id = ? AND learning_group = ?',
+                [subject_id, group_name]
+            );
+            
+            // Xóa các buổi điểm danh của nhóm này (Tùy chọn: Hoặc giữ lại nhưng set NULL)
+            // Ở đây mình chọn xóa luôn buổi điểm danh của nhóm bị xóa để sạch data
+            // Trước hết xóa chi tiết điểm danh
+            await connection.query(
+                `DELETE FROM attendance_records WHERE session_id IN (
+                    SELECT id FROM attendance_sessions WHERE subject_id = ? AND learning_group = ?
+                )`,
+                [subject_id, group_name]
+            );
+            // Sau đó xóa session
+            await connection.query(
+                'DELETE FROM attendance_sessions WHERE subject_id = ? AND learning_group = ?',
+                [subject_id, group_name]
+            );
+
+            await connection.commit();
+            res.json({ message: `Đã xóa nhóm "${group_name}"` });
+        } else {
+            res.status(400).json({ message: 'Hành động không hợp lệ' });
+        }
+
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi xử lý nhóm: ' + error.message });
+    } finally {
+        connection.release();
+    }
+};
