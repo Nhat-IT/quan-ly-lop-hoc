@@ -115,11 +115,11 @@
             </div>
 
             <div class="row g-3">
-                <div class="col-md-4 col-6">
+                <div class="col-md-3 col-6">
                     <label class="lbl-caption">Ngày điểm danh</label>
                     <input type="date" class="form-control fw-bold" id="todayDate">
                 </div>
-                <div class="col-md-4 col-6">
+                <div class="col-md-2 col-6">
                     <label class="lbl-caption">Buổi</label>
                     <select class="form-select fw-bold text-primary" id="sessionTime">
                         <option>Sáng</option>
@@ -127,11 +127,10 @@
                         <option>Tối</option>
                     </select>
                 </div>
-                <div class="col-md-4 col-12">
+                <div class="col-md-auto col-12">
                     <label class="lbl-caption">Nhóm Học</label>
-                    <div class="input-group">
-                        <select class="form-select fw-bold text-success" id="groupSelect" onchange="renderList(); loadSavedAttendance();">
-                            </select>
+                    <div class="input-group" style="flex-wrap: nowrap;">
+                        <select class="form-select fw-bold text-success" id="groupSelect" onchange="renderList(); loadSavedAttendance();" style="width: auto; min-width: 150px; max-width: 400px;"></select>
                         <button class="btn btn-outline-warning" type="button" onclick="renameCurrentGroup()" title="Đổi tên nhóm">
                             <i class="fas fa-pen"></i>
                         </button>
@@ -246,33 +245,21 @@
             const select = document.getElementById('groupSelect');
             const currentSelection = select.value;
             select.innerHTML = '';
-            
-            // Lấy danh sách nhóm duy nhất từ danh sách SV
             const groups = [...new Set(currentStudents.map(s => s.learning_group || 'Nhóm 1'))].sort();
-            
-            if (groups.length === 0) groups.push('Nhóm 1'); // Mặc định
-
-            groups.forEach(g => {
-                select.add(new Option(g, g));
-            });
-
-            // Giữ lại lựa chọn cũ nếu còn tồn tại
-            if (groups.includes(currentSelection)) {
-                select.value = currentSelection;
-            } else {
-                select.value = groups[0];
-            }
+            if (groups.length === 0) groups.push('Nhóm 1');
+            groups.forEach(g => select.add(new Option(g, g)));
+            if (groups.includes(currentSelection)) select.value = currentSelection;
+            else select.value = groups[0];
         }
 
         function addNewGroup() {
             const groupName = prompt("Nhập tên nhóm mới:");
             if (groupName && groupName.trim() !== "") {
                 const select = document.getElementById('groupSelect');
-                // Chỉ thêm vào dropdown tạm thời, khi gán SV vào nhóm này thì nó sẽ lưu
                 const opt = new Option(groupName, groupName);
                 select.add(opt);
                 select.value = groupName;
-                renderList(); // Danh sách sẽ trống
+                renderList(); 
             }
         }
 
@@ -282,24 +269,15 @@
             const newName = prompt(`Đổi tên "${currentGroup}" thành:`, currentGroup);
             
             if (newName && newName.trim() !== "" && newName !== currentGroup) {
-                if(confirm(`Bạn có chắc muốn đổi tên nhóm "${currentGroup}" thành "${newName}"?\nTất cả sinh viên và lịch sử điểm danh của nhóm này sẽ được cập nhật.`)) {
+                if(confirm(`Bạn có chắc muốn đổi tên nhóm "${currentGroup}" thành "${newName}"?`)) {
                     try {
                         const res = await fetch('/api/data/groups/manage', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({
-                                action: 'rename',
-                                subject_id: subjectId,
-                                group_name: currentGroup,
-                                new_group_name: newName
-                            })
+                            body: JSON.stringify({ action: 'rename', subject_id: subjectId, group_name: currentGroup, new_group_name: newName })
                         });
-                        if (res.ok) {
-                            alert("Đã đổi tên thành công!");
-                            changeSubject(); // Reload lại toàn bộ
-                        } else {
-                            alert("Lỗi khi đổi tên nhóm.");
-                        }
+                        if (res.ok) { alert("Đã đổi tên thành công!"); changeSubject(); } 
+                        else alert("Lỗi khi đổi tên nhóm.");
                     } catch (e) { alert("Lỗi kết nối!"); }
                 }
             }
@@ -308,24 +286,15 @@
         async function deleteCurrentGroup() {
             const subjectId = document.getElementById('subjectSelect').value;
             const currentGroup = document.getElementById('groupSelect').value;
-            
-            if(confirm(`CẢNH BÁO: Bạn có chắc muốn xóa "${currentGroup}"?\n- Các sinh viên trong nhóm này sẽ chuyển về trạng thái 'Chưa phân nhóm'.\n- Lịch sử điểm danh của nhóm này sẽ bị xóa.`)) {
+            if(confirm(`CẢNH BÁO: Xóa "${currentGroup}" sẽ đưa sinh viên về 'Chưa phân nhóm'.`)) {
                 try {
                     const res = await fetch('/api/data/groups/manage', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            action: 'delete',
-                            subject_id: subjectId,
-                            group_name: currentGroup
-                        })
+                        body: JSON.stringify({ action: 'delete', subject_id: subjectId, group_name: currentGroup })
                     });
-                    if (res.ok) {
-                        alert("Đã xóa nhóm thành công!");
-                        changeSubject(); // Reload lại
-                    } else {
-                        alert("Lỗi khi xóa nhóm.");
-                    }
+                    if (res.ok) { alert("Đã xóa nhóm thành công!"); changeSubject(); } 
+                    else alert("Lỗi khi xóa nhóm.");
                 } catch (e) { alert("Lỗi kết nối!"); }
             }
         }
@@ -334,15 +303,10 @@
             const sem = document.getElementById('semesterSelect').value;
             const select = document.getElementById('subjectSelect');
             select.innerHTML = '';
-            
             const filtered = allSubjects.filter(s => (s.semester || 'HK1') === sem);
-            
             if (filtered.length === 0) {
                 select.innerHTML = '<option value="">-- Không có môn --</option>';
-                resetInfo();
-                currentStudents = []; 
-                renderList(); 
-                return;
+                resetInfo(); currentStudents = []; renderList(); return;
             }
             filtered.forEach(s => select.add(new Option(s.subject_name, s.id)));
             changeSubject();
@@ -361,20 +325,17 @@
             const id = document.getElementById('subjectSelect').value;
             if(!id) return;
             const sub = allSubjects.find(s => s.id == id);
-            
             if(sub) {
                 document.getElementById('displaySubjectName').innerText = sub.subject_name.toUpperCase();
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name || "Chưa cập nhật";
                 document.getElementById('displayStartDate').innerText = sub.start_date ? new Date(sub.start_date).toLocaleDateString('vi-VN') : '...';
                 document.getElementById('displayEndDate').innerText = sub.end_date ? new Date(sub.end_date).toLocaleDateString('vi-VN') : '...';
             }
-
             try {
                 const res = await fetch(`/api/data/students/${id}`);
                 currentStudents = await res.json();
-                populateGroupDropdown(); // [MỚI] Tự động tạo dropdown nhóm từ dữ liệu
+                populateGroupDropdown(); 
             } catch (e) { currentStudents = []; }
-            
             renderList();
             await loadSavedAttendance();
         }
@@ -428,17 +389,11 @@
         function renderList() {
             const listBody = document.getElementById('listBody');
             listBody.innerHTML = '';
-            
             const selectedGroup = document.getElementById('groupSelect').value;
-            
-            // LỌC DANH SÁCH THEO NHÓM
-            // Nếu sinh viên chưa có nhóm, coi như Nhóm 1 hoặc hiển thị ở mục riêng nếu cần
-            const studentsInGroup = currentStudents.filter(s => 
-                (s.learning_group || 'Nhóm 1') === selectedGroup
-            );
+            const studentsInGroup = currentStudents.filter(s => (s.learning_group || 'Nhóm 1') === selectedGroup);
 
             document.getElementById('studentCount').innerText = studentsInGroup.length;
-            updateClassFilterDropdown(studentsInGroup); // Chỉ lọc lớp dựa trên SV đang hiển thị
+            updateClassFilterDropdown(studentsInGroup); 
 
             if (studentsInGroup.length === 0) {
                 listBody.innerHTML = `<div class="empty-state"><p class="text-muted fw-bold">Nhóm này chưa có sinh viên.</p><button class="btn btn-sm btn-outline-primary" onclick="importClassList()">Nhập ngay</button></div>`;
@@ -482,9 +437,7 @@
         function updateClassFilterDropdown(sourceList = currentStudents) {
             const uniqueClasses = [...new Set(sourceList.map(s => s.class_name))].sort();
             const menu = document.getElementById('classFilterMenu');
-            menu.innerHTML = `
-                <li><div class="form-check" onclick="toggleCheckbox('chk-all')"><input class="form-check-input" type="checkbox" value="" id="chk-all" onchange="toggleAllClasses(this)"><label class="form-check-label fw-bold text-primary" for="chk-all">Chọn tất cả</label></div></li>
-                <li><hr class="dropdown-divider"></li>`;
+            menu.innerHTML = `<li><div class="form-check" onclick="toggleCheckbox('chk-all')"><input class="form-check-input" type="checkbox" value="" id="chk-all" onchange="toggleAllClasses(this)"><label class="form-check-label fw-bold text-primary" for="chk-all">Chọn tất cả</label></div></li><li><hr class="dropdown-divider"></li>`;
             uniqueClasses.forEach(c => {
                 menu.insertAdjacentHTML('beforeend', `<li><div class="form-check" onclick="toggleCheckbox('chk-${c}')"><input class="form-check-input class-checkbox" type="checkbox" value="${c}" id="chk-${c}" onchange="updateDropdownLabel()"><label class="form-check-label" for="chk-${c}">${c}</label></div></li>`);
             });
@@ -625,29 +578,18 @@
             document.getElementById('editStudentName').value = s.full_name; 
             document.getElementById('editStudentMSSV').value = s.mssv; 
             document.getElementById('editStudentClass').value = s.class_name;
-            
-            // Điền dropdown nhóm cho Modal
             const groupSelect = document.getElementById('editStudentGroup');
             const mainGroupSelect = document.getElementById('groupSelect');
             groupSelect.innerHTML = '';
-            for (let i = 0; i < mainGroupSelect.options.length; i++) {
-                groupSelect.add(new Option(mainGroupSelect.options[i].text, mainGroupSelect.options[i].value));
-            }
+            for (let i = 0; i < mainGroupSelect.options.length; i++) { groupSelect.add(new Option(mainGroupSelect.options[i].text, mainGroupSelect.options[i].value)); }
             groupSelect.value = s.learning_group || 'Nhóm 1';
-
             new bootstrap.Modal(document.getElementById('editStudentModal')).show(); 
         }
         
         async function saveEditedStudent() { 
             const id = document.getElementById('editStudentId').value; 
             const subjectId = document.getElementById('subjectSelect').value;
-            const body = { 
-                full_name: document.getElementById('editStudentName').value, 
-                mssv: document.getElementById('editStudentMSSV').value, 
-                class_name: document.getElementById('editStudentClass').value,
-                subject_id: subjectId,
-                learning_group: document.getElementById('editStudentGroup').value // Cập nhật nhóm
-            }; 
+            const body = { full_name: document.getElementById('editStudentName').value, mssv: document.getElementById('editStudentMSSV').value, class_name: document.getElementById('editStudentClass').value, subject_id: subjectId, learning_group: document.getElementById('editStudentGroup').value }; 
             await fetch(`/api/data/students/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); 
             bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); 
             changeSubject(); 
@@ -663,7 +605,6 @@
         function exportToExcel() {
             const selectedGroup = document.getElementById('groupSelect').value;
             const studentsInGroup = currentStudents.filter(s => (s.learning_group || 'Nhóm 1') === selectedGroup);
-
             if (studentsInGroup.length === 0) return alert('Không có dữ liệu để xuất!');
             const subjectName = document.getElementById('displaySubjectName').innerText || 'DanhSachSinhVien';
             const data = studentsInGroup.map((sv, idx) => ({ 'STT': idx + 1, 'Họ và Tên': sv.full_name, 'MSSV': sv.mssv, 'Lớp': sv.class_name }));
