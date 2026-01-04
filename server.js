@@ -97,23 +97,27 @@ app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
     }
 });
 
-// API: Lấy dữ liệu điểm danh cũ của một môn vào ngày/buổi cụ thể (PHẢI ĐẶT TRƯỚC app.listen)
+// API: Lấy dữ liệu điểm danh cũ (Cập nhật thêm learning_group)
 app.get('/api/data/attendance/check', async (req, res) => {
     try {
-        const { subject_id, session_date, session_time } = req.query;
+        // Lấy thêm tham số learning_group
+        const { subject_id, session_date, session_time, learning_group } = req.query;
         
-        // Query đúng với bảng attendance_records (theo db.sql) - bao gồm proof_image_url
         const sql = `
             SELECT ar.student_id, ar.is_absent, ar.reason, ar.proof_image_url 
             FROM attendance_sessions s
             JOIN attendance_records ar ON s.id = ar.session_id
-            WHERE s.subject_id = ? AND s.session_date = ? AND s.session_time = ?
+            WHERE s.subject_id = ? 
+              AND s.session_date = ? 
+              AND s.session_time = ?
+              AND s.learning_group = ?  -- Thêm điều kiện lọc theo nhóm
         `;
         
-        // Thực thi SQL
-        const [rows] = await db.query(sql, [subject_id, session_date, session_time]);
+        // Mặc định là 'Nhóm 1' nếu không truyền lên
+        const group = learning_group || 'Nhóm 1'; 
         
-        res.json(rows); // Trả về mảng: [{student_id: 1, is_absent: 1, reason: 'ốm', proof_image_url: '...'}, ...]
+        const [rows] = await db.query(sql, [subject_id, session_date, session_time, group]);
+        res.json(rows);
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu điểm danh:', error);
         res.status(500).json([]);

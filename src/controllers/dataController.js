@@ -73,27 +73,34 @@ exports.updateStudent = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật SV' }); }
 };
 
-// 7. Lưu điểm danh
+// 7. Lưu điểm danh (Cập nhật thêm learning_group)
 exports.saveAttendance = async (req, res) => {
-    const { subject_id, session_date, session_time, attendance_data } = req.body;
+    // Nhận thêm learning_group từ body
+    const { subject_id, session_date, session_time, learning_group, attendance_data } = req.body;
+    const groupName = learning_group || 'Nhóm 1'; // Mặc định
+
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
+        
+        // 1. Tìm hoặc tạo session (Kèm theo nhóm)
         const [sessions] = await connection.query(
-            'SELECT id FROM attendance_sessions WHERE subject_id=? AND session_date=? AND session_time=?', 
-            [subject_id, session_date, session_time]
+            'SELECT id FROM attendance_sessions WHERE subject_id=? AND session_date=? AND session_time=? AND learning_group=?', 
+            [subject_id, session_date, session_time, groupName]
         );
+
         let sessionId;
         if (sessions.length > 0) {
             sessionId = sessions[0].id;
         } else {
             const [result] = await connection.query(
-                'INSERT INTO attendance_sessions (subject_id, session_date, session_time) VALUES (?, ?, ?)', 
-                [subject_id, session_date, session_time]
+                'INSERT INTO attendance_sessions (subject_id, session_date, session_time, learning_group) VALUES (?, ?, ?, ?)', 
+                [subject_id, session_date, session_time, groupName]
             );
             sessionId = result.insertId;
         }
         
+        // 2. Xóa dữ liệu cũ và lưu mới (Giữ nguyên logic cũ)
         await connection.query('DELETE FROM attendance_records WHERE session_id=?', [sessionId]);
         
         if (attendance_data.length > 0) {
