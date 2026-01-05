@@ -7,19 +7,27 @@ exports.getSubjects = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
+// Thêm môn (Có default_session)
 exports.createSubject = async (req, res) => {
-    const { subject_name, teacher_name, semester, start_date, end_date } = req.body;
+    const { subject_name, teacher_name, semester, start_date, end_date, default_session } = req.body;
     try {
-        await db.query('INSERT INTO subjects (subject_name, teacher_name, semester, start_date, end_date) VALUES (?, ?, ?, ?, ?)', [subject_name, teacher_name, semester, start_date, end_date]);
+        await db.query(
+            'INSERT INTO subjects (subject_name, teacher_name, semester, start_date, end_date, default_session) VALUES (?, ?, ?, ?, ?, ?)', 
+            [subject_name, teacher_name, semester, start_date, end_date, default_session || 'Sáng']
+        );
         res.status(201).json({ message: 'Thêm thành công' });
     } catch (error) { res.status(500).json({ message: 'Lỗi thêm môn' }); }
 };
 
+// Sửa môn (Có default_session)
 exports.updateSubject = async (req, res) => {
     const { id } = req.params;
-    const { subject_name, teacher_name, start_date, end_date } = req.body;
+    const { subject_name, teacher_name, start_date, end_date, default_session } = req.body;
     try {
-        await db.query('UPDATE subjects SET subject_name=?, teacher_name=?, start_date=?, end_date=? WHERE id=?', [subject_name, teacher_name, start_date, end_date, id]);
+        await db.query(
+            'UPDATE subjects SET subject_name=?, teacher_name=?, start_date=?, end_date=?, default_session=? WHERE id=?', 
+            [subject_name, teacher_name, start_date, end_date, default_session, id]
+        );
         res.json({ message: 'Cập nhật thành công' });
     } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật' }); }
 };
@@ -38,7 +46,7 @@ exports.deleteSubject = async (req, res) => {
     } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi xóa' }); } finally { connection.release(); }
 };
 
-// Lấy danh sách SV (KÈM NHÓM)
+// Lấy SV (Có learning_group)
 exports.getStudentsBySubject = async (req, res) => {
     const { subjectId } = req.params;
     try {
@@ -50,7 +58,7 @@ exports.getStudentsBySubject = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
-// Cập nhật SV (KÈM CHUYỂN NHÓM)
+// Cập nhật SV (Có chuyển nhóm)
 exports.updateStudent = async (req, res) => {
     const { id } = req.params;
     const { full_name, mssv, class_name, subject_id, learning_group } = req.body;
@@ -66,7 +74,6 @@ exports.updateStudent = async (req, res) => {
     } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi cập nhật' }); } finally { connection.release(); }
 };
 
-// Xóa SV
 exports.deleteStudent = async (req, res) => {
     const { id } = req.params;
     const connection = await db.getConnection();
@@ -80,7 +87,7 @@ exports.deleteStudent = async (req, res) => {
     } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi xóa SV' }); } finally { connection.release(); }
 };
 
-// Lưu điểm danh (KÈM NHÓM)
+// Lưu điểm danh (Có learning_group)
 exports.saveAttendance = async (req, res) => {
     const { subject_id, session_date, session_time, learning_group, attendance_data } = req.body;
     const groupName = learning_group || 'Nhóm 1';
@@ -132,7 +139,6 @@ exports.countSpecialStudents = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi đếm SV' }); }
 };
 
-// [MỚI] Quản lý Nhóm (Đổi tên, Xóa)
 exports.manageGroup = async (req, res) => {
     const { action, subject_id, group_name, new_group_name } = req.body;
     const connection = await db.getConnection();

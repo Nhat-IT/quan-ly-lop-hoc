@@ -17,6 +17,6 @@ router.put('/students/:id', dataController.updateStudent);
 router.delete('/students/:id', dataController.deleteStudent);
 
 router.post('/attendance', dataController.saveAttendance);
-router.post('/groups/manage', dataController.manageGroup); // Route mới
+router.post('/groups/manage', dataController.manageGroup);
 
 module.exports = router;

@@ -12,11 +12,9 @@ const authRoutes = require('./src/routes/authRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Tạo thư mục uploads
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-// Cấu hình Multer
 const storage = multer.diskStorage({
     destination: function (req, file, cb) { cb(null, uploadsDir); },
     filename: function (req, file, cb) {
@@ -46,7 +44,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.get('/', (req, res) => res.redirect('/login/login.html'));
 app.get(['/login', '/login.html'], (req, res) => res.redirect('/login/login.html'));
 
-// API Upload
 app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'Không có file' });
     res.json({ url: '/uploads/' + req.file.filename });
@@ -56,7 +53,6 @@ app.post('/api/data/upload-proof', upload.single('proof'), (req, res) => {
 app.get('/api/data/attendance/check', async (req, res) => {
     try {
         const { subject_id, session_date, session_time, learning_group } = req.query;
-        // Mặc định nhóm 1 nếu không có
         const group = learning_group || 'Nhóm 1';
 
         const sql = `
