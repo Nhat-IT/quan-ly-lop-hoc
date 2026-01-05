@@ -94,6 +94,11 @@ git add .
 git commit -m "Initial commit"
 git push origin main
 ```
+# cập nhật code nếu có thay đổi
+cd backend
+PS D:\Test app quanlysv\backend> git add . 
+>> git commit -m " Responsive diemdanh.html"
+>> git push
 
 ### Bước 3: Deploy Web Service trên Render
 - Runtime: Node  
