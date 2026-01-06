@@ -12,7 +12,17 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="auth.js"></script>
     <style>
-        :root { --primary-color: #3459e6; --danger-color: #e6344a; --danger-bg-light: #fff0f3; --bg-body: #f4f7fa; --bg-white: #ffffff; --text-dark: #2c3e50; --border-color: #e2e8f0; }
+        :root { 
+            --primary-color: #3459e6; 
+            --danger-color: #e6344a; 
+            --danger-bg-light: #fff0f3; 
+            --bg-body: #f4f7fa; 
+            --bg-white: #ffffff; 
+            --text-dark: #2c3e50; 
+            --border-color: #e2e8f0; 
+            /* [ĐÃ SỬA] Cấu trúc Grid chuẩn: Tên chiếm 1fr (tự giãn hết khoảng trống), các cột khác cố định */
+            --student-grid: 60px 1fr 160px 120px 100px; 
+        }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
         .sticky-header { background: var(--bg-white); position: sticky; top: 0; z-index: 1000; padding: 12px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
@@ -27,16 +37,20 @@
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* GRID DESKTOP */
-        :root { --student-grid: 50px 0.5fr 160px 120px 150px; }
-        .list-header { background-color: #e9ecef; color: #495057; font-weight: 700; padding: 12px 0; border-radius: 8px 8px 0 0; border: 1px solid var(--border-color); border-bottom: none; display: grid; grid-template-columns: var(--student-grid); align-items: center; }
+        .list-header { 
+            background-color: #e9ecef; color: #495057; font-weight: 700; padding: 12px 0; 
+            border-radius: 8px 8px 0 0; border: 1px solid var(--border-color); border-bottom: none; 
+            display: grid; grid-template-columns: var(--student-grid); align-items: center; 
+        }
         .student-row { background: var(--bg-white); border: 1px solid var(--border-color); border-top: none; padding: 0; transition: background 0.2s; }
         .student-row:hover { background-color: #f8f9fa; }
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
         .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; padding: 12px 0; }
         
         .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
-        .col-name { padding: 0 10px; padding-left: 40px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; text-align: left; }
-        .list-header .col-name { text-align: left; padding-left: 40px; }
+        /* Tên căn trái, có khoảng cách */
+        .col-name { padding: 0 10px; padding-left: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; text-align: left; }
+        .list-header .col-name { text-align: left; padding-left: 20px; }
 
         .note-input-group { display: none !important; margin: 10px 15px 15px 50px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
