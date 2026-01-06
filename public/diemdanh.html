@@ -20,8 +20,8 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* GRID: Tên chiếm 4 phần, MSSV 2 phần, Lớp 1.5 phần */
-            --student-grid: 60px 4fr 2fr 1.5fr 100px; 
+            /* GRID MỚI: Dùng % để chia chắc chắn */
+            --student-grid: 5% 35% 20% 20% 20%;
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -36,10 +36,10 @@
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* --- GRID TABLE STYLING --- */
+        /* --- TABLE STYLING --- */
         .list-header { 
             background-color: #e9ecef; 
-            color: #2c3e50; /* Màu chữ đậm hơn cho tiêu đề */
+            color: #495057; 
             padding: 15px 0; 
             border-radius: 8px 8px 0 0; 
             border: 1px solid var(--border-color); 
@@ -49,11 +49,12 @@
             align-items: center; 
         }
 
-        /* [ĐÃ SỬA] Định dạng in đậm đồng nhất cho tất cả các cột trong Header */
+        /* Định dạng Header: In hoa, In đậm đồng bộ */
         .list-header > div {
-            font-weight: 800 !important; /* In đậm mạnh */
-            font-size: 0.95rem;
-            text-transform: uppercase; /* Chữ in hoa cho đẹp (tuỳ chọn) */
+            font-weight: 800; 
+            font-size: 0.85rem; 
+            text-transform: uppercase;
+            color: #2c3e50;
         }
 
         .row-main-content { 
@@ -68,32 +69,24 @@
         .student-row:hover { background-color: #f8f9fa; }
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
 
-        /* Căn giữa các cột thông tin (trừ tên) */
-        .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
-        
-        /* Font cho nội dung bên dưới (nhẹ hơn header 1 chút) */
-        .col-stt { color: #666; font-weight: 600; }
-        .col-mssv { font-family: monospace; font-size: 1rem; font-weight: 600; }
-        .col-class { font-weight: 600; }
+        /* Căn chỉnh các cột */
+        .col-stt { text-align: center; color: #666; font-weight: 700; }
+        .col-mssv { text-align: center; font-family: monospace; font-size: 1rem; font-weight: 600; }
+        .col-class { text-align: center; font-weight: 600; }
+        .col-action { display: flex; justify-content: center; align-items: center; }
+        .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
-        /* [ĐÃ SỬA] Cột Tên: Đẩy sang phải 50px */
+        /* Cột Tên: Đẩy sang phải 80px */
         .col-name { 
-            padding: 0 10px; 
-            padding-left: 50px; /* Đẩy sang phải nhiều hơn */
+            padding-left: 80px; 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
             font-weight: 700; 
             text-align: left; 
+            font-size: 0.95rem;
         }
-        /* Header Tên cũng phải đẩy sang phải tương ứng */
-        .list-header .col-name { 
-            text-align: left; 
-            padding-left: 50px; 
-        }
-
-        .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
-        .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
+        .list-header .col-name { text-align: left; padding-left: 80px; }
 
         .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
@@ -111,7 +104,7 @@
         @media (max-width: 768px) {
             .sticky-header .header-subject { position: static; transform: none; font-size: 1.1rem; display: block; margin-top: 5px; text-align: left; padding-left: 50px; max-width: 100%; white-space: normal; }
             .header-title { font-size: 1.2rem; margin-right: 10px; }
-            .list-header { display: none; } /* Ẩn header bảng trên mobile */
+            .list-header { display: none; }
             .student-row { margin-bottom: 15px; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.03); padding: 15px; position: relative; }
             .student-row.is-absent { border-left-color: var(--danger-color); }
             .row-main-content { display: flex; flex-wrap: wrap; padding: 0; }
@@ -212,10 +205,10 @@
         <div id="studentListContainer">
             <div class="list-header">
                 <div class="col-stt">STT</div>
-                <div class="col-name">Họ và Tên</div>
-                <div class="col-mssv">Mã số sinh viên</div>
-                <div class="col-class">Lớp</div>
-                <div class="col-action">Vắng</div>
+                <div class="col-name">HỌ VÀ TÊN</div>
+                <div class="col-mssv">MÃ SỐ SINH VIÊN</div>
+                <div class="col-class">LỚP</div>
+                <div class="col-action">VẮNG</div>
             </div>
             <div id="listBody"></div>
         </div>
