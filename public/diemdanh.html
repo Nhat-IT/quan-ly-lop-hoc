@@ -20,8 +20,8 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* [ĐÃ SỬA] Cấu trúc Grid chuẩn: Tên chiếm 1fr (tự giãn hết khoảng trống), các cột khác cố định */
-            --student-grid: 60px 1fr 160px 120px 100px; 
+            /* [ĐÃ SỬA] Sử dụng tỉ lệ fr để chia đều không gian, không dùng px cố định cho các cột giữa */
+            --student-grid: 60px 4fr 2fr 1.5fr 100px; 
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -36,30 +36,66 @@
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* GRID DESKTOP */
+        /* GRID TABLE - DESKTOP */
         .list-header { 
-            background-color: #e9ecef; color: #495057; font-weight: 700; padding: 12px 0; 
-            border-radius: 8px 8px 0 0; border: 1px solid var(--border-color); border-bottom: none; 
-            display: grid; grid-template-columns: var(--student-grid); align-items: center; 
+            background-color: #e9ecef; 
+            color: #495057; 
+            font-weight: 700; 
+            padding: 12px 0; 
+            border-radius: 8px 8px 0 0; 
+            border: 1px solid var(--border-color); 
+            border-bottom: none; 
+            display: grid; 
+            grid-template-columns: var(--student-grid); 
+            align-items: center; 
         }
-        .student-row { background: var(--bg-white); border: 1px solid var(--border-color); border-top: none; padding: 0; transition: background 0.2s; }
+        
+        .student-row { 
+            background: var(--bg-white); 
+            border: 1px solid var(--border-color); 
+            border-top: none; 
+            padding: 0; 
+            transition: background 0.2s; 
+        }
         .student-row:hover { background-color: #f8f9fa; }
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
-        .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; padding: 12px 0; }
-        
-        .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
-        /* Tên căn trái, có khoảng cách */
-        .col-name { padding: 0 10px; padding-left: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; text-align: left; }
-        .list-header .col-name { text-align: left; padding-left: 20px; }
 
-        .note-input-group { display: none !important; margin: 10px 15px 15px 50px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .row-main-content { 
+            display: grid; 
+            grid-template-columns: var(--student-grid); 
+            align-items: center; 
+            width: 100%; 
+            padding: 12px 0; 
+        }
+        
+        /* CĂN CHỈNH NỘI DUNG CỘT */
+        .col-stt { text-align: center; color: #666; font-weight: 600; }
+        .col-mssv { text-align: center; font-weight: 500; font-family: monospace; font-size: 1rem; }
+        .col-class { text-align: center; font-weight: 500; }
+        
+        /* Checkbox căn giữa hoàn toàn */
+        .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
+        .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
+
+        /* Tên căn trái, thụt vào một chút cho đẹp */
+        .col-name { 
+            padding: 0 15px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            font-weight: 700; 
+            text-align: left; 
+        }
+        /* Header Tên cũng căn trái giống cột dữ liệu */
+        .list-header .col-name { text-align: left; padding-left: 15px; }
+
+        .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
         
         .proof-upload-section { margin-top: 12px; }
         .proof-preview img { width: 100px; height: auto; border-radius: 4px; margin-top: 5px; cursor: pointer; border: 1px solid #ddd; }
         
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
-        .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
 
         .dropdown-menu-filter { max-height: 300px; overflow-y: auto; padding: 8px; width: 260px; max-width: 90vw; }
         .col-name .edit-icon { visibility: hidden; opacity: 0; transition: all 0.2s ease; cursor: pointer; font-size: 0.85rem; color: #6c757d; margin-left: 10px; }
@@ -78,7 +114,7 @@
             .col-mssv, .col-class { width: auto; text-align: left; font-size: 0.9rem; color: #666; margin-right: 15px; display: inline-block; }
             .col-mssv::before { content: "MSSV: "; font-weight: normal; color: #888; }
             .col-class::before { content: "Lớp: "; font-weight: normal; color: #888; }
-            .col-action { position: absolute; top: 15px; right: 15px; width: auto; }
+            .col-action { position: absolute; top: 15px; right: 15px; width: auto; height: auto; } /* Reset height on mobile */
             .col-action input[type="checkbox"] { width: 30px; height: 30px; }
             .note-input-group { margin: 15px 0 0 0; width: 100%; border: 1px dashed #ccc; }
             .input-group { width: 100%; }
