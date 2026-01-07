@@ -20,8 +20,8 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* [ĐÃ SỬA LẠI] Dùng % để chia cột đều và đẹp như bạn yêu cầu */
-            --student-grid: 10% 35% 20% 20% 20%;
+            /* [GRID CHUẨN] Chia cột theo phần trăm để đều trên mọi màn hình */
+            --student-grid: 5% 35% 20% 20% 20%;
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -49,7 +49,6 @@
             align-items: center; 
         }
 
-        /* Header: In đậm, In hoa, Màu tối */
         .list-header > div {
             font-weight: 800 !important; 
             font-size: 0.85rem; 
@@ -70,14 +69,14 @@
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
 
         .col-stt { text-align: center; color: #666; font-weight: 700; }
-        .col-mssv { text-align: center; font-size: 1rem; font-weight: 600; }
+        .col-mssv { text-align: center; font-family: monospace; font-size: 1rem; font-weight: 600; }
         .col-class { text-align: center; font-weight: 600; }
         .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
-        /* [ĐÃ SỬA LẠI] Padding 80px để tên thụt vào đẹp */
+        /* Tên thụt vào 80px cho đẹp */
         .col-name { 
-            padding-left: 170px; 
+            padding-left: 80px; 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -97,13 +96,13 @@
 
         /* Nút Excel Xanh */
         .btn-excel {
-            background-color: #1e8d36 !important; 
-            border-color: #207b2f !important;
+            background-color: #217346 !important; 
+            border-color: #217346 !important;
             color: white !important;
         }
         .btn-excel:hover {
-            background-color: #29ac3a !important;
-            border-color: #2ea942 !important;
+            background-color: #1a5c38 !important;
+            border-color: #1a5c38 !important;
         }
 
         .empty-state { padding: 60px 20px; text-align: center; background: white; border-radius: 0 0 8px 8px; border: 1px solid var(--border-color); border-top: none; }
@@ -432,6 +431,7 @@
                 currentStudents = await res.json();
                 populateGroupDropdown();
                 
+                // Nếu môn có nhóm mặc định, tự động chọn luôn
                 if (sub && sub.default_group) {
                     const groupSelect = document.getElementById('groupSelect');
                     let exists = false;
