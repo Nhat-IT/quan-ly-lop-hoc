@@ -20,8 +20,8 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* GRID: Tên chiếm 4 phần, MSSV 2 phần, Lớp 1.5 phần */
-            --student-grid: 60px 4fr 2fr 1.5fr 100px; 
+            /* [ĐÃ SỬA LẠI] Dùng % để chia cột đều và đẹp như bạn yêu cầu */
+            --student-grid: 5% 35% 20% 20% 20%;
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -49,6 +49,7 @@
             align-items: center; 
         }
 
+        /* Header: In đậm, In hoa, Màu tối */
         .list-header > div {
             font-weight: 800 !important; 
             font-size: 0.85rem; 
@@ -74,8 +75,9 @@
         .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
+        /* [ĐÃ SỬA LẠI] Padding 80px để tên thụt vào đẹp */
         .col-name { 
-            padding-left: 50px; 
+            padding-left: 80px; 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -83,7 +85,7 @@
             text-align: left; 
             font-size: 0.95rem;
         }
-        .list-header .col-name { text-align: left; padding-left: 50px; }
+        .list-header .col-name { text-align: left; padding-left: 80px; }
 
         .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
@@ -93,7 +95,7 @@
         
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
 
-        /* Nút Excel màu xanh chuẩn */
+        /* Nút Excel Xanh */
         .btn-excel {
             background-color: #217346 !important; 
             border-color: #217346 !important;
@@ -104,14 +106,14 @@
             border-color: #1a5c38 !important;
         }
 
-        .dropdown-menu-filter { max-height: 300px; overflow-y: auto; padding: 8px; width: 260px; max-width: 90vw; }
-        .col-name .edit-icon { visibility: hidden; opacity: 0; transition: all 0.2s ease; cursor: pointer; font-size: 0.85rem; color: #6c757d; margin-left: 10px; }
-        .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
-
         .empty-state { padding: 60px 20px; text-align: center; background: white; border-radius: 0 0 8px 8px; border: 1px solid var(--border-color); border-top: none; }
         .empty-state-text { color: #64748b; font-weight: 600; font-size: 1.1rem; margin-bottom: 20px; display: block; }
         .btn-upload-center { padding: 10px 25px; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); transition: all 0.15s ease; }
         .btn-upload-center:hover { transform: translateY(-1px); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
+
+        .dropdown-menu-filter { max-height: 300px; overflow-y: auto; padding: 8px; width: 260px; max-width: 90vw; }
+        .col-name .edit-icon { visibility: hidden; opacity: 0; transition: all 0.2s ease; cursor: pointer; font-size: 0.85rem; color: #6c757d; margin-left: 10px; }
+        .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
 
         @media (max-width: 768px) {
             .sticky-header .header-subject { position: static; transform: none; font-size: 1.1rem; display: block; margin-top: 5px; text-align: left; padding-left: 50px; max-width: 100%; white-space: normal; }
@@ -366,7 +368,7 @@
             const start = document.getElementById('newStartDate').value;
             const end = document.getElementById('newEndDate').value;
             const defaultSession = document.getElementById('newDefaultSession').value;
-            const defaultGroup = document.getElementById('newDefaultGroup').value; // Lấy nhóm
+            const defaultGroup = document.getElementById('newDefaultGroup').value;
             await fetch('/api/data/subjects', {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ subject_name: name, teacher_name: teacher, semester: sem, start_date: start, end_date: end, default_session: defaultSession, default_group: defaultGroup })
@@ -383,7 +385,7 @@
             document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : '';
             document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : '';
             document.getElementById('editDefaultSession').value = sub.default_session || 'Sáng';
-            document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1'; // Set nhóm
+            document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1';
             new bootstrap.Modal(document.getElementById('editSubjectModal')).show();
         }
 
@@ -421,7 +423,7 @@
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name || "Chưa cập nhật";
                 document.getElementById('displayStartDate').innerText = sub.start_date ? new Date(sub.start_date).toLocaleDateString('vi-VN') : '...';
                 document.getElementById('displayEndDate').innerText = sub.end_date ? new Date(sub.end_date).toLocaleDateString('vi-VN') : '...';
-                // Set default session and group
+                
                 if (sub.default_session) document.getElementById('sessionTime').value = sub.default_session;
                 else document.getElementById('sessionTime').value = 'Sáng';
             }
@@ -430,10 +432,8 @@
                 currentStudents = await res.json();
                 populateGroupDropdown();
                 
-                // Sau khi populate, nếu môn có default_group thì chọn nó
                 if (sub && sub.default_group) {
                     const groupSelect = document.getElementById('groupSelect');
-                    // Kiểm tra xem nhóm đó có trong dropdown chưa, nếu chưa (vd chưa có SV) thì thêm vào
                     let exists = false;
                     for (let i = 0; i < groupSelect.options.length; i++) {
                         if (groupSelect.options[i].value === sub.default_group) { exists = true; break; }
@@ -443,7 +443,6 @@
                     }
                     groupSelect.value = sub.default_group;
                 }
-                
             } catch (e) { currentStudents = []; }
             renderList();
             await loadSavedAttendance();
