@@ -20,7 +20,7 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* [GRID CHUẨN] Chia cột theo phần trăm để đều trên mọi màn hình */
+            /* Grid danh sách: Chia % để đều trên mọi màn hình */
             --student-grid: 5% 35% 20% 20% 20%;
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
@@ -29,6 +29,17 @@
         .header-title { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--text-dark); margin-right: 20px; white-space: nowrap; }
         .header-subject { position: absolute; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: var(--primary-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%; }
 
+        /* [MỚI] Style cho nút Quay lại to, dễ bấm */
+        .btn-back-custom {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .btn-back-custom:active { transform: scale(0.9); }
+
         .scrollable-controls { background: var(--bg-white); padding: 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
         .form-control-fixed, .form-select-fixed { height: 42px; }
@@ -36,7 +47,7 @@
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* --- TABLE STYLING --- */
+        /* TABLE STYLING */
         .list-header { 
             background-color: #e9ecef; 
             color: #495057; 
@@ -74,7 +85,6 @@
         .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
-        /* Tên thụt vào 80px cho đẹp */
         .col-name { 
             padding-left: 80px; 
             white-space: nowrap; 
@@ -138,7 +148,10 @@
 
     <div class="sticky-header">
         <div class="container d-flex align-items-center flex-wrap position-relative">
-            <a href="index.html" class="btn btn-light btn-sm rounded-circle shadow-sm border me-3"><i class="fas fa-arrow-left text-primary"></i></a>
+            <a href="index.html" class="btn btn-light rounded-circle shadow-sm border me-3 btn-back-custom">
+                <i class="fas fa-arrow-left text-primary fs-5"></i>
+            </a>
+            
             <div class="header-title">ĐIỂM DANH</div>
             <div class="header-subject" id="displaySubjectName">--</div>
             <div class="ms-auto"></div>
@@ -431,7 +444,6 @@
                 currentStudents = await res.json();
                 populateGroupDropdown();
                 
-                // Nếu môn có nhóm mặc định, tự động chọn luôn
                 if (sub && sub.default_group) {
                     const groupSelect = document.getElementById('groupSelect');
                     let exists = false;
