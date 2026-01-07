@@ -20,8 +20,8 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* GRID MỚI: Dùng % để chia chắc chắn */
-            --student-grid: 5% 35% 20% 20% 20%;
+            /* GRID: Tên chiếm 4 phần, MSSV 2 phần, Lớp 1.5 phần */
+            --student-grid: 60px 4fr 2fr 1.5fr 100px; 
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -49,7 +49,6 @@
             align-items: center; 
         }
 
-        /* Định dạng Header: In hoa, In đậm đồng bộ */
         .list-header > div {
             font-weight: 800; 
             font-size: 0.85rem; 
@@ -69,16 +68,14 @@
         .student-row:hover { background-color: #f8f9fa; }
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
 
-        /* Căn chỉnh các cột */
         .col-stt { text-align: center; color: #666; font-weight: 700; }
-        .col-mssv { text-align: center; font-size: 1rem; font-weight: 600; }
+        .col-mssv { text-align: center; font-family: monospace; font-size: 1rem; font-weight: 600; }
         .col-class { text-align: center; font-weight: 600; }
         .col-action { display: flex; justify-content: center; align-items: center; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
-        /* Cột Tên: Đẩy sang phải 80px */
         .col-name { 
-            padding-left: 80px; 
+            padding-left: 50px; 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -86,7 +83,7 @@
             text-align: left; 
             font-size: 0.95rem;
         }
-        .list-header .col-name { text-align: left; padding-left: 80px; }
+        .list-header .col-name { text-align: left; padding-left: 50px; }
 
         .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
@@ -95,22 +92,47 @@
         .proof-preview img { width: 100px; height: auto; border-radius: 4px; margin-top: 5px; cursor: pointer; border: 1px solid #ddd; }
         
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
-        
+
+        /* Nút Excel màu xanh chuẩn */
         .btn-excel {
-            background-color: #278652 !important; /* Màu xanh Excel chính hãng */
-            border-color: #298d56 !important;
+            background-color: #239f5b !important; 
+            border-color: #289258 !important;
             color: white !important;
         }
         .btn-excel:hover {
-            background-color: #178235 !important;
-            border-color: #1a5c38 !important;
+            background-color: #179338 !important;
+            border-color: #1b9a3f !important;
         }
+
+        /* [ĐÃ SỬA] Empty State đẹp mắt */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            background: white;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+        }
+        .empty-state-text {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .btn-upload-center {
+            padding: 10px 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.15s ease;
+        }
+        .btn-upload-center:hover { transform: translateY(-1px); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
 
         .dropdown-menu-filter { max-height: 300px; overflow-y: auto; padding: 8px; width: 260px; max-width: 90vw; }
         .col-name .edit-icon { visibility: hidden; opacity: 0; transition: all 0.2s ease; cursor: pointer; font-size: 0.85rem; color: #6c757d; margin-left: 10px; }
         .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
 
-        /* RESPONSIVE MOBILE */
         @media (max-width: 768px) {
             .sticky-header .header-subject { position: static; transform: none; font-size: 1.1rem; display: block; margin-top: 5px; text-align: left; padding-left: 50px; max-width: 100%; white-space: normal; }
             .header-title { font-size: 1.2rem; margin-right: 10px; }
@@ -153,9 +175,11 @@
                     <button class="btn btn-success" onclick="openAddSubjectModal()"><i class="fas fa-plus"></i></button>
                     <select class="form-select fw-bold text-primary border-0" id="subjectSelect" onchange="changeSubject()"></select>
                     <button class="btn btn-warning" onclick="openEditSubjectModal()"><i class="fas fa-pen text-white"></i></button>
+                    
                     <button class="btn btn-excel d-none d-md-block" id="btnImportExcel" onclick="importClassList()">
                         <i class="fas fa-file-excel"></i> Nhập danh sách
                     </button>
+                    
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
             </div>
@@ -195,7 +219,7 @@
             <span class="text-muted small">Sĩ số: <b id="studentCount">0</b> | Hiện: <b id="filteredCount">0</b></span>
             <div class="d-flex gap-2">
                 <button class="btn btn-excel d-md-none btn-sm" onclick="importClassList()"><i class="fas fa-file-excel"></i></button>
-                <button class="btn btn-success btn-sm" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Thêm</button>
+                <button class="btn btn-success btn-sm" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Thêm SV</button>
             </div>
         </div>
         
@@ -451,7 +475,14 @@
             updateClassFilterDropdown(studentsInGroup);
 
             if (studentsInGroup.length === 0) {
-                listBody.innerHTML = `<div class="empty-state"><p class="text-muted fw-bold">Trống.</p><button class="btn btn-sm btn-outline-primary" onclick="importClassList()">Import</button></div>`;
+                // [ĐÃ SỬA] Hiển thị trạng thái "Chưa có dữ liệu" & nút "Tải lên" to đẹp
+                listBody.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-state-text">Chưa có dữ liệu sinh viên trong nhóm này</span>
+                        <button class="btn btn-primary btn-upload-center" onclick="importClassList()">
+                            <i class="fas fa-file-upload me-2"></i> Tải lên danh sách
+                        </button>
+                    </div>`;
                 document.getElementById('countAbsent').innerText = 0;
                 document.getElementById('filteredCount').innerText = 0;
                 return;
