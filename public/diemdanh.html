@@ -21,7 +21,7 @@
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
             /* [ĐÃ SỬA LẠI] Dùng % để chia cột đều và đẹp như bạn yêu cầu */
-            --student-grid: 5% 35% 20% 20% 20%;
+            --student-grid: 10% 35% 20% 20% 20%;
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -70,14 +70,14 @@
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
 
         .col-stt { text-align: center; color: #666; font-weight: 700; }
-        .col-mssv { text-align: center; font-family: monospace; font-size: 1rem; font-weight: 600; }
+        .col-mssv { text-align: center; font-size: 1rem; font-weight: 600; }
         .col-class { text-align: center; font-weight: 600; }
         .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
         /* [ĐÃ SỬA LẠI] Padding 80px để tên thụt vào đẹp */
         .col-name { 
-            padding-left: 80px; 
+            padding-left: 150px; 
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -97,8 +97,8 @@
 
         /* Nút Excel Xanh */
         .btn-excel {
-            background-color: #28c06c !important; 
-            border-color: #29bc6b !important;
+            background-color: #28c049 !important; 
+            border-color: #29bc41 !important;
             color: white !important;
         }
         .btn-excel:hover {
