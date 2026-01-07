@@ -20,8 +20,8 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            /* Grid danh sách: Chia % để đều trên mọi màn hình */
-            --student-grid: 15% 25% 20% 20% 20%;
+            /* GRID: Tên chiếm 35%, MSSV 20%, Lớp 20% */
+            --student-grid: 15% 25% 20% 20% 20%; 
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -29,16 +29,19 @@
         .header-title { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--text-dark); margin-right: 20px; white-space: nowrap; }
         .header-subject { position: absolute; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: var(--primary-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%; }
 
-        /* [MỚI] Style cho nút Quay lại to, dễ bấm */
+        /* [ĐÃ CHỈNH] Nút Quay lại to hơn (50px) */
         .btn-back-custom {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: transform 0.2s;
+            background-color: #fff;
+            border: 2px solid #e2e8f0;
         }
-        .btn-back-custom:active { transform: scale(0.9); }
+        .btn-back-custom:active { transform: scale(0.95); background-color: #f1f5f9; }
+        .btn-back-custom i { font-size: 1.4rem; color: var(--primary-color); }
 
         .scrollable-controls { background: var(--bg-white); padding: 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
         .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
@@ -49,51 +52,24 @@
 
         /* TABLE STYLING */
         .list-header { 
-            background-color: #e9ecef; 
-            color: #495057; 
-            padding: 15px 0; 
-            border-radius: 8px 8px 0 0; 
-            border: 1px solid var(--border-color); 
-            border-bottom: none; 
-            display: grid; 
-            grid-template-columns: var(--student-grid); 
-            align-items: center; 
+            background-color: #e9ecef; color: #495057; padding: 15px 0; 
+            border-radius: 8px 8px 0 0; border: 1px solid var(--border-color); border-bottom: none; 
+            display: grid; grid-template-columns: var(--student-grid); align-items: center; 
         }
+        .list-header > div { font-weight: 800 !important; font-size: 0.85rem; text-transform: uppercase; color: #2c3e50; }
 
-        .list-header > div {
-            font-weight: 800 !important; 
-            font-size: 0.85rem; 
-            text-transform: uppercase;
-            color: #2c3e50;
-        }
-
-        .row-main-content { 
-            display: grid; 
-            grid-template-columns: var(--student-grid); 
-            align-items: center; 
-            width: 100%; 
-            padding: 12px 0; 
-        }
-        
+        .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; padding: 12px 0; }
         .student-row { background: var(--bg-white); border: 1px solid var(--border-color); border-top: none; padding: 0; transition: background 0.2s; }
         .student-row:hover { background-color: #f8f9fa; }
         .student-row.is-absent { background-color: var(--danger-bg-light); border-left: 4px solid var(--danger-color); }
 
         .col-stt { text-align: center; color: #666; font-weight: 700; }
-        .col-mssv { text-align: center; font-size: 1rem; font-weight: 600; }
+        .col-mssv { text-align: center; font-family: monospace; font-size: 1rem; font-weight: 600; }
         .col-class { text-align: center; font-weight: 600; }
         .col-action { display: flex; justify-content: center; align-items: center; height: 100%; }
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; margin: 0; }
 
-        .col-name { 
-            padding-left: 80px; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            font-weight: 700; 
-            text-align: left; 
-            font-size: 0.95rem;
-        }
+        .col-name { padding-left: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; text-align: left; font-size: 0.95rem; }
         .list-header .col-name { text-align: left; padding-left: 80px; }
 
         .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
@@ -101,19 +77,10 @@
         
         .proof-upload-section { margin-top: 12px; }
         .proof-preview img { width: 100px; height: auto; border-radius: 4px; margin-top: 5px; cursor: pointer; border: 1px solid #ddd; }
-        
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
 
-        /* Nút Excel Xanh */
-        .btn-excel {
-            background-color: #218844 !important; 
-            border-color: #218844 !important;
-            color: white !important;
-        }
-        .btn-excel:hover {
-            background-color: #177438 !important;
-            border-color: #177438 !important;
-        }
+        .btn-excel { background-color: #1c8245 !important; border-color: #1c8245 !important; color: white !important; }
+        .btn-excel:hover { background-color: #136637 !important; border-color: #136637 !important; }
 
         .empty-state { padding: 60px 20px; text-align: center; background: white; border-radius: 0 0 8px 8px; border: 1px solid var(--border-color); border-top: none; }
         .empty-state-text { color: #64748b; font-weight: 600; font-size: 1.1rem; margin-bottom: 20px; display: block; }
@@ -148,10 +115,9 @@
 
     <div class="sticky-header">
         <div class="container d-flex align-items-center flex-wrap position-relative">
-            <a href="index.html" class="btn btn-light rounded-circle shadow-sm border me-3 btn-back-custom">
-                <i class="fas fa-arrow-left text-primary fs-5"></i>
+            <a href="index.html" class="btn rounded-circle shadow-sm me-3 btn-back-custom" title="Quay lại">
+                <i class="fas fa-arrow-left"></i>
             </a>
-            
             <div class="header-title">ĐIỂM DANH</div>
             <div class="header-subject" id="displaySubjectName">--</div>
             <div class="ms-auto"></div>
@@ -169,11 +135,9 @@
                     <button class="btn btn-success" onclick="openAddSubjectModal()"><i class="fas fa-plus"></i></button>
                     <select class="form-select fw-bold text-primary border-0" id="subjectSelect" onchange="changeSubject()"></select>
                     <button class="btn btn-warning" onclick="openEditSubjectModal()"><i class="fas fa-pen text-white"></i></button>
-                    
                     <button class="btn btn-excel d-none d-md-block" id="btnImportExcel" onclick="importClassList()">
                         <i class="fas fa-file-excel"></i> Nhập danh sách
                     </button>
-                    
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                 </div>
             </div>
@@ -254,7 +218,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="addSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" class="form-control mb-3" id="newSubjectName" placeholder="Tên môn"><input type="text" class="form-control mb-3" id="newTeacherName" placeholder="Giảng viên">
+    <div class="modal fade" id="addSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" class="form-control mb-3" id="newSubjectName" placeholder="Tên môn (Bắt buộc)"><input type="text" class="form-control mb-3" id="newTeacherName" placeholder="Giảng viên">
         <div class="row mb-3">
             <div class="col-6">
                 <label class="small text-muted">Buổi mặc định</label>
@@ -373,20 +337,35 @@
         function openAddSubjectModal() { new bootstrap.Modal(document.getElementById('addSubjectModal')).show(); }
         function resetInfo() { document.getElementById('displaySubjectName').innerText = "--"; document.getElementById('displayTeacherName').innerText = "--"; document.getElementById('displayStartDate').innerText = "--"; document.getElementById('displayEndDate').innerText = "--"; }
 
+        // [ĐÃ SỬA] Thêm kiểm tra lỗi và bắt buộc nhập tên
         async function saveNewSubject() {
-            const name = document.getElementById('newSubjectName').value;
+            const name = document.getElementById('newSubjectName').value.trim();
+            if (!name) { alert("Vui lòng nhập tên môn học!"); return; } // Bắt buộc nhập tên
+
             const teacher = document.getElementById('newTeacherName').value;
             const sem = document.getElementById('semesterSelect').value;
             const start = document.getElementById('newStartDate').value;
             const end = document.getElementById('newEndDate').value;
             const defaultSession = document.getElementById('newDefaultSession').value;
             const defaultGroup = document.getElementById('newDefaultGroup').value;
-            await fetch('/api/data/subjects', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ subject_name: name, teacher_name: teacher, semester: sem, start_date: start, end_date: end, default_session: defaultSession, default_group: defaultGroup })
-            });
-            bootstrap.Modal.getInstance(document.getElementById('addSubjectModal')).hide();
-            const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); filterSubjectsBySemester();
+            
+            try {
+                const res = await fetch('/api/data/subjects', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ subject_name: name, teacher_name: teacher, semester: sem, start_date: start, end_date: end, default_session: defaultSession, default_group: defaultGroup })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert("Lỗi: " + (err.message || "Không thể tạo môn học. Kiểm tra DB."));
+                    return;
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('addSubjectModal')).hide();
+                const resList = await fetch('/api/data/subjects'); 
+                allSubjects = await resList.json(); 
+                filterSubjectsBySemester();
+            } catch (e) { alert("Lỗi kết nối server: " + e.message); }
         }
 
         function openEditSubjectModal() {
