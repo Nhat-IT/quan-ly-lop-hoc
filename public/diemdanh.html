@@ -592,7 +592,42 @@
         }
         async function sendImport(students) { 
             const subId = document.getElementById('subjectSelect').value; 
-            try { await fetch('/api/data/students/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject_id: subId, students }) }); alert("Xong!"); changeSubject(); } catch (e) { alert("Lỗi!"); }
+            const currentGroup = document.getElementById('groupSelect').value; // Lấy nhóm hiện tại
+            const btn = document.getElementById('btnImportExcel');
+            
+            // 1. Hiệu ứng đang tải (UX)
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            btn.disabled = true;
+
+            try { 
+                const res = await fetch('/api/data/students/import', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ 
+                        subject_id: subId, 
+                        students: students,
+                        learning_group: currentGroup // Gửi nhóm lên server
+                    }) 
+                }); 
+                
+                const d = await res.json(); 
+                
+                if (res.ok) {
+                    alert(d.message); 
+                    changeSubject(); // Tải lại danh sách ngay lập tức
+                } else {
+                    alert("Lỗi: " + d.message);
+                }
+            } catch (err) { 
+                alert("Lỗi kết nối server!"); 
+            } finally {
+                // 2. Trả lại nút bấm như cũ
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                // Xóa file trong input để lần sau chọn lại file cũ vẫn ăn sự kiện onchange
+                document.getElementById('fileInput').value = ''; 
+            }
         }
 
         function openAddStudentModal() { new bootstrap.Modal(document.getElementById('addStudentModal')).show(); }
