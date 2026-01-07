@@ -7,26 +7,26 @@ exports.getSubjects = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
-// Thêm môn (Có default_session)
+// 2. Thêm môn (CẬP NHẬT: Thêm default_group)
 exports.createSubject = async (req, res) => {
-    const { subject_name, teacher_name, semester, start_date, end_date, default_session } = req.body;
+    const { subject_name, teacher_name, semester, start_date, end_date, default_session, default_group } = req.body;
     try {
         await db.query(
-            'INSERT INTO subjects (subject_name, teacher_name, semester, start_date, end_date, default_session) VALUES (?, ?, ?, ?, ?, ?)', 
-            [subject_name, teacher_name, semester, start_date, end_date, default_session || 'Sáng']
+            'INSERT INTO subjects (subject_name, teacher_name, semester, start_date, end_date, default_session, default_group) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+            [subject_name, teacher_name, semester, start_date, end_date, default_session || 'Sáng', default_group || 'Nhóm 1']
         );
         res.status(201).json({ message: 'Thêm thành công' });
     } catch (error) { res.status(500).json({ message: 'Lỗi thêm môn' }); }
 };
 
-// Sửa môn (Có default_session)
+// 3. Sửa môn (CẬP NHẬT: Thêm default_group)
 exports.updateSubject = async (req, res) => {
     const { id } = req.params;
-    const { subject_name, teacher_name, start_date, end_date, default_session } = req.body;
+    const { subject_name, teacher_name, start_date, end_date, default_session, default_group } = req.body;
     try {
         await db.query(
-            'UPDATE subjects SET subject_name=?, teacher_name=?, start_date=?, end_date=?, default_session=? WHERE id=?', 
-            [subject_name, teacher_name, start_date, end_date, default_session, id]
+            'UPDATE subjects SET subject_name=?, teacher_name=?, start_date=?, end_date=?, default_session=?, default_group=? WHERE id=?', 
+            [subject_name, teacher_name, start_date, end_date, default_session, default_group, id]
         );
         res.json({ message: 'Cập nhật thành công' });
     } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật' }); }
