@@ -590,45 +590,55 @@
             };
             reader.readAsArrayBuffer(file); e.target.value = ''; 
         }
-        async function sendImport(students) { 
-            const subId = document.getElementById('subjectSelect').value; 
-            const currentGroup = document.getElementById('groupSelect').value; // Lấy nhóm hiện tại
-            const btn = document.getElementById('btnImportExcel');
-            
-            // 1. Hiệu ứng đang tải (UX)
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-            btn.disabled = true;
+        // 10. Import SV (ĐÃ SỬA: Cho phép chuyển nhóm nếu SV đã tồn tại)
+            exports.importStudents = async (req, res) => {
+                const { subject_id, students, learning_group } = req.body;
+                
+                // Nếu không chọn nhóm thì mặc định vào Nhóm 1
+                const targetGroup = learning_group || 'Nhóm 1';
 
-            try { 
-                const res = await fetch('/api/data/students/import', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ 
-                        subject_id: subId, 
-                        students: students,
-                        learning_group: currentGroup // Gửi nhóm lên server
-                    }) 
-                }); 
-                
-                const d = await res.json(); 
-                
-                if (res.ok) {
-                    alert(d.message); 
-                    changeSubject(); // Tải lại danh sách ngay lập tức
-                } else {
-                    alert("Lỗi: " + d.message);
+                const connection = await db.getConnection();
+                try {
+                    await connection.beginTransaction();
+                    for (const sv of students) {
+                        // 1. Tạo hoặc cập nhật thông tin sinh viên
+                        await connection.query(
+                            `INSERT INTO students (mssv, full_name, class_name) VALUES (?, ?, ?) 
+                            ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), class_name = VALUES(class_name)`, 
+                            [sv.mssv, sv.full_name, sv.class_name]
+                        );
+                        
+                        // 2. Lấy ID sinh viên
+                        const [rows] = await connection.query('SELECT id FROM students WHERE mssv = ?', [sv.mssv]);
+                        const studentId = rows[0].id;
+                        
+                        // 3. Kiểm tra xem sinh viên đã có trong môn học này chưa
+                        const [enrollment] = await connection.query('SELECT id FROM enrollments WHERE student_id = ? AND subject_id = ?', [studentId, subject_id]);
+                        
+                        if (enrollment.length === 0) {
+                            // Trường hợp 1: Chưa có -> Thêm mới vào nhóm đang chọn
+                            await connection.query(
+                                'INSERT INTO enrollments (student_id, subject_id, learning_group) VALUES (?, ?, ?)', 
+                                [studentId, subject_id, targetGroup]
+                            );
+                        } else {
+                            // Trường hợp 2: Đã có -> CẬP NHẬT sang nhóm đang chọn (Bỏ comment dòng này)
+                            await connection.query(
+                                'UPDATE enrollments SET learning_group = ? WHERE id = ?', 
+                                [targetGroup, enrollment[0].id]
+                            );
+                        }
+                    }
+                    await connection.commit();
+                    res.json({ message: `Đã nhập và cập nhật thành công ${students.length} sinh viên vào ${targetGroup}!` });
+                } catch (error) { 
+                    await connection.rollback(); 
+                    console.error(error);
+                    res.status(500).json({ message: 'Lỗi import: ' + error.message }); 
+                } finally { 
+                    connection.release(); 
                 }
-            } catch (err) { 
-                alert("Lỗi kết nối server!"); 
-            } finally {
-                // 2. Trả lại nút bấm như cũ
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                // Xóa file trong input để lần sau chọn lại file cũ vẫn ăn sự kiện onchange
-                document.getElementById('fileInput').value = ''; 
-            }
-        }
+            };
 
         function openAddStudentModal() { new bootstrap.Modal(document.getElementById('addStudentModal')).show(); }
         async function saveNewStudent() {
