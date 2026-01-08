@@ -573,26 +573,68 @@
         function updateCount() { document.getElementById('countAbsent').innerText = document.querySelectorAll('.student-row .form-check-input:checked').length; }
         
         function importClassList() { document.getElementById('fileInput').click(); }
+        // [ĐÃ SỬA LẠI] Xử lý file Excel thông minh (Tự tìm dòng tiêu đề và ghép tên)
         function handleFileSelect(e) { 
             const file = e.target.files[0]; if(!file) return; 
             const reader = new FileReader(); 
             reader.onload = function(evt) { 
                 const wb = XLSX.read(evt.target.result, {type: 'array'}); 
                 const ws = wb.Sheets[wb.SheetNames[0]]; 
-                const data = XLSX.utils.sheet_to_json(ws, {range: 0}); 
+                
+                // 1. Chuyển thành mảng 2 chiều để quét tiêu đề
+                const aoa = XLSX.utils.sheet_to_json(ws, {header: 1});
+                
+                // 2. Tìm dòng chứa "Mã SV" hoặc "MSSV"
+                let headerRowIndex = 0;
+                for(let i = 0; i < aoa.length; i++) {
+                    const row = aoa[i];
+                    if (row && row.some(cell => cell && cell.toString().trim().includes('Mã SV') || cell.toString().trim().includes('MSSV'))) {
+                        headerRowIndex = i; break;
+                    }
+                }
+
+                // 3. Đọc dữ liệu từ dòng tiêu đề tìm được
+                const data = XLSX.utils.sheet_to_json(ws, {range: headerRowIndex}); 
+
                 const students = data.map(row => {
-                    let mssv = row['MSSV'] || row['Mã SV'] || '';
-                    let name = row['Họ tên'] || row['Họ và tên'] || '';
+                    let mssv = row['MSSV'] || row['Mã SV'] || row['Mã số sinh viên'] || '';
+                    // Ghép tên từ 2 cột hoặc lấy từ 1 cột
+                    let fullName = '';
+                    if (row['Họ tên'] || row['Họ và tên']) fullName = row['Họ tên'] || row['Họ và tên'];
+                    else if (row['Họ SV'] && row['Tên SV']) fullName = row['Họ SV'] + ' ' + row['Tên SV']; // Ghép lại
+                    
                     let lop = row['Lớp'] || '25TH';
-                    return { mssv, full_name: name, class_name: lop };
-                }).filter(s => s.mssv);
-                if(students.length > 0 && confirm(`Import ${students.length} SV?`)) sendImport(students);
+                    return { mssv: mssv.toString().trim(), full_name: fullName.trim(), class_name: lop };
+                }).filter(s => s.mssv && s.full_name); // Lọc dòng rác
+
+                if(students.length > 0) {
+                    if(confirm(`Tìm thấy ${students.length} sinh viên. Nhập vào nhóm hiện tại?`)) sendImport(students);
+                } else {
+                    alert("Không tìm thấy dữ liệu! Hãy kiểm tra lại file (Cần cột: Mã SV, Họ SV, Tên SV, Lớp).");
+                }
             };
             reader.readAsArrayBuffer(file); e.target.value = ''; 
         }
+
         async function sendImport(students) { 
             const subId = document.getElementById('subjectSelect').value; 
-            try { await fetch('/api/data/students/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject_id: subId, students }) }); alert("Xong!"); changeSubject(); } catch (e) { alert("Lỗi!"); }
+            const currentGroup = document.getElementById('groupSelect').value; // Lấy nhóm đang chọn
+            const btn = document.getElementById('btnImportExcel');
+            
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            btn.disabled = true;
+
+            try { 
+                await fetch('/api/data/students/import', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ subject_id: subId, students: students, learning_group: currentGroup }) 
+                }); 
+                alert("Nhập danh sách thành công!"); 
+                changeSubject(); // Tải lại ngay lập tức
+            } catch (e) { alert("Lỗi: " + e.message); } 
+            finally { btn.innerHTML = oldText; btn.disabled = false; }
         }
 
         function openAddStudentModal() { new bootstrap.Modal(document.getElementById('addStudentModal')).show(); }

@@ -146,39 +146,39 @@ exports.getAttendance = async (req, res) => {
     } catch (error) { res.status(500).json([]); }
 };
 
-// 10. Import SV (ĐÃ SỬA: Bỏ comment để cập nhật nhóm cho SV cũ)
+// 10. Import SV (CẬP NHẬT QUAN TRỌNG: Logic nhập và chuyển nhóm)
 exports.importStudents = async (req, res) => {
     const { subject_id, students, learning_group } = req.body;
     
-    // Nếu không chọn nhóm thì mặc định vào Nhóm 1
+    // Mặc định nhóm 1 nếu không chọn
     const targetGroup = learning_group || 'Nhóm 1';
 
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
         for (const sv of students) {
-            // 1. Tạo/Update sinh viên
+            // 1. Thêm hoặc cập nhật thông tin sinh viên (MSSV, Tên, Lớp)
             await connection.query(
                 `INSERT INTO students (mssv, full_name, class_name) VALUES (?, ?, ?) 
                  ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), class_name = VALUES(class_name)`, 
                 [sv.mssv, sv.full_name, sv.class_name]
             );
             
-            // 2. Lấy ID sinh viên
+            // 2. Lấy ID của sinh viên vừa xử lý
             const [rows] = await connection.query('SELECT id FROM students WHERE mssv = ?', [sv.mssv]);
             const studentId = rows[0].id;
             
-            // 3. Tạo liên kết vào lớp
+            // 3. Kiểm tra xem sinh viên đã có trong danh sách môn học này chưa
             const [enrollment] = await connection.query('SELECT id FROM enrollments WHERE student_id = ? AND subject_id = ?', [studentId, subject_id]);
             
             if (enrollment.length === 0) {
-                // Chưa có thì thêm mới vào nhóm
+                // Chưa có -> Thêm mới vào nhóm đang chọn
                 await connection.query(
                     'INSERT INTO enrollments (student_id, subject_id, learning_group) VALUES (?, ?, ?)', 
                     [studentId, subject_id, targetGroup]
                 );
             } else {
-                // ĐÃ CÓ -> CẬP NHẬT NHÓM (Dòng này quan trọng để SV hiện ra ở nhóm mới)
+                // Đã có -> CẬP NHẬT sang nhóm đang chọn (Quan trọng để chuyển nhóm)
                 await connection.query(
                     'UPDATE enrollments SET learning_group = ? WHERE id = ?', 
                     [targetGroup, enrollment[0].id]
@@ -186,10 +186,10 @@ exports.importStudents = async (req, res) => {
             }
         }
         await connection.commit();
-        res.json({ message: `Đã nhập thành công ${students.length} sinh viên vào ${targetGroup}!` });
+        res.json({ message: `Đã xử lý thành công ${students.length} sinh viên vào ${targetGroup}!` });
     } catch (error) { 
         await connection.rollback(); 
-        console.error(error);
+        console.error("Lỗi import:", error);
         res.status(500).json({ message: 'Lỗi import: ' + error.message }); 
     } finally { 
         connection.release(); 
