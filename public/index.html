@@ -43,10 +43,16 @@
 
         .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
-        .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
+        
+        .edit-icon { 
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            opacity: 0; transition: opacity 0.2s; color: #0d6efd; 
+        }
         .editable-reason:hover .edit-icon { opacity: 1; }
 
-        .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
+        .delete-absence-icon {
+            opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem;
+        }
         .subject-col:hover .delete-absence-icon { opacity: 1; }
         .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
     </style>
@@ -57,8 +63,8 @@
             <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD QUẢN LÝ SINH VIÊN</span>
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
-                    <div id="semesterDisplay" class="fw-bold">HK: --</div>
-                    <div id="yearHeaderDisplay" class="text-warning fw-bold">Năm: --</div>
+                    <div id="semesterDisplay">Đang tải dữ liệu...</div>
+                    <div id="yearDisplay" class="fw-bold text-warning">--</div> 
                     <div>Lớp: 25TH01 - 25TH02</div>
                 </div>
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
@@ -137,10 +143,10 @@
                         <tr>
                             <th class="text-center" style="width: 5%;">STT</th>
                             <th class="text-start ps-3" style="width: 22%;">Sinh viên</th>
-                            <th class="text-start" style="width: 23%;">Môn học</th>
+                            <th class="text-start" style="width: 23%;">Môn học (Xóa vắng)</th>
                             <th class="text-center" style="width: 10%;">Ngày</th>
                             <th class="text-center" style="width: 8%;">Buổi</th>
-                            <th class="text-center" style="width: 12%;">Lý do</th>
+                            <th class="text-center" style="width: 12%;">Lý do (Sửa)</th>
                             <th class="text-center" style="width: 10%;">Minh chứng</th>
                             <th class="text-center" style="width: 10%;">Tổng Vắng</th>
                         </tr>
@@ -169,7 +175,6 @@
         let db = {}; 
         let allSubjectsInfo = [];
         
-        // Hàm format ngày chuẩn dd/mm/yyyy
         function formatDateVN(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
@@ -220,7 +225,6 @@
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
             sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
 
-            // Tự động chọn năm hiện tại
             const today = new Date();
             const year = today.getFullYear();
             const month = today.getMonth() + 1;
@@ -241,9 +245,8 @@
             const currentData = db[sem] || { total: 0, subjects: [], data: [] };
             const selYear = document.getElementById('yearFilter').value;
             
-            // Cập nhật Header Dashboard
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
-            document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Tất cả năm' : `Năm học: ${selYear}`;
+            document.getElementById('yearDisplay').innerText = selYear === 'all' ? 'Tất cả năm' : `Năm học: ${selYear}`;
             
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
@@ -288,21 +291,27 @@
             currentData.data.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
                 
-                // [SỬA LỖI] Lọc nghiêm ngặt: Nếu record không có năm học, coi như không khớp
+                // [FIXED] Logic lọc dữ liệu
                 const visibleDetails = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
-                    const matchYear = yearFilter === 'all' || d.school_year === yearFilter;
+                    
+                    // Logic Năm học:
+                    // 1. Nếu chọn "Tất cả" -> Luôn đúng
+                    // 2. Nếu record CÓ trường school_year -> Phải trùng với filter
+                    // 3. Nếu record KHÔNG CÓ trường school_year -> Coi như hợp lệ (để không bị ẩn mất dữ liệu cũ)
+                    const matchYear = yearFilter === 'all' || !d.school_year || d.school_year === yearFilter;
+                    
                     return matchSub && matchYear;
                 });
 
                 let total = visibleDetails.length;
                 let isWarning = total >= 2;
                 
+                // Nếu lọc theo trạng thái Warning nhưng total < 2 -> Bỏ qua
                 if (statusFilter === 'warning' && !isWarning) return;
-                // Nếu chọn năm cụ thể mà không có dữ liệu, ẩn dòng đó
-                if (total === 0 && yearFilter !== 'all') return;
-                // Nếu chọn tất cả năm mà không có dữ liệu (do lọc môn), ẩn luôn
-                if (total === 0 && subFilter !== 'all') return;
+                
+                // Nếu lọc Năm học cụ thể mà không còn dữ liệu -> Bỏ qua dòng này
+                if (total === 0) return;
 
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
 
@@ -380,6 +389,7 @@
                 });
                 if (res.ok) {
                     td.innerHTML = `<span class="reason-text">${text || '<i class="text-muted small">--</i>'}</span> <i class="fas fa-pen edit-icon"></i>`;
+                    // Refresh data in RAM (optional but good)
                     init(); 
                 } else alert("Lỗi lưu!");
             } catch(e) { alert("Lỗi kết nối!"); }
@@ -403,12 +413,19 @@
             const container = document.getElementById('warningSubjectList');
             container.innerHTML = '';
             if (!data || data.length === 0) return;
+            
+            const selYear = document.getElementById('yearFilter').value;
             const subCounts = {};
+            
             data.forEach(sv => {
                 const grouped = {};
-                sv.details.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
+                // [FIXED] Lọc chi tiết cho thẻ cảnh báo cũng phải theo Năm
+                const filteredDetails = sv.details.filter(d => selYear === 'all' || !d.school_year || d.school_year === selYear);
+                
+                filteredDetails.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
                 for (let sub in grouped) if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
             });
+
             if(Object.keys(subCounts).length === 0) {
                 container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
                 return;
