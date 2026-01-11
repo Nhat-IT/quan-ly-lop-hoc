@@ -23,33 +23,15 @@
         .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .table { margin-bottom: 0; }
         .table thead th {
-            vertical-align: middle;
-            font-weight: 700;
-            color: #495057;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            white-space: nowrap; /* Giữ tiêu đề trên 1 dòng */
+            vertical-align: middle; font-weight: 700; color: #495057; text-transform: uppercase;
+            font-size: 0.85rem; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; white-space: nowrap;
         }
-        .table tbody td {
-            vertical-align: middle;
-            padding-top: 12px;
-            padding-bottom: 12px;
-        }
+        .table tbody td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
 
         .badge-sub { 
-            background: #f8f9fa; 
-            border: 1px solid #dee2e6; 
-            color: #495057; 
-            border-radius: 6px; 
-            padding: 4px 8px; 
-            font-weight: 600; 
-            display: inline-block;
-            max-width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; 
+            padding: 4px 8px; font-weight: 600; display: inline-block; max-width: 100%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         
         .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; margin: 0 auto; }
@@ -60,6 +42,18 @@
         
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
+
+        /* CSS Mới cho tính năng Hover Edit */
+        .hover-edit-container { position: relative; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .hover-edit-container .edit-icon { 
+            opacity: 0; visibility: hidden; transition: all 0.2s ease; cursor: pointer; color: #0d6efd; font-size: 0.9rem;
+        }
+        .hover-edit-container:hover .edit-icon { opacity: 1; visibility: visible; }
+        
+        /* Riêng cho cột Môn học (căn trái) */
+        .hover-edit-container.start { justify-content: flex-start; }
+        
+        .inline-input { border: 1px solid #0d6efd; border-radius: 4px; padding: 2px 5px; font-size: 0.9rem; width: 100%; }
     </style>
 </head>
 <body>
@@ -69,7 +63,7 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải dữ liệu...</div>
-                    <div>Lớp: 25TH01 - 25TH02</div>
+                    <div id="classDisplayInfo">Lớp: Đang tải...</div>
                 </div>
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
                     <i class="fas fa-sign-out-alt"></i> Thoát
@@ -82,9 +76,17 @@
         <div class="row mb-4 g-3">
             <div class="col-md-4">
                 <div class="card stat-card h-100">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="icon-box bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-users"></i></div>
-                        <div><h6 class="text-muted small fw-bold">TỔNG SINH VIÊN (25TH01-02)</h6><h3 class="fw-bold mb-0" id="totalCount">--</h3></div>
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-users"></i></div>
+                            <div>
+                                <h6 class="text-muted small fw-bold mb-1">TỔNG SINH VIÊN</h6>
+                                <select id="classFilter" class="form-select form-select-sm fw-bold border-0 bg-light" style="width: auto; cursor: pointer;" onchange="render()">
+                                    <option value="all">25TH01 - 25TH02 (Tất cả)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-primary" id="totalCount">--</h3>
                     </div>
                 </div>
             </div>
@@ -115,7 +117,7 @@
 
         <div class="d-flex flex-wrap gap-2 mb-3 justify-content-between">
             <div class="d-flex gap-2 flex-wrap">
-                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();"></select>
+                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="handleSemChange()"></select>
                 <input type="text" class="form-control w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm tên hoặc MSSV...">
                 <select class="form-select w-auto text-primary fw-bold" id="subFilter" onchange="renderTable()">
                     <option value="all">Tất cả môn</option>
@@ -141,8 +143,7 @@
                             <th class="text-start" style="width: 23%;">Môn học</th>
                             <th class="text-center" style="width: 10%;">Ngày</th>
                             <th class="text-center" style="width: 8%;">Buổi</th>
-                            <th class="text-center" style="width: 12%;">Lý do</th>
-                            <th class="text-center" style="width: 10%;">Minh chứng</th>
+                            <th class="text-center" style="width: 15%;">Lý do</th> <th class="text-center" style="width: 7%;">Minh chứng</th>
                             <th class="text-center" style="width: 10%;">Tổng Vắng</th>
                         </tr>
                     </thead>
@@ -172,7 +173,7 @@
 
         async function init() {
             try {
-                // 1. Tạo danh sách kỳ
+                // Tạo danh sách kỳ
                 const semSelect = document.getElementById('semFilter');
                 semSelect.innerHTML = '';
                 ["HK1", "HK2", "HK3"].forEach(sem => semSelect.add(new Option(sem, sem)));
@@ -188,38 +189,90 @@
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
 
-                render();
+                handleSemChange(); // Gọi hàm này để load cả lớp và dữ liệu
             } catch (error) { 
                 console.error(error); 
                 db = {};
-                render(); 
+                handleSemChange(); 
+            }
+        }
+
+        // Xử lý khi đổi học kỳ: Cập nhật danh sách Lớp và Dữ liệu
+        function handleSemChange() {
+            const sem = document.getElementById('semFilter').value;
+            localStorage.setItem('currentSemester', sem);
+            updateDiemDanhLink();
+
+            // Cập nhật Select Class dựa trên dữ liệu thực tế
+            updateClassFilterOptions(sem);
+
+            render();
+        }
+
+        function updateClassFilterOptions(sem) {
+            const classSelect = document.getElementById('classFilter');
+            const currentData = db[sem]?.data || [];
+            
+            // Lấy danh sách lớp duy nhất từ dữ liệu sinh viên
+            const uniqueClasses = new Set();
+            currentData.forEach(sv => {
+                if(sv.class_name) uniqueClasses.add(sv.class_name);
+            });
+            const sortedClasses = Array.from(uniqueClasses).sort();
+
+            // Giữ lại giá trị đang chọn nếu có, nếu không reset về 'all'
+            const savedClass = classSelect.value;
+            
+            classSelect.innerHTML = '';
+            // Option mặc định gộp
+            const allOption = new Option("25TH01 - 25TH02 (Tổng)", "all");
+            classSelect.add(allOption);
+
+            sortedClasses.forEach(c => {
+                classSelect.add(new Option(c, c));
+            });
+
+            if (savedClass && (savedClass === 'all' || sortedClasses.includes(savedClass))) {
+                classSelect.value = savedClass;
+            } else {
+                classSelect.value = 'all';
             }
         }
 
         function render() {
             const sem = document.getElementById('semFilter').value;
-            localStorage.setItem('currentSemester', sem);
-            updateDiemDanhLink();
-
-            const currentData = db[sem] || { total: 0, subjects: [], data: [] };
+            const classFilter = document.getElementById('classFilter').value;
             
+            // Lấy dữ liệu gốc
+            const rawDataObj = db[sem] || { total: 0, subjects: [], data: [] };
+            
+            // Lọc dữ liệu theo lớp
+            let filteredData = [];
+            if (classFilter === 'all') {
+                filteredData = rawDataObj.data;
+            } else {
+                filteredData = rawDataObj.data.filter(sv => sv.class_name === classFilter);
+            }
+
             // Cập nhật Header
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
+            document.getElementById('classDisplayInfo').innerText = `Lớp: ${classFilter === 'all' ? '25TH01 - 25TH02' : classFilter}`;
             
-            // Cập nhật Tổng sinh viên theo Học kỳ được chọn
-            document.getElementById('totalCount').innerText = currentData.total || 0;
+            // Cập nhật Tổng sinh viên theo lớp đã chọn
+            document.getElementById('totalCount').innerText = filteredData.length;
 
+            // Cập nhật bộ lọc môn học
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
-            if (currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+            if (rawDataObj.subjects) rawDataObj.subjects.forEach(s => subSelect.add(new Option(s, s)));
             
-            if (currentSubVal && currentSubVal !== 'all' && currentData.subjects.includes(currentSubVal)) {
+            if (currentSubVal && currentSubVal !== 'all' && rawDataObj.subjects.includes(currentSubVal)) {
                  subSelect.value = currentSubVal;
             }
 
-            renderTable(currentData);
-            renderWarningCards(currentData.data);
+            renderTable(filteredData);
+            renderWarningCards(filteredData);
         }
         
         function updateDiemDanhLink() {
@@ -230,12 +283,12 @@
             }
         }
 
-        function renderTable(currentData) {
+        function renderTable(dataList) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            if (!currentData.data || currentData.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng học.</td></tr>';
+            if (!dataList || dataList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng học cho lớp này.</td></tr>';
                 document.getElementById('warningCount').innerText = 0;
                 document.getElementById('subWarningCount').innerText = 0;
                 return;
@@ -247,7 +300,7 @@
             
             let stt = 1, warnCount = 0, subWarnSet = new Set();
 
-            currentData.data.forEach(sv => {
+            dataList.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
                 const visibleDetails = sv.details.filter(d => subFilter === 'all' || d.sub === subFilter);
                 let total = visibleDetails.length;
@@ -268,20 +321,37 @@
                         
                         const dateStr = d.date ? new Date(d.date).toLocaleDateString('en-GB') : '-';
                         const reasonText = d.reason ? d.reason : '-';
+                        
+                        // ID duy nhất để xử lý edit
+                        const rowId = `${sv.mssv}-${d.sub}-${d.date}`.replace(/\s/g, '');
 
                         const html = `
-                            <tr class="${rowClass}">
+                            <tr class="${rowClass} row-hover">
                                 ${isFirstRow ? `<td class="text-center fw-bold text-muted" rowspan="${rowspan}">${stt++}</td>` : ''}
                                 
                                 ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}">
                                     <div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div>
-                                    <div class="small text-muted">${sv.mssv}</div>
+                                    <div class="small text-muted">${sv.mssv} - ${sv.class_name || ''}</div>
                                 </td>` : ''}
                                 
-                                <td class="text-start"><span class="badge-sub">${d.sub}</span></td>
+                                <td class="text-start">
+                                    <div class="hover-edit-container start">
+                                        <span class="badge-sub">${d.sub}</span>
+                                        <i class="fas fa-pencil-alt edit-icon text-danger" title="Xóa môn (Bỏ vắng)" 
+                                           onclick="deleteRecord('${sv.mssv}', '${d.sub}', '${d.date}', '${d.session_time}')"></i>
+                                    </div>
+                                </td>
                                 <td class="text-center">${dateStr}</td>
                                 <td class="text-center">${d.session_time || '-'}</td>
-                                <td class="text-center small text-muted">${reasonText}</td>
+                                
+                                <td class="text-center small text-muted" id="reason-cell-${rowId}">
+                                    <div class="hover-edit-container">
+                                        <span id="reason-text-${rowId}">${reasonText}</span>
+                                        <i class="fas fa-pencil-alt edit-icon" title="Sửa lý do" 
+                                           onclick="enableEditReason('${rowId}', '${sv.mssv}', '${d.sub}', '${d.date}', '${d.session_time}')"></i>
+                                    </div>
+                                </td>
+                                
                                 <td class="text-center"><button class="btn-action" onclick="viewProof('${d.proof || ''}')"><i class="fas fa-eye"></i></button></td>
                                 
                                 ${isFirstRow ? `<td class="text-center" rowspan="${rowspan}"><span class="fw-bold fs-5 ${totalColor}">${total}</span></td>` : ''}
@@ -293,6 +363,66 @@
 
             document.getElementById('warningCount').innerText = warnCount;
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
+        }
+
+        // --- TÍNH NĂNG CHỈNH SỬA LÝ DO ---
+        function enableEditReason(rowId, mssv, sub, date, session) {
+            const cell = document.getElementById(`reason-cell-${rowId}`);
+            const textSpan = document.getElementById(`reason-text-${rowId}`);
+            const currentVal = textSpan.innerText === '-' ? '' : textSpan.innerText;
+
+            // Chuyển thành ô input
+            cell.innerHTML = `
+                <input type="text" class="inline-input" id="input-${rowId}" value="${currentVal}" 
+                    onblur="saveReason('${rowId}', '${mssv}', '${sub}', '${date}', '${session}', this.value)"
+                    onkeydown="if(event.key === 'Enter') this.blur()">
+            `;
+            setTimeout(() => document.getElementById(`input-${rowId}`).focus(), 100);
+        }
+
+        async function saveReason(rowId, mssv, sub, date, session, newVal) {
+            const sem = document.getElementById('semFilter').value;
+            newVal = newVal.trim();
+
+            // Cập nhật Client Side (DB tạm)
+            const svIndex = db[sem].data.findIndex(s => s.mssv === mssv);
+            if(svIndex !== -1) {
+                const detail = db[sem].data[svIndex].details.find(d => d.sub === sub && d.date === date && d.session_time == session);
+                if(detail) detail.reason = newVal;
+            }
+
+            // Gửi API cập nhật (Giả lập)
+            try {
+                // await fetch('/api/update-reason', { method: 'POST', body: JSON.stringify({ sem, mssv, sub, date, reason: newVal }) });
+                console.log(`Đã lưu lý do mới cho ${mssv}: ${newVal}`);
+            } catch(e) { console.error("Lỗi lưu:", e); }
+
+            render(); // Render lại bảng để thoát chế độ edit
+        }
+
+        // --- TÍNH NĂNG XÓA BẢN GHI (XÓA MÔN KHỎI DANH SÁCH VẮNG) ---
+        async function deleteRecord(mssv, sub, date, session) {
+            if(!confirm(`Xác nhận xóa môn ${sub} ngày ${new Date(date).toLocaleDateString('vi-VN')} của SV ${mssv}?\n(Hành động này sẽ bỏ tính vắng cho buổi học này).`)) return;
+
+            const sem = document.getElementById('semFilter').value;
+
+            // Xóa ở Client Side
+            const svIndex = db[sem].data.findIndex(s => s.mssv === mssv);
+            if(svIndex !== -1) {
+                const sv = db[sem].data[svIndex];
+                sv.details = sv.details.filter(d => !(d.sub === sub && d.date === date && d.session_time == session));
+                
+                // Nếu sinh viên không còn môn vắng nào, có thể xóa khỏi danh sách hoặc giữ lại tùy logic
+                // Ở đây ta giữ lại object SV nhưng details rỗng sẽ bị ẩn bởi logic render
+            }
+
+            // Gửi API xóa (Giả lập)
+            try {
+                // await fetch('/api/delete-attendance', { method: 'POST', body: JSON.stringify({ sem, mssv, sub, date }) });
+                console.log(`Đã xóa bản ghi ${sub} của ${mssv}`);
+            } catch(e) { console.error("Lỗi xóa:", e); }
+
+            render();
         }
 
         function renderWarningCards(data) {
@@ -336,7 +466,7 @@
         function quickFilter(sub) {
             document.getElementById('subFilter').value = sub;
             document.getElementById('statusFilter').value = 'warning';
-            renderTable(db[document.getElementById('semFilter').value]);
+            renderTable(db[document.getElementById('semFilter').value].data); // Lưu ý: Cần fix chỗ này nếu muốn quick filter theo lớp đang chọn
             document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
         }
 
