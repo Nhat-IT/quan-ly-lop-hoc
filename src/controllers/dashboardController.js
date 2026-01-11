@@ -13,7 +13,7 @@ exports.getDashboardData = async (req, res) => {
             FROM attendance_records ar
             JOIN attendance_sessions ses ON ar.session_id = ses.id
             JOIN subjects s ON ses.subject_id = s.id
-            JOIN students st ON ar.student_id = st.student_id
+            JOIN students st ON ar.student_id = st.id
             WHERE ar.is_absent = 1
             ORDER BY ses.session_date DESC
         `;

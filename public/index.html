@@ -4,31 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Sinh Viên</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="auth.js"></script> 
+    
     <style>
         body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
         .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .stat-card:hover { transform: translateY(-3px); }
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+        
         .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .table thead th { background-color: #f8f9fa; vertical-align: middle; font-weight: 700; color: #495057; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
+        .table { margin-bottom: 0; }
+        .table thead th {
+            vertical-align: middle; font-weight: 700; color: #495057; text-transform: uppercase; font-size: 0.85rem;
+            background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; white-space: nowrap;
+        }
         .table tbody td { vertical-align: middle; padding: 12px; }
-        .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 4px 8px; font-weight: 600; display: inline-block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .badge-sub { 
+            background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 4px 8px; font-weight: 600; 
+            display: inline-block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        
         .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; margin: 0 auto; }
         .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
+        
         .alert-row { background-color: #fff5f5 !important; }
         .alert-row td:first-child { border-left: 5px solid #dc3545; }
+        
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
-        .editable-reason { position: relative; cursor: pointer; padding-right: 30px !important; }
+
+        .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
-        .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; color: #0d6efd; }
+        .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
         .editable-reason:hover .edit-icon { opacity: 1; }
+
         .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
         .subject-col:hover .delete-absence-icon { opacity: 1; }
+        .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -37,34 +57,72 @@
             <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD QUẢN LÝ SINH VIÊN</span>
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
-                    <div id="semesterDisplay">Đang tải...</div>
+                    <div id="semesterDisplay">Đang tải dữ liệu...</div>
                     <div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
                     <div>Lớp: 25TH01 - 25TH02</div>
                 </div>
-                <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()"><i class="fas fa-sign-out-alt"></i> Thoát</button>
+                <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Thoát
+                </button>
             </div>
         </div>
     </nav>
 
     <div class="container">
         <div class="row mb-4 g-3">
-            <div class="col-md-4"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center"><div class="icon-box bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-users"></i></div><div><h6 class="text-muted small fw-bold">TỔNG SINH VIÊN</h6><h3 class="fw-bold mb-0" id="totalCount">--</h3></div></div></div></div>
-            <div class="col-md-4"><div class="card stat-card h-100 border-start border-4 border-danger"><div class="card-body d-flex align-items-center"><div class="icon-box bg-danger bg-opacity-10 text-danger me-3"><i class="fas fa-user-times"></i></div><div><h6 class="text-danger small fw-bold">SV BỊ CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-danger" id="warningCount">--</h3></div></div></div></div>
-            <div class="col-md-4"><div class="card stat-card h-100 border-start border-4 border-warning"><div class="card-body d-flex align-items-center"><div class="icon-box bg-warning bg-opacity-10 text-warning-emphasis me-3"><i class="fas fa-book-dead"></i></div><div><h6 class="text-warning-emphasis small fw-bold">MÔN CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-warning-emphasis" id="subWarningCount">--</h3></div></div></div></div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary me-3"><i class="fas fa-users"></i></div>
+                        <div><h6 class="text-muted small fw-bold">TỔNG SINH VIÊN</h6><h3 class="fw-bold mb-0" id="totalCount">--</h3></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100 border-start border-4 border-danger">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="icon-box bg-danger bg-opacity-10 text-danger me-3"><i class="fas fa-user-times"></i></div>
+                        <div><h6 class="text-danger small fw-bold">SV BỊ CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-danger" id="warningCount">--</h3></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100 border-start border-4 border-warning">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="icon-box bg-warning bg-opacity-10 text-warning-emphasis me-3"><i class="fas fa-book-dead"></i></div>
+                        <div><h6 class="text-warning-emphasis small fw-bold">MÔN CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-warning-emphasis" id="subWarningCount">--</h3></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card mb-4 border-0 shadow-sm" id="detailSection">
             <div class="card-header bg-white fw-bold border-0 pt-3"><i class="fas fa-list-ul text-secondary me-2"></i> MÔN HỌC CÓ SINH VIÊN BỊ CẢNH BÁO</div>
-            <div class="card-body pt-0"><div class="row g-3" id="warningSubjectList"></div></div>
+            <div class="card-body pt-0">
+                <div class="row g-3" id="warningSubjectList"></div>
+            </div>
         </div>
 
         <div class="d-flex flex-wrap gap-2 mb-3 justify-content-between">
             <div class="d-flex gap-2 flex-wrap">
-                <select class="form-select w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()" style="min-width: 140px;"></select>
-                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select>
+                <select class="form-select w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()" style="min-width: 140px;">
+                    <option value="all">Tất cả năm</option>
+                </select>
+
+                <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();">
+                    <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
+                </select>
+                
                 <input type="text" class="form-control w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm tên hoặc MSSV...">
-                <select class="form-select w-auto text-primary fw-bold" id="subFilter" onchange="renderTable()"><option value="all">Tất cả môn</option></select>
-                <select class="form-select w-auto" id="statusFilter" onchange="renderTable()"><option value="all">Tất cả trạng thái</option><option value="warning" class="text-danger">🔴 Chỉ hiện Cảnh báo</option></select>
+                
+                <select class="form-select w-auto text-primary fw-bold" id="subFilter" onchange="renderTable()">
+                    <option value="all">Tất cả môn</option>
+                </select>
+                
+                <select class="form-select w-auto" id="statusFilter" onchange="renderTable()">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="warning" class="text-danger">🔴 Chỉ hiện Cảnh báo</option>
+                </select>
             </div>
             <div>
                 <button class="btn btn-success me-2" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
@@ -75,50 +133,103 @@
         <div class="table-card">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="mainTable">
-                    <thead><tr><th class="text-center" style="width: 5%;">STT</th><th class="text-start ps-3" style="width: 22%;">Sinh viên</th><th class="text-start" style="width: 23%;">Môn học (Xóa vắng)</th><th class="text-center" style="width: 10%;">Ngày</th><th class="text-center" style="width: 8%;">Buổi</th><th class="text-center" style="width: 12%;">Lý do (Sửa)</th><th class="text-center" style="width: 10%;">Minh chứng</th><th class="text-center" style="width: 10%;">Tổng Vắng</th></tr></thead>
-                    <tbody id="tableBody"><tr><td colspan="8" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr></tbody>
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 5%;">STT</th>
+                            <th class="text-start ps-3" style="width: 22%;">Sinh viên</th>
+                            <th class="text-start" style="width: 23%;">Môn học (Xóa vắng)</th>
+                            <th class="text-center" style="width: 10%;">Ngày</th>
+                            <th class="text-center" style="width: 8%;">Buổi</th>
+                            <th class="text-center" style="width: 12%;">Lý do (Sửa)</th>
+                            <th class="text-center" style="width: 10%;">Minh chứng</th>
+                            <th class="text-center" style="width: 10%;">Tổng Vắng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="8" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="proofModal"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-body text-center p-4"><img id="proofImg" class="img-fluid rounded shadow" style="display:none; max-height: 80vh;"><div id="noProof" class="py-5 text-muted" style="display:none"><h5>Không có minh chứng</h5></div></div></div></div></div>
+    <div class="modal fade" id="proofModal">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <img id="proofImg" class="img-fluid rounded shadow" style="display:none; max-height: 80vh;">
+                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có minh chứng</h5></div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let db = {}; let allSubjectsInfo = [];
-        function formatDateVN(d) { if(!d) return '-'; const date=new Date(d); return isNaN(date)?'-':`${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`; }
+        let db = {}; 
+        let allSubjectsInfo = [];
+        
+        function formatDateVN(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '-';
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
 
         async function init() {
             try {
+                const semSelect = document.getElementById('semFilter');
+                const savedSem = localStorage.getItem('currentSemester');
+                if (savedSem) semSelect.value = savedSem;
+
                 const res = await fetch('/api/data/dashboard');
+                if(!res.ok) throw new Error('Lỗi Server');
                 db = await res.json();
+
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
-                
-                const savedSem = localStorage.getItem('currentSemester') || 'HK1';
-                document.getElementById('semFilter').value = savedSem;
-                
-                populateYearFilter();
+
+                populateYearFilter(); 
                 render();
-            } catch (e) { console.error(e); }
+            } catch (error) { 
+                console.error(error); 
+                db = {};
+                render(); 
+            }
         }
 
+        // [ĐÃ SỬA] Lấy năm học từ Danh Sách Môn Học (allSubjectsInfo)
         function populateYearFilter() {
-            // Lấy năm học từ 2 nguồn: Dữ liệu Dashboard + Dữ liệu Môn học
-            const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]);
+            const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); // Năm mặc định
             
-            // 1. Quét từ danh sách môn học (để đảm bảo có đủ năm)
-            if (allSubjectsInfo) allSubjectsInfo.forEach(s => { if(s.school_year) years.add(s.school_year); });
+            // Quét từ danh sách môn học thực tế
+            if (allSubjectsInfo && allSubjectsInfo.length > 0) {
+                allSubjectsInfo.forEach(s => {
+                    if (s.school_year) years.add(s.school_year);
+                });
+            }
+
+            const sortedYears = Array.from(years).sort().reverse();
             
             const yearSelect = document.getElementById('yearFilter');
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
-            Array.from(years).sort().reverse().forEach(y => yearSelect.add(new Option(y, y)));
+            sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
 
-            // Tự động chọn năm hiện tại
-            const today = new Date(); const m = today.getMonth()+1; const y = today.getFullYear();
-            const curY = m>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
-            if(years.has(curY)) yearSelect.value = curY; else yearSelect.value = 'all';
+            // Tự động chọn năm hiện tại theo thời gian thực
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            const currentYear = month >= 8 ? `${year}-${year+1}` : `${year-1}-${year}`;
+
+            // Ưu tiên chọn năm hiện tại nếu có trong list
+            if (years.has(currentYear)) {
+                yearSelect.value = currentYear;
+            } else {
+                yearSelect.value = "all";
+            }
         }
 
         function render() {
@@ -131,21 +242,39 @@
             
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm học: Tất cả' : `Năm học: ${selYear}`;
-            document.getElementById('totalCount').innerText = currentData.total;
+            
+            document.getElementById('totalCount').innerText = currentData.total || 0;
 
             const subSelect = document.getElementById('subFilter');
+            const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
-            if(currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+            if (currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
+            if (currentSubVal && currentSubVal !== 'all' && currentData.subjects.includes(currentSubVal)) {
+                 subSelect.value = currentSubVal;
+            }
 
             renderTable(currentData);
             renderWarningCards(currentData.data);
         }
         
-        function updateDiemDanhLink() { document.getElementById('btnDiemDanh').href = `diemdanh.html?semester=${document.getElementById('semFilter').value}`; }
+        function updateDiemDanhLink() {
+            const sem = document.getElementById('semFilter').value;
+            const btnDiemDanh = document.getElementById('btnDiemDanh');
+            if (btnDiemDanh) {
+                btnDiemDanh.href = `diemdanh.html?semester=${sem}`;
+            }
+        }
 
         function renderTable(currentData) {
-            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
-            if (!currentData.data || currentData.data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Chưa có dữ liệu vắng.</td></tr>'; return; }
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (!currentData.data || currentData.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng học.</td></tr>';
+                document.getElementById('warningCount').innerText = 0;
+                document.getElementById('subWarningCount').innerText = 0;
+                return;
+            }
 
             const search = document.getElementById('search').value.toLowerCase();
             const subFilter = document.getElementById('subFilter').value;
@@ -157,78 +286,181 @@
             currentData.data.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
                 
-                // LỌC NGHIÊM NGẶT THEO NĂM HỌC
+                // [LỌC DỮ LIỆU]
                 const visibleDetails = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
-                    const matchYear = yearFilter === 'all' || d.school_year === yearFilter;
+                    
+                    // Logic: Nếu chọn năm cụ thể -> Chỉ hiện record có năm đó
+                    // Nếu dữ liệu cũ (d.school_year = null) -> Mặc định gán về '2024-2025' để lọc cho đúng
+                    const recordYear = d.school_year || '2024-2025';
+                    const matchYear = yearFilter === 'all' || recordYear === yearFilter;
+                    
                     return matchSub && matchYear;
                 });
 
                 let total = visibleDetails.length;
-                if (total === 0) return; // Không có dữ liệu của năm đó -> Ẩn luôn
-
                 let isWarning = total >= 2;
+                
                 if (statusFilter === 'warning' && !isWarning) return;
+                if (total === 0) return;
 
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
+
                 const rowClass = isWarning ? 'alert-row' : '';
                 const totalColor = isWarning ? 'text-danger' : 'text-success';
                 
-                visibleDetails.forEach((d, idx) => {
-                    const html = `<tr class="${rowClass}">
-                        ${idx===0 ? `<td class="text-center fw-bold text-muted" rowspan="${total}">${stt++}</td><td class="text-start ps-3" rowspan="${total}"><div class="fw-bold ${isWarning?'text-danger':''}">${sv.name}</div><div class="small text-muted">${sv.mssv}</div></td>` : ''}
-                        <td class="text-start subject-col"><span class="badge-sub">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
-                        <td class="text-center">${formatDateVN(d.date)}</td>
-                        <td class="text-center">${d.session_time||'-'}</td>
-                        <td class="text-center small editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${d.reason||'<i class="text-muted small">--</i>'}</span><i class="fas fa-pen edit-icon"></i></td>
-                        <td class="text-center"><button class="btn-action" onclick="viewProof('${d.proof||''}')"><i class="fas fa-eye"></i></button></td>
-                        ${idx===0 ? `<td class="text-center" rowspan="${total}"><span class="fw-bold fs-5 ${totalColor}">${total}</span></td>` : ''}
-                    </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', html);
-                });
+                if (visibleDetails.length > 0) {
+                    visibleDetails.forEach((d, idx) => {
+                        const isFirstRow = idx === 0;
+                        const rowspan = visibleDetails.length;
+                        
+                        const dateStr = formatDateVN(d.date);
+                        const reasonText = d.reason ? d.reason : '<i class="text-muted small">--</i>';
+
+                        const html = `
+                            <tr class="${rowClass}">
+                                ${isFirstRow ? `<td class="text-center fw-bold text-muted" rowspan="${rowspan}">${stt++}</td>` : ''}
+                                
+                                ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}">
+                                    <div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div>
+                                    <div class="small text-muted">${sv.mssv}</div>
+                                </td>` : ''}
+                                
+                                <td class="text-start subject-col">
+                                    <span class="badge-sub">${d.sub}</span>
+                                    <i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i>
+                                </td>
+                                
+                                <td class="text-center">${dateStr}</td>
+                                <td class="text-center">${d.session_time || '-'}</td>
+                                
+                                <td class="text-center small editable-reason" onclick="editReason(this, ${d.record_id})">
+                                    <span class="reason-text">${reasonText}</span>
+                                    <i class="fas fa-pen edit-icon"></i>
+                                </td>
+                                
+                                <td class="text-center"><button class="btn-action" onclick="viewProof('${d.proof || ''}')"><i class="fas fa-eye"></i></button></td>
+                                
+                                ${isFirstRow ? `<td class="text-center" rowspan="${rowspan}"><span class="fw-bold fs-5 ${totalColor}">${total}</span></td>` : ''}
+                            </tr>`;
+                        tbody.insertAdjacentHTML('beforeend', html);
+                    });
+                }
             });
+
             document.getElementById('warningCount').innerText = warnCount;
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
         }
 
-        // --- CÁC HÀM XỬ LÝ (SỬA LÝ DO, XÓA VẮNG...) ---
-        function editReason(td, id) {
-            if(td.querySelector('input')) return;
-            const txt = td.querySelector('.reason-text').innerText;
-            td.innerHTML = ''; 
-            const inp = document.createElement('input'); inp.className='form-control form-control-sm d-inline w-75'; inp.value = txt==='--'?'':txt;
-            const btn = document.createElement('button'); btn.className='btn btn-success btn-sm ms-1'; btn.innerHTML='<i class="fas fa-check"></i>';
-            btn.onclick = (e)=>{ e.stopPropagation(); saveReason(id, inp.value, td); };
-            td.append(inp, btn); inp.focus();
+        // --- HÀM SỬA LÝ DO ---
+        function editReason(td, recordId) {
+            if (td.querySelector('input')) return;
+            const span = td.querySelector('.reason-text');
+            const currentText = span.innerText === '--' ? '' : span.innerText;
+            td.innerHTML = '';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control form-control-sm d-inline-block w-75';
+            input.value = currentText;
+            
+            const btnSave = document.createElement('button');
+            btnSave.className = 'btn btn-success btn-sm ms-1';
+            btnSave.innerHTML = '<i class="fas fa-check"></i>';
+            btnSave.onclick = (e) => { e.stopPropagation(); saveReasonDB(recordId, input.value, td); };
+
+            td.appendChild(input); td.appendChild(btnSave); input.focus();
         }
-        async function saveReason(id, val, td) {
-            try { await fetch('/api/data/attendance/update-reason', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({record_id:id, reason:val}) });
-            td.innerHTML = `<span class="reason-text">${val||'<i class="text-muted small">--</i>'}</span><i class="fas fa-pen edit-icon"></i>`; init(); } catch(e){ alert('Lỗi'); }
+
+        async function saveReasonDB(id, text, td) {
+            try {
+                const res = await fetch('/api/data/attendance/update-reason', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ record_id: id, reason: text })
+                });
+                if (res.ok) {
+                    td.innerHTML = `<span class="reason-text">${text || '<i class="text-muted small">--</i>'}</span> <i class="fas fa-pen edit-icon"></i>`;
+                    init(); 
+                } else alert("Lỗi lưu!");
+            } catch(e) { alert("Lỗi kết nối!"); }
         }
-        async function removeAbsence(id, n, s) {
-            if(confirm(`Xóa vắng cho ${n} môn ${s}?`)) { await fetch('/api/data/attendance/remove-absence', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({record_id:id}) }); alert('Đã xóa!'); init(); }
-        }
-        function renderWarningCards(data) {
-            const c = document.getElementById('warningSubjectList'); c.innerHTML='';
-            if(!data) return;
-            const y = document.getElementById('yearFilter').value;
-            const counts={};
-            data.forEach(sv => { 
-                const gr={}; 
-                // Lọc chi tiết theo năm trước khi đếm cảnh báo
-                sv.details.filter(d => y==='all' || d.school_year===y).forEach(d => gr[d.sub] = (gr[d.sub]||0)+1); 
-                for(let k in gr) if(gr[k]>=2) counts[k]=(counts[k]||0)+1; 
-            });
-            if(Object.keys(counts).length===0) { c.innerHTML='<div class="col-12 text-center text-muted py-3">Không có cảnh báo trong năm này.</div>'; return; }
-            for(let [k,v] of Object.entries(counts)) {
-                const t = allSubjectsInfo.find(s=>s.subject_name===k)?.teacher_name || "Chưa cập nhật";
-                c.insertAdjacentHTML('beforeend', `<div class="col-md-4 col-sm-6"><div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${k}')"><div><div class="fw-bold text-dark">${k}</div><div class="small text-muted">GV: ${t}</div></div><div class="text-end"><span class="badge bg-danger">${v} SV</span></div></div></div>`);
+
+        // --- HÀM XÓA VẮNG ---
+        async function removeAbsence(id, name, sub) {
+            if (confirm(`HỦY VẮNG cho sinh viên:\n${name} - Môn: ${sub}?`)) {
+                try {
+                    const res = await fetch('/api/data/attendance/remove-absence', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ record_id: id })
+                    });
+                    if (res.ok) { alert("Đã xóa vắng!"); init(); } 
+                    else alert("Lỗi server!");
+                } catch(e) { alert("Lỗi kết nối!"); }
             }
         }
-        function quickFilter(s) { document.getElementById('subFilter').value=s; document.getElementById('statusFilter').value='warning'; renderTable(db[document.getElementById('semFilter').value]); }
-        function viewProof(u) { const m = new bootstrap.Modal(document.getElementById('proofModal')); const i = document.getElementById('proofImg'); const n = document.getElementById('noProof'); if(u && u.match(/\.(jpg|png|jpeg)$/i)) { i.src=u; i.style.display='block'; n.style.display='none'; } else { i.style.display='none'; n.style.display='block'; } m.show(); }
-        function exportExcel() { const wb = XLSX.utils.table_to_book(document.getElementById('mainTable'), {sheet:"Data"}); XLSX.writeFile(wb, "Report.xlsx"); }
-        function performLogout() { localStorage.removeItem('isLoggedIn'); window.location.href='/login/login.html'; }
+
+        function renderWarningCards(data) {
+            const container = document.getElementById('warningSubjectList');
+            container.innerHTML = '';
+            if (!data || data.length === 0) return;
+            const subCounts = {};
+            
+            // [FIXED] Filter warning cards by Year
+            const selYear = document.getElementById('yearFilter').value;
+
+            data.forEach(sv => {
+                const grouped = {};
+                // Lọc chi tiết trước khi đếm
+                const filteredDetails = sv.details.filter(d => {
+                    const recordYear = d.school_year || '2024-2025';
+                    return selYear === 'all' || recordYear === selYear;
+                });
+
+                filteredDetails.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
+                for (let sub in grouped) if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
+            });
+
+            if(Object.keys(subCounts).length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào trong năm này.</div>';
+                return;
+            }
+            for (let [subName, count] of Object.entries(subCounts)) {
+                const subInfo = allSubjectsInfo.find(s => s.subject_name === subName);
+                const teacherName = subInfo && subInfo.teacher_name ? subInfo.teacher_name : "Chưa cập nhật";
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="col-md-4 col-sm-6"><div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${subName}')">
+                        <div><div class="fw-bold text-dark">${subName}</div><div class="small text-muted"><i class="fas fa-chalkboard-teacher"></i> GV: ${teacherName}</div></div>
+                        <div class="text-end"><span class="badge bg-danger">${count} SV</span><div class="small text-danger mt-1 fw-bold" style="font-size: 0.7rem;">Xem <i class="fas fa-arrow-right"></i></div></div>
+                    </div></div>`);
+            }
+        }
+
+        function quickFilter(sub) {
+            document.getElementById('subFilter').value = sub;
+            document.getElementById('statusFilter').value = 'warning';
+            renderTable(db[document.getElementById('semFilter').value]);
+            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function viewProof(url) {
+            const modal = new bootstrap.Modal(document.getElementById('proofModal'));
+            const img = document.getElementById('proofImg');
+            const none = document.getElementById('noProof');
+            if (url && (url.match(/\.(jpeg|jpg|gif|png)$/i) || url.startsWith('blob:'))) {
+                img.src = url; img.style.display = 'block'; none.style.display = 'none';
+            } else {
+                img.style.display = 'none'; none.style.display = 'block';
+            }
+            modal.show();
+        }
+
+        function exportExcel() {
+            const table = document.getElementById("mainTable");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Báo Cáo"});
+            XLSX.writeFile(wb, "Danh_Sach_Canh_Bao.xlsx");
+        }
+
+        function performLogout() { localStorage.removeItem('isLoggedIn'); window.location.href = '/login/login.html'; }
 
         init();
     </script>
