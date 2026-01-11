@@ -63,8 +63,7 @@
             <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD QUẢN LÝ SINH VIÊN</span>
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
-                    <div id="semesterDisplay">Đang tải dữ liệu...</div>
-                    <div id="yearDisplay" class="fw-bold text-warning">--</div> 
+                    <div id="headerInfo">Đang tải...</div>
                     <div>Lớp: 25TH01 - 25TH02</div>
                 </div>
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
@@ -112,8 +111,7 @@
         <div class="d-flex flex-wrap gap-2 mb-3 justify-content-between">
             <div class="d-flex gap-2 flex-wrap">
                 <select class="form-select w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()" style="min-width: 140px;">
-                    <option value="all">Tất cả năm</option>
-                </select>
+                    </select>
 
                 <select class="form-select w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();">
                     <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
@@ -143,7 +141,7 @@
                         <tr>
                             <th class="text-center" style="width: 5%;">STT</th>
                             <th class="text-start ps-3" style="width: 22%;">Sinh viên</th>
-                            <th class="text-start" style="width: 23%;">Môn học (Xóa vắng)</th>
+                            <th class="text-start" style="width: 23%;">Môn học</th>
                             <th class="text-center" style="width: 10%;">Ngày</th>
                             <th class="text-center" style="width: 8%;">Buổi</th>
                             <th class="text-center" style="width: 12%;">Lý do (Sửa)</th>
@@ -174,7 +172,17 @@
     <script>
         let db = {}; 
         let allSubjectsInfo = [];
-        let rawDetails = []; 
+        
+        // [MỚI] Hàm format ngày chuẩn dd/mm/yyyy
+        function formatDateVN(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '-';
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
 
         async function init() {
             try {
@@ -189,7 +197,7 @@
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
 
-                populateYearFilter();
+                populateYearFilter(); // Điền năm học trước
                 render();
             } catch (error) { 
                 console.error(error); 
@@ -198,45 +206,40 @@
             }
         }
 
-        // [LOGIC MỚI] Tự động xác định năm học hiện tại
-        function getCurrentSchoolYear() {
-            const today = new Date();
-            const month = today.getMonth() + 1; // 1-12
-            const year = today.getFullYear();
-            
-            // Logic: Nếu tháng >= 8 (Tháng 8), thì năm học là Năm-Nay - Năm-Sau (VD: 8/2024 -> 2024-2025)
-            // Nếu tháng < 8, thì năm học là Năm-Ngoái - Năm-Nay (VD: 5/2025 -> 2024-2025)
-            if (month >= 8) {
-                return `${year}-${year + 1}`;
-            } else {
-                return `${year - 1}-${year}`;
-            }
-        }
-
         function populateYearFilter() {
-            // Gom tất cả năm học từ các học kỳ
-            const years = new Set();
+            // [ĐÃ SỬA] Luôn hiển thị danh sách các năm này
+            const defaultYears = ["2023-2024", "2024-2025", "2025-2026", "2026-2027"];
+            
+            // Lấy thêm năm từ dữ liệu thực tế (nếu có)
+            const dataYears = new Set();
             Object.values(db).forEach(group => {
                 if(group.data) {
                     group.data.forEach(sv => {
-                        sv.details.forEach(d => { if(d.school_year) years.add(d.school_year); });
+                        sv.details.forEach(d => { if(d.school_year) dataYears.add(d.school_year); });
                     });
                 }
             });
+
+            // Gộp lại và sắp xếp giảm dần
+            const allYears = new Set([...defaultYears, ...dataYears]);
+            const sortedYears = Array.from(allYears).sort().reverse();
             
             const yearSelect = document.getElementById('yearFilter');
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
-            
-            const sortedYears = Array.from(years).sort().reverse();
             sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
 
-            // [MỚI] Tự động chọn năm học hiện tại nếu có trong danh sách
-            const currentYear = getCurrentSchoolYear();
-            if (years.has(currentYear)) {
-                yearSelect.value = currentYear;
-            } else if (sortedYears.length > 0) {
-                // Nếu không có năm hiện tại (do chưa nhập liệu), chọn năm mới nhất
-                yearSelect.value = sortedYears[0];
+            // Tự động chọn năm hiện tại theo thời gian thực
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+            let targetYear = "";
+            
+            // Logic: Tháng 8-12 là học kỳ 1 của năm (VD: 2025-2026), Tháng 1-7 là học kỳ 2 (vẫn 2025-2026)
+            if (currentMonth >= 8) targetYear = `${currentYear}-${currentYear + 1}`;
+            else targetYear = `${currentYear - 1}-${currentYear}`;
+
+            // Nếu năm đó có trong list thì chọn, không thì chọn "Tất cả"
+            if (sortedYears.includes(targetYear)) {
+                yearSelect.value = targetYear;
             } else {
                 yearSelect.value = "all";
             }
@@ -248,16 +251,14 @@
             updateDiemDanhLink();
 
             const currentData = db[sem] || { total: 0, subjects: [], data: [] };
-            
-            // Cập nhật Header
-            document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             const selYear = document.getElementById('yearFilter').value;
-            // Hiển thị năm đang chọn hoặc "Tất cả"
-            document.getElementById('yearDisplay').innerText = selYear === 'all' ? 'Tất cả năm học' : `Năm học: ${selYear}`;
+            
+            // [ĐÃ SỬA] Hiển thị Năm học lên Header (Dữ liệu: HK2 - Năm học: 2025-2026)
+            const yearText = selYear === 'all' ? 'Tất cả năm' : `Năm học: ${selYear}`;
+            document.getElementById('headerInfo').innerHTML = `<strong>Dữ liệu: ${sem}</strong> &nbsp;|&nbsp; <strong>${yearText}</strong>`;
             
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
-            // Cập nhật bộ lọc môn
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
@@ -302,7 +303,8 @@
                 // Lọc chi tiết theo Môn và Năm học
                 const visibleDetails = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
-                    const matchYear = yearFilter === 'all' || d.school_year === yearFilter;
+                    // Nếu DB chưa có school_year thì coi như khớp với tất cả
+                    const matchYear = yearFilter === 'all' || !d.school_year || d.school_year === yearFilter;
                     return matchSub && matchYear;
                 });
 
@@ -322,13 +324,8 @@
                         const isFirstRow = idx === 0;
                         const rowspan = visibleDetails.length;
                         
-                        // Định dạng ngày dd/mm/yyyy
-                        let dateStr = '-';
-                        if(d.date) {
-                             const dateObj = new Date(d.date);
-                             if(!isNaN(dateObj)) dateStr = `${String(dateObj.getDate()).padStart(2,'0')}/${String(dateObj.getMonth()+1).padStart(2,'0')}/${dateObj.getFullYear()}`;
-                        }
-                        
+                        // [ĐÃ SỬA] Dùng hàm format ngày chuẩn dd/mm/yyyy
+                        const dateStr = formatDateVN(d.date);
                         const reasonText = d.reason ? d.reason : '<i class="text-muted small">--</i>';
 
                         const html = `
@@ -394,7 +391,6 @@
                 });
                 if (res.ok) {
                     td.innerHTML = `<span class="reason-text">${text || '<i class="text-muted small">--</i>'}</span> <i class="fas fa-pen edit-icon"></i>`;
-                    // Refresh data in RAM (optional but good)
                     init(); 
                 } else alert("Lỗi lưu!");
             } catch(e) { alert("Lỗi kết nối!"); }
