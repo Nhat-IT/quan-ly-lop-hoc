@@ -43,16 +43,10 @@
 
         .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
-        
-        .edit-icon { 
-            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-            opacity: 0; transition: opacity 0.2s; color: #0d6efd; 
-        }
+        .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
         .editable-reason:hover .edit-icon { opacity: 1; }
 
-        .delete-absence-icon {
-            opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem;
-        }
+        .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
         .subject-col:hover .delete-absence-icon { opacity: 1; }
         .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
     </style>
@@ -64,7 +58,7 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải dữ liệu...</div>
-                    <div id="yearDisplay" class="fw-bold text-warning">--</div> 
+                    <div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
                     <div>Lớp: 25TH01 - 25TH02</div>
                 </div>
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
@@ -175,6 +169,7 @@
         let db = {}; 
         let allSubjectsInfo = [];
         
+        // Hàm format ngày chuẩn dd/mm/yyyy
         function formatDateVN(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
@@ -207,33 +202,22 @@
             }
         }
 
+        // [LOGIC MỚI] Lấy năm từ DB môn học để điền vào dropdown
         function populateYearFilter() {
-            const defaultYears = ["2023-2024", "2024-2025", "2025-2026", "2026-2027"];
-            const dataYears = new Set();
-            Object.values(db).forEach(group => {
-                if(group.data) {
-                    group.data.forEach(sv => {
-                        sv.details.forEach(d => { if(d.school_year) dataYears.add(d.school_year); });
-                    });
-                }
-            });
-
-            const allYears = new Set([...defaultYears, ...dataYears]);
-            const sortedYears = Array.from(allYears).sort().reverse();
+            // Lấy tất cả năm học duy nhất từ danh sách Môn học (allSubjectsInfo)
+            // Vì "bên điểm danh tạo môn học của năm nào thì bên này hiện ra năm đó"
+            const dbYears = new Set(allSubjectsInfo.map(s => s.school_year).filter(y => y));
             
             const yearSelect = document.getElementById('yearFilter');
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
+            
+            // Sắp xếp năm giảm dần
+            const sortedYears = Array.from(dbYears).sort().reverse();
             sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
 
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth() + 1;
-            const currentYear = month >= 8 ? `${year}-${year+1}` : `${year-1}-${year}`;
-
-            if (sortedYears.includes(currentYear)) {
-                yearSelect.value = currentYear;
-            } else {
-                yearSelect.value = "all";
+            // Mặc định chọn năm mới nhất (nếu có)
+            if (sortedYears.length > 0) {
+                yearSelect.value = sortedYears[0];
             }
         }
 
@@ -245,11 +229,13 @@
             const currentData = db[sem] || { total: 0, subjects: [], data: [] };
             const selYear = document.getElementById('yearFilter').value;
             
+            // [HIỂN THỊ] Năm học lên Header
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
-            document.getElementById('yearDisplay').innerText = selYear === 'all' ? 'Tất cả năm' : `Năm học: ${selYear}`;
+            document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm học: Tất cả' : `Năm học: ${selYear}`;
             
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
+            // Cập nhật bộ lọc môn
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
@@ -291,15 +277,13 @@
             currentData.data.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
                 
-                // [FIXED] Logic lọc dữ liệu
+                // [LỌC CHUẨN] Chỉ lấy chi tiết vắng khớp với Năm học đang chọn
                 const visibleDetails = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
                     
-                    // Logic Năm học:
-                    // 1. Nếu chọn "Tất cả" -> Luôn đúng
-                    // 2. Nếu record CÓ trường school_year -> Phải trùng với filter
-                    // 3. Nếu record KHÔNG CÓ trường school_year -> Coi như hợp lệ (để không bị ẩn mất dữ liệu cũ)
-                    const matchYear = yearFilter === 'all' || !d.school_year || d.school_year === yearFilter;
+                    // Nếu chọn "all" -> Đúng
+                    // Nếu chọn năm cụ thể -> Trường school_year trong data phải trùng khớp hoàn toàn
+                    const matchYear = yearFilter === 'all' || d.school_year === yearFilter;
                     
                     return matchSub && matchYear;
                 });
@@ -307,10 +291,9 @@
                 let total = visibleDetails.length;
                 let isWarning = total >= 2;
                 
-                // Nếu lọc theo trạng thái Warning nhưng total < 2 -> Bỏ qua
                 if (statusFilter === 'warning' && !isWarning) return;
                 
-                // Nếu lọc Năm học cụ thể mà không còn dữ liệu -> Bỏ qua dòng này
+                // Nếu sau khi lọc năm mà không còn buổi vắng nào -> Ẩn sinh viên này luôn
                 if (total === 0) return;
 
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
@@ -389,7 +372,6 @@
                 });
                 if (res.ok) {
                     td.innerHTML = `<span class="reason-text">${text || '<i class="text-muted small">--</i>'}</span> <i class="fas fa-pen edit-icon"></i>`;
-                    // Refresh data in RAM (optional but good)
                     init(); 
                 } else alert("Lỗi lưu!");
             } catch(e) { alert("Lỗi kết nối!"); }
@@ -413,21 +395,21 @@
             const container = document.getElementById('warningSubjectList');
             container.innerHTML = '';
             if (!data || data.length === 0) return;
-            
-            const selYear = document.getElementById('yearFilter').value;
             const subCounts = {};
+            // [FIXED] Lọc dữ liệu thống kê theo Năm học hiện tại
+            const selYear = document.getElementById('yearFilter').value;
             
             data.forEach(sv => {
                 const grouped = {};
-                // [FIXED] Lọc chi tiết cho thẻ cảnh báo cũng phải theo Năm
-                const filteredDetails = sv.details.filter(d => selYear === 'all' || !d.school_year || d.school_year === selYear);
+                // Chỉ đếm các môn có trong năm học đang chọn
+                const visibleDetails = sv.details.filter(d => selYear === 'all' || d.school_year === selYear);
                 
-                filteredDetails.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
+                visibleDetails.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
                 for (let sub in grouped) if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
             });
 
             if(Object.keys(subCounts).length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào.</div>';
+                container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Hiện tại không có cảnh báo nào trong năm này.</div>';
                 return;
             }
             for (let [subName, count] of Object.entries(subCounts)) {
