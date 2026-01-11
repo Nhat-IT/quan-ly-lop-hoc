@@ -19,7 +19,6 @@
         .stat-card:hover { transform: translateY(-3px); }
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
         
-        /* CSS BẢNG */
         .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .table { margin-bottom: 0; }
         .table thead th {
@@ -42,7 +41,6 @@
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
 
-        /* [MỚI] Style cho phần chỉnh sửa trực tiếp */
         .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
         
@@ -176,11 +174,10 @@
     <script>
         let db = {}; 
         let allSubjectsInfo = [];
-        let rawDetails = []; // Chứa danh sách chi tiết phẳng để lọc
+        let rawDetails = []; 
 
         async function init() {
             try {
-                // 1. Load các học kỳ
                 const semSelect = document.getElementById('semFilter');
                 const savedSem = localStorage.getItem('currentSemester');
                 if (savedSem) semSelect.value = savedSem;
@@ -201,6 +198,21 @@
             }
         }
 
+        // [LOGIC MỚI] Tự động xác định năm học hiện tại
+        function getCurrentSchoolYear() {
+            const today = new Date();
+            const month = today.getMonth() + 1; // 1-12
+            const year = today.getFullYear();
+            
+            // Logic: Nếu tháng >= 8 (Tháng 8), thì năm học là Năm-Nay - Năm-Sau (VD: 8/2024 -> 2024-2025)
+            // Nếu tháng < 8, thì năm học là Năm-Ngoái - Năm-Nay (VD: 5/2025 -> 2024-2025)
+            if (month >= 8) {
+                return `${year}-${year + 1}`;
+            } else {
+                return `${year - 1}-${year}`;
+            }
+        }
+
         function populateYearFilter() {
             // Gom tất cả năm học từ các học kỳ
             const years = new Set();
@@ -214,7 +226,20 @@
             
             const yearSelect = document.getElementById('yearFilter');
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
-            Array.from(years).sort().reverse().forEach(y => yearSelect.add(new Option(y, y)));
+            
+            const sortedYears = Array.from(years).sort().reverse();
+            sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
+
+            // [MỚI] Tự động chọn năm học hiện tại nếu có trong danh sách
+            const currentYear = getCurrentSchoolYear();
+            if (years.has(currentYear)) {
+                yearSelect.value = currentYear;
+            } else if (sortedYears.length > 0) {
+                // Nếu không có năm hiện tại (do chưa nhập liệu), chọn năm mới nhất
+                yearSelect.value = sortedYears[0];
+            } else {
+                yearSelect.value = "all";
+            }
         }
 
         function render() {
@@ -227,7 +252,8 @@
             // Cập nhật Header
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             const selYear = document.getElementById('yearFilter').value;
-            document.getElementById('yearDisplay').innerText = selYear === 'all' ? '' : `Năm học: ${selYear}`;
+            // Hiển thị năm đang chọn hoặc "Tất cả"
+            document.getElementById('yearDisplay').innerText = selYear === 'all' ? 'Tất cả năm học' : `Năm học: ${selYear}`;
             
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
@@ -296,7 +322,13 @@
                         const isFirstRow = idx === 0;
                         const rowspan = visibleDetails.length;
                         
-                        const dateStr = d.date ? new Date(d.date).toLocaleDateString('en-GB') : '-';
+                        // Định dạng ngày dd/mm/yyyy
+                        let dateStr = '-';
+                        if(d.date) {
+                             const dateObj = new Date(d.date);
+                             if(!isNaN(dateObj)) dateStr = `${String(dateObj.getDate()).padStart(2,'0')}/${String(dateObj.getMonth()+1).padStart(2,'0')}/${dateObj.getFullYear()}`;
+                        }
+                        
                         const reasonText = d.reason ? d.reason : '<i class="text-muted small">--</i>';
 
                         const html = `
@@ -376,7 +408,7 @@
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ record_id: id })
                     });
-                    if (res.ok) { alert("Đã xóa vắng!"); init(); } // Reload lại bảng
+                    if (res.ok) { alert("Đã xóa vắng!"); init(); } 
                     else alert("Lỗi server!");
                 } catch(e) { alert("Lỗi kết nối!"); }
             }
