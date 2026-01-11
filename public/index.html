@@ -16,7 +16,7 @@
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
         
-        /* Layout Cards Thống kê (Giữ nguyên style gốc) */
+        /* --- STYLE CARD THỐNG KÊ (LAYOUT GỐC) --- */
         .stat-card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: none; transition: transform 0.2s; cursor: pointer; }
         .stat-card:hover { transform: translateY(-5px); }
         .icon-shape { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
@@ -25,16 +25,14 @@
         .bg-gradient-danger { background: linear-gradient(45deg, #e74a3b, #be2617); }
         .bg-gradient-success { background: linear-gradient(45deg, #1cc88a, #13855c); }
 
-        /* Table Style */
+        /* --- TABLE STYLE --- */
         .table-card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: none; }
         .table thead th { background-color: #f8f9fa; border-bottom: 2px solid #e3e6f0; color: #5a5c69; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
         .table td { vertical-align: middle; font-size: 0.95rem; }
 
-        /* --- TÍNH NĂNG CHỈNH SỬA TRỰC TIẾP --- */
-        
-        /* 1. Sửa Lý do */
+        /* --- TÍNH NĂNG SỬA TRỰC TIẾP --- */
         .editable-cell { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
-        .editable-cell:hover { background-color: #fff3cd; } /* Hover màu vàng nhạt */
+        .editable-cell:hover { background-color: #fff3cd; }
         
         .edit-icon { 
             position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
@@ -42,7 +40,7 @@
         }
         .editable-cell:hover .edit-icon { opacity: 1; }
 
-        /* 2. Xóa vắng (Ở cột Môn học) */
+        /* --- TÍNH NĂNG XÓA VẮNG --- */
         .subject-cell { position: relative; }
         .delete-icon {
             opacity: 0; transition: all 0.2s; cursor: pointer; color: #e74a3b; margin-left: 8px;
@@ -50,7 +48,6 @@
         .subject-cell:hover .delete-icon { opacity: 1; }
         .subject-cell:hover .delete-icon:hover { transform: scale(1.2); }
 
-        /* Animation */
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -139,15 +136,12 @@
                     <select class="form-select form-select-sm fw-bold border-secondary text-primary" id="yearFilter" onchange="filterData()" style="width: 140px;">
                         <option value="all">Tất cả năm</option>
                     </select>
-
                     <select class="form-select form-select-sm fw-bold border-primary" id="semFilter" onchange="filterData()" style="width: 100px;">
                         <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
                     </select>
-                    
                     <select class="form-select form-select-sm" id="subFilter" onchange="filterData()" style="width: 180px;">
                         <option value="all">Tất cả môn</option>
                     </select>
-                    
                     <button class="btn btn-success btn-sm fw-bold" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất</button>
                 </div>
             </div>
@@ -181,25 +175,16 @@
         let rawData = [];
 
         async function init() {
-            // Check login
-            if (!localStorage.getItem('isLoggedIn')) {
-                window.location.href = '/login/login.html';
-                return;
-            }
-            // Set default filters (ví dụ lấy năm hiện tại)
+            // [ĐÃ SỬA] Xóa đoạn kiểm tra isLoggedIn gây lỗi loop
+            // Thay vào đó chỉ load dữ liệu, việc bảo vệ trang do auth.js (nếu có) lo.
             await loadData();
         }
 
         async function loadData() {
             try {
-                // Gọi API lấy dữ liệu dashboard (Cần backend hỗ trợ trả về list đầy đủ)
-                // Lưu ý: Route /api/data/dashboard cần trả về list chi tiết
                 const res = await fetch('/api/data/dashboard'); 
                 const data = await res.json();
-                
-                // Xử lý dữ liệu trả về (Nếu backend trả về object {details: []} thì dùng data.details)
                 rawData = Array.isArray(data) ? data : (data.details || []); 
-                
                 updateStats();
                 populateFilters();
                 renderTable();
@@ -207,23 +192,19 @@
         }
 
         function updateStats() {
-            // Tính toán sơ bộ từ rawData (nếu backend chưa tính sẵn)
             document.getElementById('statTotal').innerText = rawData.length;
             const warningCount = rawData.filter(r => r.absent_count >= 2 && r.absent_count < 3).length;
             const dangerCount = rawData.filter(r => r.absent_count >= 3).length;
-            
             document.getElementById('statWarning').innerText = warningCount;
             document.getElementById('statDanger').innerText = dangerCount;
         }
 
         function populateFilters() {
-            // 1. Năm học
             const yearSet = new Set(rawData.map(r => r.school_year).filter(y => y));
             const yearSelect = document.getElementById('yearFilter');
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
             Array.from(yearSet).sort().reverse().forEach(y => yearSelect.add(new Option(y, y)));
 
-            // 2. Môn học
             const subFilter = document.getElementById('subFilter');
             subFilter.innerHTML = '<option value="all">Tất cả môn</option>';
             const subjects = [...new Set(rawData.map(r => r.subject_name))];
@@ -242,7 +223,7 @@
 
             const filtered = rawData.filter(item => {
                 const matchYear = (selYear === 'all') || (item.school_year === selYear);
-                const matchSem = (item.semester === selSem); // Đảm bảo backend trả về field 'semester'
+                const matchSem = (item.semester === selSem);
                 const matchSub = (selSub === 'all') || (item.subject_name === selSub);
                 return matchYear && matchSem && matchSub;
             });
@@ -253,7 +234,6 @@
             }
 
             filtered.forEach((row, index) => {
-                // Format ngày dd/mm/yyyy
                 let dateStr = row.session_date;
                 try {
                     const d = new Date(row.session_date);
@@ -266,25 +246,21 @@
                     <td class="fw-bold text-primary">${row.mssv}</td>
                     <td class="fw-bold">${row.full_name}</td>
                     <td>${row.class_name}</td>
-                    
                     <td class="subject-cell">
                         ${row.subject_name}
                         <i class="fas fa-trash-alt delete-icon" title="Hủy vắng cho SV này" 
                            onclick="removeAbsence(${row.record_id}, '${row.full_name}', '${row.subject_name}')"></i>
                     </td>
-                    
                     <td class="text-center">
                         <span class="badge ${row.absent_count >= 3 ? 'bg-danger' : 'bg-warning'} rounded-pill px-3">
                             ${row.absent_count} buổi
                         </span>
                     </td>
                     <td>${dateStr} <br><small class="text-muted">(${row.session_time})</small></td>
-                    
                     <td class="editable-cell" onclick="editReason(this, ${row.record_id})">
                         <span class="reason-text">${row.reason || '<i class="text-muted small">--</i>'}</span>
                         <i class="fas fa-pen edit-icon" title="Sửa lý do"></i>
                     </td>
-                    
                     <td class="text-center">
                         ${row.proof_image_url ? 
                             `<button class="btn btn-sm btn-outline-primary rounded-circle" onclick="viewProof('${row.proof_image_url}')"><i class="fas fa-image"></i></button>` : 
@@ -295,51 +271,38 @@
             });
         }
 
-        // --- CHỨC NĂNG SỬA LÝ DO ---
+        // --- SỬA LÝ DO ---
         function editReason(td, recordId) {
-            if (td.querySelector('input')) return; // Đang sửa thì thôi
-
+            if (td.querySelector('input')) return;
             const span = td.querySelector('.reason-text');
             const currentText = span.innerText === '--' ? '' : span.innerText;
-            
-            td.innerHTML = ''; // Xóa nội dung cũ
-
-            // Input
+            td.innerHTML = ''; 
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'form-control form-control-sm d-inline-block';
             input.style.width = '120px';
             input.value = currentText;
-            
-            // Nút Lưu
             const btnSave = document.createElement('button');
             btnSave.className = 'btn btn-success btn-sm ms-1';
             btnSave.innerHTML = '<i class="fas fa-check"></i>';
             btnSave.onclick = (e) => { e.stopPropagation(); saveReasonDB(recordId, input.value, td); };
-
-            td.appendChild(input);
-            td.appendChild(btnSave);
-            input.focus();
+            td.appendChild(input); td.appendChild(btnSave); input.focus();
         }
 
         async function saveReasonDB(id, text, td) {
             try {
-                // Gọi API update (Bạn cần đảm bảo backend có route này)
                 const res = await fetch('/api/data/attendance/update-reason', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ record_id: id, reason: text })
                 });
-                
                 if (res.ok) {
                     td.innerHTML = `<span class="reason-text">${text || '<i class="text-muted small">--</i>'}</span> <i class="fas fa-pen edit-icon"></i>`;
-                    // Update data gốc
-                    const item = rawData.find(r => r.record_id === id);
-                    if(item) item.reason = text;
+                    const item = rawData.find(r => r.record_id === id); if(item) item.reason = text;
                 } else alert("Lỗi lưu!");
             } catch(e) { alert("Lỗi kết nối!"); }
         }
 
-        // --- CHỨC NĂNG XÓA VẮNG ---
+        // --- XÓA VẮNG ---
         async function removeAbsence(id, name, sub) {
             if (confirm(`Bạn có chắc muốn HỦY VẮNG buổi này cho sinh viên:\n${name} - Môn: ${sub}?`)) {
                 try {
@@ -347,23 +310,14 @@
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ record_id: id })
                     });
-                    
-                    if (res.ok) {
-                        alert("Đã xóa vắng thành công!");
-                        // Load lại dữ liệu
-                        await loadData();
-                    } else alert("Lỗi server!");
+                    if (res.ok) { alert("Đã xóa vắng thành công!"); rawData = rawData.filter(r => r.record_id !== id); filterData(); } else alert("Lỗi server!");
                 } catch(e) { alert("Lỗi kết nối!"); }
             }
         }
 
         function viewProof(url) {
-            const modal = new bootstrap.Modal(document.getElementById('proofModal'));
-            const img = document.getElementById('proofImg');
-            const none = document.getElementById('noProof');
-            if (url) { img.src = url; img.style.display = 'block'; none.style.display = 'none'; } 
-            else { img.style.display = 'none'; none.style.display = 'block'; }
-            modal.show();
+            new bootstrap.Modal(document.getElementById('proofModal')).show();
+            document.getElementById('proofImg').src = url;
         }
 
         function exportExcel() {
@@ -372,7 +326,8 @@
             XLSX.writeFile(wb, "Danh_Sach_Canh_Bao.xlsx");
         }
 
-        function logout() { localStorage.removeItem('isLoggedIn'); window.location.href = '/login/login.html'; }
+        // [ĐÃ SỬA] Logout xóa sạch data
+        function logout() { localStorage.clear(); window.location.href = '/login/login.html'; }
 
         init();
     </script>
