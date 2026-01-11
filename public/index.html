@@ -169,7 +169,6 @@
         let db = {}; 
         let allSubjectsInfo = [];
         
-        // Hàm format ngày chuẩn dd/mm/yyyy
         function formatDateVN(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
@@ -202,22 +201,34 @@
             }
         }
 
-        // [LOGIC MỚI] Lấy năm từ DB môn học để điền vào dropdown
+        // [ĐÃ SỬA] Lấy năm học từ Danh Sách Môn Học (allSubjectsInfo)
         function populateYearFilter() {
-            // Lấy tất cả năm học duy nhất từ danh sách Môn học (allSubjectsInfo)
-            // Vì "bên điểm danh tạo môn học của năm nào thì bên này hiện ra năm đó"
-            const dbYears = new Set(allSubjectsInfo.map(s => s.school_year).filter(y => y));
+            const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); // Năm mặc định
+            
+            // Quét từ danh sách môn học thực tế
+            if (allSubjectsInfo && allSubjectsInfo.length > 0) {
+                allSubjectsInfo.forEach(s => {
+                    if (s.school_year) years.add(s.school_year);
+                });
+            }
+
+            const sortedYears = Array.from(years).sort().reverse();
             
             const yearSelect = document.getElementById('yearFilter');
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
-            
-            // Sắp xếp năm giảm dần
-            const sortedYears = Array.from(dbYears).sort().reverse();
             sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
 
-            // Mặc định chọn năm mới nhất (nếu có)
-            if (sortedYears.length > 0) {
-                yearSelect.value = sortedYears[0];
+            // Tự động chọn năm hiện tại theo thời gian thực
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            const currentYear = month >= 8 ? `${year}-${year+1}` : `${year-1}-${year}`;
+
+            // Ưu tiên chọn năm hiện tại nếu có trong list
+            if (years.has(currentYear)) {
+                yearSelect.value = currentYear;
+            } else {
+                yearSelect.value = "all";
             }
         }
 
@@ -229,13 +240,11 @@
             const currentData = db[sem] || { total: 0, subjects: [], data: [] };
             const selYear = document.getElementById('yearFilter').value;
             
-            // [HIỂN THỊ] Năm học lên Header
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm học: Tất cả' : `Năm học: ${selYear}`;
             
             document.getElementById('totalCount').innerText = currentData.total || 0;
 
-            // Cập nhật bộ lọc môn
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
@@ -277,13 +286,14 @@
             currentData.data.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
                 
-                // [LỌC CHUẨN] Chỉ lấy chi tiết vắng khớp với Năm học đang chọn
+                // [LỌC DỮ LIỆU]
                 const visibleDetails = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
                     
-                    // Nếu chọn "all" -> Đúng
-                    // Nếu chọn năm cụ thể -> Trường school_year trong data phải trùng khớp hoàn toàn
-                    const matchYear = yearFilter === 'all' || d.school_year === yearFilter;
+                    // Logic: Nếu chọn năm cụ thể -> Chỉ hiện record có năm đó
+                    // Nếu dữ liệu cũ (d.school_year = null) -> Mặc định gán về '2024-2025' để lọc cho đúng
+                    const recordYear = d.school_year || '2024-2025';
+                    const matchYear = yearFilter === 'all' || recordYear === yearFilter;
                     
                     return matchSub && matchYear;
                 });
@@ -292,8 +302,6 @@
                 let isWarning = total >= 2;
                 
                 if (statusFilter === 'warning' && !isWarning) return;
-                
-                // Nếu sau khi lọc năm mà không còn buổi vắng nào -> Ẩn sinh viên này luôn
                 if (total === 0) return;
 
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
@@ -396,15 +404,19 @@
             container.innerHTML = '';
             if (!data || data.length === 0) return;
             const subCounts = {};
-            // [FIXED] Lọc dữ liệu thống kê theo Năm học hiện tại
-            const selYear = document.getElementById('yearFilter').value;
             
+            // [FIXED] Filter warning cards by Year
+            const selYear = document.getElementById('yearFilter').value;
+
             data.forEach(sv => {
                 const grouped = {};
-                // Chỉ đếm các môn có trong năm học đang chọn
-                const visibleDetails = sv.details.filter(d => selYear === 'all' || d.school_year === selYear);
-                
-                visibleDetails.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
+                // Lọc chi tiết trước khi đếm
+                const filteredDetails = sv.details.filter(d => {
+                    const recordYear = d.school_year || '2024-2025';
+                    return selYear === 'all' || recordYear === selYear;
+                });
+
+                filteredDetails.forEach(d => grouped[d.sub] = (grouped[d.sub] || 0) + 1);
                 for (let sub in grouped) if (grouped[sub] >= 2) subCounts[sub] = (subCounts[sub] || 0) + 1;
             });
 

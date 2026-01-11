@@ -2,11 +2,12 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // Query lấy tất cả sinh viên vắng, JOIN với môn học để lấy school_year
+        // [ĐÃ SỬA] Thêm IFNULL để xử lý trường hợp môn cũ chưa có năm
         const sql = `
             SELECT 
                 st.id AS student_id, st.mssv, st.full_name, st.class_name,
-                s.subject_name, s.semester, s.school_year,
+                s.subject_name, s.semester, 
+                IFNULL(s.school_year, '2024-2025') as school_year, 
                 ses.session_date, ses.session_time,
                 ar.id AS record_id, ar.reason, ar.proof_image_url
             FROM attendance_records ar
@@ -19,14 +20,12 @@ exports.getDashboardData = async (req, res) => {
         
         const [rows] = await db.query(sql);
 
-        // Gom nhóm dữ liệu theo Học Kỳ (HK1, HK2, HK3) để Frontend dễ xử lý
         const result = {
             "HK1": { total: 0, subjects: [], data: [] },
             "HK2": { total: 0, subjects: [], data: [] },
             "HK3": { total: 0, subjects: [], data: [] }
         };
 
-        // Biến tạm để gom nhóm theo sinh viên
         const tempMap = {};
 
         rows.forEach(row => {
@@ -45,7 +44,6 @@ exports.getDashboardData = async (req, res) => {
                 result[sem].data.push(tempMap[key]);
             }
 
-            // Đẩy chi tiết vắng vào, quan trọng là có school_year
             tempMap[key].details.push({
                 sub: row.subject_name,
                 date: row.session_date,
@@ -53,19 +51,15 @@ exports.getDashboardData = async (req, res) => {
                 reason: row.reason,
                 proof: row.proof_image_url,
                 record_id: row.record_id,
-                school_year: row.school_year // <--- QUAN TRỌNG: Cần trường này để lọc
+                school_year: row.school_year 
             });
 
-            // Thêm môn học vào list môn của kỳ đó
             if (!result[sem].subjects.includes(row.subject_name)) {
                 result[sem].subjects.push(row.subject_name);
             }
         });
 
-        // Đếm tổng số sinh viên trong danh sách (Unique) cho mỗi kỳ
-        for (const k in result) {
-            result[k].total = result[k].data.length;
-        }
+        for (const k in result) result[k].total = result[k].data.length;
 
         res.json(result);
     } catch (error) {
