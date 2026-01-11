@@ -24,4 +24,8 @@ router.post('/attendance', dataController.saveAttendance); // Route lưu
 router.get('/attendance/check', dataController.getAttendance); // [QUAN TRỌNG] Route lấy dữ liệu cũ (Đã thêm mới)
 router.post('/groups/manage', dataController.manageGroup);
 
+// 
+router.post('/attendance/update-reason', dataController.updateReason);
+router.post('/attendance/remove-absence', dataController.removeAbsence);
+
 module.exports = router;

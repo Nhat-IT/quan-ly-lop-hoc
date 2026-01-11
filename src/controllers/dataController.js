@@ -8,42 +8,40 @@ exports.getSubjects = async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
-// 2. Thêm môn (ĐÃ SỬA: Xử lý ngày rỗng để không bị lỗi)
+// 2. Thêm môn (CÓ THÊM school_year)
 exports.createSubject = async (req, res) => {
-    const { subject_name, teacher_name, semester, start_date, end_date, default_session, default_group } = req.body;
-    
-    // Nếu ngày rỗng thì chuyển thành NULL
+    const { subject_name, teacher_name, semester, school_year, start_date, end_date, default_session, default_group } = req.body;
     const sDate = start_date === "" ? null : start_date;
     const eDate = end_date === "" ? null : end_date;
 
     try {
         await db.query(
-            'INSERT INTO subjects (subject_name, teacher_name, semester, start_date, end_date, default_session, default_group) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-            [subject_name, teacher_name, semester, sDate, eDate, default_session || 'Sáng', default_group || 'Nhóm 1']
+            'INSERT INTO subjects (subject_name, teacher_name, semester, school_year, start_date, end_date, default_session, default_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+            [subject_name, teacher_name, semester, school_year || '2025-2026', sDate, eDate, default_session || 'Sáng', default_group || 'Nhóm 1']
         );
         res.status(201).json({ message: 'Thêm thành công' });
     } catch (error) { 
-        console.error("Lỗi thêm môn:", error); // Ghi log để dễ kiểm tra
-        res.status(500).json({ message: 'Lỗi thêm môn: ' + error.message }); 
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi thêm môn' }); 
     }
 };
 
-// 3. Sửa môn (ĐÃ SỬA: Xử lý ngày rỗng)
+// 3. Sửa môn (CÓ THÊM school_year)
 exports.updateSubject = async (req, res) => {
     const { id } = req.params;
-    const { subject_name, teacher_name, start_date, end_date, default_session, default_group } = req.body;
-
+    const { subject_name, teacher_name, start_date, end_date, default_session, default_group, school_year } = req.body;
     const sDate = start_date === "" ? null : start_date;
     const eDate = end_date === "" ? null : end_date;
 
     try {
         await db.query(
-            'UPDATE subjects SET subject_name=?, teacher_name=?, start_date=?, end_date=?, default_session=?, default_group=? WHERE id=?', 
-            [subject_name, teacher_name, sDate, eDate, default_session, default_group, id]
+            'UPDATE subjects SET subject_name=?, teacher_name=?, start_date=?, end_date=?, default_session=?, default_group=?, school_year=? WHERE id=?', 
+            [subject_name, teacher_name, sDate, eDate, default_session, default_group, school_year, id]
         );
         res.json({ message: 'Cập nhật thành công' });
     } catch (error) { res.status(500).json({ message: 'Lỗi cập nhật' }); }
 };
+
 
 // 4. Xóa môn
 exports.deleteSubject = async (req, res) => {
@@ -222,4 +220,31 @@ exports.manageGroup = async (req, res) => {
         } else res.status(400).json({ message: 'Action không hợp lệ' });
         await connection.commit();
     } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi nhóm: ' + error.message }); } finally { connection.release(); }
+};
+
+// [MỚI] Cập nhật lý do vắng (Dùng cho Index)
+exports.updateReason = async (req, res) => {
+    const { record_id, reason } = req.body;
+    try {
+        await db.query('UPDATE attendance_records SET reason = ? WHERE id = ?', [reason, record_id]);
+        res.json({ message: 'Đã lưu lý do!' });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi lưu lý do' });
+    }
+};
+
+// [MỚI] Xóa vắng (Chuyển thành đi học - Dùng cho Index)
+exports.removeAbsence = async (req, res) => {
+    const { record_id } = req.body;
+    try {
+        // Cách 1: Xóa hẳn record (nếu muốn sạch data)
+        // await db.query('DELETE FROM attendance_records WHERE id = ?', [record_id]);
+        
+        // Cách 2: Set is_absent = 0 (giữ lại lịch sử là có đi học) - Khuyên dùng
+        await db.query('UPDATE attendance_records SET is_absent = 0 WHERE id = ?', [record_id]);
+        
+        res.json({ message: 'Đã xóa vắng thành công!' });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi xóa vắng' });
+    }
 };
