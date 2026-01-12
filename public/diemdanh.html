@@ -326,6 +326,9 @@
                        semSelect.value = newest.semester || 'HK1';
                        filterSubjects(); // Lọc lại
                    }
+                } else if (count > 0) {
+                   // [ĐÃ SỬA] Nếu tìm thấy môn, tải dữ liệu ngay
+                   changeSubject(); 
                 }
 
             } catch (error) { console.error(error); }
@@ -371,6 +374,7 @@
             }
 
             filtered.forEach(s => subSelect.add(new Option(s.subject_name, s.id)));
+            // Nếu không silent (hoặc được gọi từ onchange), thì load data luôn
             if(!silent) changeSubject();
             return filtered.length;
         }
