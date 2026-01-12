@@ -2,8 +2,8 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // [ĐÃ SỬA] Thêm IFNULL để xử lý trường hợp môn cũ chưa có năm
-        const sql = `
+        // 1. Query lấy danh sách sinh viên VẮNG (Code cũ của bạn, đã sửa lỗi JOIN st.id)
+        const sqlAbsent = `
             SELECT 
                 st.id AS student_id, st.mssv, st.full_name, st.class_name,
                 s.subject_name, s.semester, 
@@ -17,19 +17,45 @@ exports.getDashboardData = async (req, res) => {
             WHERE ar.is_absent = 1
             ORDER BY ses.session_date DESC
         `;
-        
-        const [rows] = await db.query(sql);
 
+        // 2. [MỚI] Query đếm TỔNG SỐ SINH VIÊN ĐANG HỌC (Dựa vào bảng đăng ký môn học enrollments)
+        // Đếm distinct student_id để tránh trùng lặp nếu 1 SV học nhiều môn trong cùng 1 kỳ
+        const sqlTotalStudents = `
+            SELECT s.semester, COUNT(DISTINCT e.student_id) as total_enrolled
+            FROM enrollments e
+            JOIN subjects s ON e.subject_id = s.id
+            GROUP BY s.semester
+        `;
+        
+        // Thực hiện cả 2 truy vấn song song
+        const [absentRows] = await db.query(sqlAbsent);
+        const [totalRows] = await db.query(sqlTotalStudents);
+
+        // Khởi tạo cấu trúc kết quả
         const result = {
             "HK1": { total: 0, subjects: [], data: [] },
             "HK2": { total: 0, subjects: [], data: [] },
             "HK3": { total: 0, subjects: [], data: [] }
         };
 
+        // BƯỚC 1: Cập nhật TỔNG SỐ SINH VIÊN THỰC TẾ vào result
+        totalRows.forEach(row => {
+            const sem = row.semester || 'HK1';
+            if (result[sem]) {
+                result[sem].total = row.total_enrolled;
+            } else {
+                // Phòng trường hợp DB có kỳ lạ (ví dụ HK He)
+                result[sem] = { total: row.total_enrolled, subjects: [], data: [] };
+            }
+        });
+
+        // BƯỚC 2: Xử lý danh sách vắng (Logic cũ)
         const tempMap = {};
 
-        rows.forEach(row => {
+        absentRows.forEach(row => {
             const sem = row.semester || 'HK1';
+            
+            // Nếu kỳ này chưa có trong result (do không có tổng SV nhưng có SV vắng), khởi tạo
             if (!result[sem]) result[sem] = { total: 0, subjects: [], data: [] };
 
             const key = `${sem}_${row.mssv}`;
@@ -59,11 +85,12 @@ exports.getDashboardData = async (req, res) => {
             }
         });
 
-        for (const k in result) result[k].total = result[k].data.length;
+        // [QUAN TRỌNG] Đã xóa dòng lệnh tính total = data.length gây sai lệch
+        // for (const k in result) result[k].total = result[k].data.length; <--- ĐÃ XÓA DÒNG NÀY
 
         res.json(result);
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi Dashboard:", error);
         res.status(500).json({ message: 'Lỗi lấy dữ liệu Dashboard' });
     }
 };
