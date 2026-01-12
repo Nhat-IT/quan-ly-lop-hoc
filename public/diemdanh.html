@@ -16,7 +16,7 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            --student-grid: 15% 25% 20% 20% 20%;
+            --student-grid: 15% 25% 20% 20% 20% ; 
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -49,10 +49,8 @@
         .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; padding: 12px 0; }
         .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
         
-        /* CSS cho cột Tên và Icon Sửa */
+        /* CSS Ẩn/Hiện bút chì */
         .col-name { padding-left: 20px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; position: relative; }
-        
-        /* Mặc định ẩn icon sửa */
         .col-name .edit-icon { 
             visibility: hidden; 
             opacity: 0; 
@@ -62,11 +60,8 @@
             color: var(--primary-color);
             padding: 5px;
         }
-        /* Hiện icon khi hover vào dòng tên */
-        .col-name:hover .edit-icon { 
-            visibility: visible; 
-            opacity: 1; 
-        }
+        /* Hover vào dòng tên mới hiện */
+        .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
 
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
         .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
@@ -100,10 +95,8 @@
             .row-main-content { display: flex; flex-wrap: wrap; padding: 10px; }
             .col-stt { display: none; }
             .col-name { width: 100%; font-size: 1.1rem; margin-bottom: 5px; padding-left: 0; }
-            
-            /* Trên mobile luôn hiện icon sửa để dễ bấm */
+            /* Mobile luôn hiện icon sửa */
             .col-name .edit-icon { visibility: visible; opacity: 1; color: #6c757d; }
-            
             .col-mssv, .col-class { width: auto; font-size: 0.9rem; color: #666; margin-right: 15px; text-align: left; }
             .col-mssv::before { content: "MSSV: "; } .col-class::before { content: "Lớp: "; }
             .col-action { position: absolute; right: 15px; top: 15px; }
@@ -225,8 +218,8 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-6"><label class="small text-muted">Buổi mặc định</label><select class="form-select" id="newDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
-            <div class="col-6"><label class="small text-muted">Nhóm mặc định</label><select class="form-select" id="newDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
+            <div class="col-6"><label class="small text-muted">Buổi học</label><select class="form-select" id="newDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
+            <div class="col-6"><label class="small text-muted">Nhóm học</label><select class="form-select" id="newDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
         </div>
 
         <div class="row">
@@ -263,8 +256,8 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-6"><label class="small text-muted">Buổi mặc định</label><select class="form-select" id="editDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
-            <div class="col-6"><label class="small text-muted">Nhóm mặc định</label><select class="form-select" id="editDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
+            <div class="col-6"><label class="small text-muted">Buổi học</label><select class="form-select" id="editDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
+            <div class="col-6"><label class="small text-muted">Nhóm học</label><select class="form-select" id="editDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
         </div>
 
         <div class="row">
@@ -350,7 +343,10 @@
             years.forEach(y => {
                 const opt = document.createElement('option');
                 opt.value = y; 
-                opt.text = `[${y.split('-')[0]}] - [${y.split('-')[1]}]`; 
+                // [ĐÃ SỬA] Xóa ngoặc vuông, hiển thị: 2025 - 2026
+                const parts = y.split('-');
+                if(parts.length === 2) opt.text = `${parts[0]} - ${parts[1]}`;
+                else opt.text = y;
                 yearSelect.appendChild(opt);
             });
         }
@@ -388,7 +384,11 @@
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name || "--";
                 const sy = sub.school_year || "2024-2025";
                 const parts = sy.split('-');
-                document.getElementById('displaySchoolYear').innerText = `[${parts[0]}] - [${parts[1]}]`;
+                
+                // [ĐÃ SỬA] Xóa ngoặc vuông hiển thị thông tin
+                if(parts.length === 2) document.getElementById('displaySchoolYear').innerText = `${parts[0]} - ${parts[1]}`;
+                else document.getElementById('displaySchoolYear').innerText = sy;
+
                 document.getElementById('displayStartDate').innerText = sub.start_date ? formatDateVN(sub.start_date) : '--';
                 document.getElementById('displayEndDate').innerText = sub.end_date ? formatDateVN(sub.end_date) : '--';
                 if (sub.default_session) document.getElementById('sessionTime').value = sub.default_session;
@@ -412,7 +412,7 @@
             return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
         }
 
-        // --- XỬ LÝ MODAL THÊM MÔN (Đã sửa lỗi) ---
+        // --- XỬ LÝ MODAL THÊM MÔN ---
         function openAddSubjectModal() {
             // Reset form
             document.getElementById('newSubjectName').value = '';
