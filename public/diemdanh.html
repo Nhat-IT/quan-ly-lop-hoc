@@ -16,7 +16,7 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            --student-grid: 15% 25% 20% 20% 20%; 
+            --student-grid: 15% 25% 20% 20% 20%;
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -34,7 +34,6 @@
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Table Styling */
         .list-header { 
             background-color: #e9ecef; color: #495057; padding: 15px 0; 
             border-radius: 8px 8px 0 0; border: 1px solid var(--border-color); border-bottom: none; 
@@ -59,12 +58,24 @@
         .btn-excel { background-color: #217346 !important; border-color: #217346 !important; color: white !important; }
         .empty-state { padding: 40px; text-align: center; background: white; border: 1px solid var(--border-color); }
 
-        /* Media Queries */
-        @media (max-width: 992px) {
-            .filter-row-custom { flex-wrap: wrap !important; }
-            .filter-year, .filter-sem { width: 50% !important; flex: 0 0 auto; }
-            .filter-sub { width: 100% !important; margin-top: 8px; }
+        /* CSS Ép buộc cùng 1 dòng trên desktop */
+        @media (min-width: 992px) {
+            .filter-row-custom { flex-wrap: nowrap !important; }
+            .filter-year { width: 170px; flex-shrink: 0; }
+            .filter-sem { width: 110px; flex-shrink: 0; }
+            .filter-add-btn { width: auto; flex-shrink: 0; }
+            .filter-sub { flex-grow: 1; min-width: 200px; }
+            .filter-tools { width: auto; flex-shrink: 0; display: flex; gap: 8px; }
         }
+
+        @media (max-width: 991px) {
+            .filter-row-custom { flex-wrap: wrap; }
+            .filter-year, .filter-sem { width: 48%; }
+            .filter-sub { width: 100%; order: 3; margin-top: 5px; }
+            .filter-add-btn { width: auto; }
+            .filter-tools { width: 100%; margin-top: 5px; display: flex; gap: 5px; }
+        }
+
         @media (max-width: 768px) {
             .sticky-header .header-subject { display: none; }
             .list-header { display: none; }
@@ -93,30 +104,34 @@
                 <label class="lbl-caption">Bộ lọc môn học</label> 
                 <div class="d-flex gap-2 align-items-center filter-row-custom">
                     
-                    <div class="filter-year" style="width: 160px;">
-                        <select class="form-select fw-bold border-0 text-dark" id="yearSelect" onchange="filterSubjects()">
+                    <div class="filter-year">
+                        <select class="form-select fw-bold border-0 text-dark shadow-sm" id="yearSelect" onchange="filterSubjects()">
                             </select>
                     </div>
 
-                    <div class="filter-sem" style="width: 100px;">
-                        <select class="form-select fw-bold text-success border-0" id="semesterSelect" onchange="filterSubjects()">
+                    <div class="filter-sem">
+                        <select class="form-select fw-bold text-success border-0 shadow-sm" id="semesterSelect" onchange="filterSubjects()">
                             <option value="HK1">HK1</option>
                             <option value="HK2">HK2</option>
                             <option value="HK3">HK3</option>
                         </select>
                     </div>
 
-                    <button class="btn btn-success" onclick="openAddSubjectModal()" title="Thêm môn mới"><i class="fas fa-plus"></i></button>
-                    
-                    <div class="flex-grow-1 filter-sub" style="min-width: 200px;">
-                        <select class="form-select fw-bold text-primary border-0 w-100" id="subjectSelect" onchange="changeSubject()"></select>
+                    <div class="filter-add-btn">
+                        <button class="btn btn-success shadow-sm" onclick="openAddSubjectModal()" title="Thêm môn mới"><i class="fas fa-plus"></i></button>
                     </div>
                     
-                    <button class="btn btn-warning" onclick="openEditSubjectModal()" title="Sửa môn"><i class="fas fa-pen text-white"></i></button>
-                    <button class="btn btn-excel d-none d-md-block" id="btnImportExcel" onclick="importClassList()">
-                        <i class="fas fa-file-excel"></i> Nhập DS
-                    </button>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
+                    <div class="filter-sub">
+                        <select class="form-select fw-bold text-primary border-0 w-100 shadow-sm" id="subjectSelect" onchange="changeSubject()"></select>
+                    </div>
+                    
+                    <div class="filter-tools">
+                        <button class="btn btn-warning shadow-sm" onclick="openEditSubjectModal()" title="Sửa môn"><i class="fas fa-pen text-white"></i></button>
+                        <button class="btn btn-excel d-none d-md-block shadow-sm" id="btnImportExcel" onclick="importClassList()">
+                            <i class="fas fa-file-excel"></i> Nhập DS
+                        </button>
+                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
+                    </div>
                 </div>
             </div>
 
@@ -174,11 +189,11 @@
         
         <div class="row mb-3">
             <div class="col-7">
-                <label class="small text-muted fw-bold">Năm học</label>
+                <label class="small text-muted fw-bold">Năm học (Ví dụ: 2025 - 2026)</label>
                 <div class="input-group">
-                    <input type="number" class="form-control" id="newYearStart" placeholder="2025" min="2020">
-                    <span class="input-group-text bg-white">-</span>
-                    <input type="number" class="form-control" id="newYearEnd" placeholder="2026" min="2020">
+                    <input type="number" class="form-control text-center fw-bold" id="newYearStart" placeholder="2025">
+                    <span class="input-group-text bg-white fw-bold">-</span>
+                    <input type="number" class="form-control text-center fw-bold" id="newYearEnd" placeholder="2026">
                 </div>
             </div>
             <div class="col-5">
@@ -214,9 +229,9 @@
             <div class="col-7">
                 <label class="small text-muted fw-bold">Năm học</label>
                 <div class="input-group">
-                    <input type="number" class="form-control" id="editYearStart">
-                    <span class="input-group-text bg-white">-</span>
-                    <input type="number" class="form-control" id="editYearEnd">
+                    <input type="number" class="form-control text-center fw-bold" id="editYearStart">
+                    <span class="input-group-text bg-white fw-bold">-</span>
+                    <input type="number" class="form-control text-center fw-bold" id="editYearEnd">
                 </div>
             </div>
             <div class="col-5">
@@ -253,19 +268,7 @@
         let currentStudents = [];
         let proofImages = {}; 
 
-        // Khởi tạo và thiết lập mặc định cho ô nhập năm mới
-        function setDefaultInputYears() {
-            const y = new Date().getFullYear();
-            const m = new Date().getMonth() + 1;
-            // Nếu tháng 1-7: Năm học là (Năm trước - Năm nay)
-            // Nếu tháng 8-12: Năm học là (Năm nay - Năm sau)
-            const y1 = m >= 8 ? y : y - 1;
-            document.getElementById('newYearStart').value = y1;
-            document.getElementById('newYearEnd').value = y1 + 1;
-        }
-
         async function init() {
-            setDefaultInputYears();
             try {
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
@@ -274,18 +277,12 @@
                 populateYearFilter();
 
                 // 2. Lấy thông tin ưu tiên từ Dashboard (localStorage)
-                // Dashboard lưu: 'currentSemester' (HK1) và 'currentYear' (2025-2026)
-                // Lưu ý: Dashboard code bạn gửi dùng 'yearFilter' và 'semFilter'
-                // Giả sử bạn đã lưu nó vào localStorage, hoặc lấy từ URL
-                
-                // Code này ưu tiên lấy từ localStorage nếu có
                 const savedSem = localStorage.getItem('currentSemester') || 'HK1';
-                // Năm học thì phải tìm trong danh sách dynamic vừa tạo
-                // Nếu Dashboard chưa lưu year thì lấy năm hiện tại
+                
+                // Nếu chưa có năm trong storage, tính năm hiện tại
                 const curY = new Date().getFullYear();
                 const m = new Date().getMonth() + 1;
                 const defaultYear = m >= 8 ? `${curY}-${curY+1}` : `${curY-1}-${curY}`;
-                // Bạn có thể update Dashboard để lưu 'currentYear' vào localStorage
                 const savedYear = localStorage.getItem('currentYear') || defaultYear; 
 
                 // Set giá trị cho bộ lọc
@@ -293,7 +290,6 @@
                 if(semSelect) semSelect.value = savedSem;
 
                 const yearSelect = document.getElementById('yearSelect');
-                // Kiểm tra xem savedYear có trong options không, nếu không thì chọn option đầu
                 const yearOptionExists = Array.from(yearSelect.options).some(o => o.value === savedYear);
                 if(yearOptionExists) yearSelect.value = savedYear;
 
@@ -301,33 +297,23 @@
             } catch (error) { console.error(error); }
         }
 
-        // Tạo danh sách năm học từ các môn học ĐANG CÓ
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect');
             yearSelect.innerHTML = '';
-            
-            // Lấy tất cả năm học từ allSubjects, lọc trùng
-            const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))];
-            
-            // Sắp xếp giảm dần (Năm mới nhất lên đầu)
-            years.sort().reverse();
-
+            // Lấy tất cả năm học từ allSubjects, lọc trùng và sắp xếp
+            const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
             if (years.length === 0) {
-                // Nếu chưa có môn nào, hiển thị năm hiện tại làm mẫu
                 const curY = new Date().getFullYear();
-                const yStr = `${curY}-${curY+1}`;
-                years.push(yStr);
+                years.push(`${curY}-${curY+1}`);
             }
-
             years.forEach(y => {
                 const opt = document.createElement('option');
-                opt.value = y; // Giá trị lọc: 2025-2026
-                opt.text = y;  // Hiển thị: 2025-2026 (User yêu cầu list hiển thị có trong list)
+                opt.value = y; 
+                opt.text = `[${y.split('-')[0]}] - [${y.split('-')[1]}]`; 
                 yearSelect.appendChild(opt);
             });
         }
 
-        // LỌC MÔN: NĂM -> KỲ -> MÔN
         function filterSubjects() {
             const year = document.getElementById('yearSelect').value;
             const sem = document.getElementById('semesterSelect').value;
@@ -358,11 +344,11 @@
             if(sub) {
                 document.getElementById('displaySubjectName').innerText = sub.subject_name.toUpperCase();
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name || "--";
-                document.getElementById('displaySchoolYear').innerText = sub.school_year || "--";
-                
+                const sy = sub.school_year || "2024-2025";
+                const parts = sy.split('-');
+                document.getElementById('displaySchoolYear').innerText = `[${parts[0]}] - [${parts[1]}]`;
                 document.getElementById('displayStartDate').innerText = sub.start_date ? formatDateVN(sub.start_date) : '--';
                 document.getElementById('displayEndDate').innerText = sub.end_date ? formatDateVN(sub.end_date) : '--';
-                
                 if (sub.default_session) document.getElementById('sessionTime').value = sub.default_session;
                 if (sub.default_group) {
                     const grpSel = document.getElementById('groupSelect');
@@ -384,15 +370,32 @@
             return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
         }
 
+        // --- XỬ LÝ MODAL THÊM MÔN (Đã sửa lỗi) ---
+        function openAddSubjectModal() {
+            // Reset form
+            document.getElementById('newSubjectName').value = '';
+            document.getElementById('newTeacherName').value = '';
+            // Default năm
+            const y = new Date().getFullYear();
+            const m = new Date().getMonth() + 1;
+            const yStart = m >= 8 ? y : y - 1;
+            document.getElementById('newYearStart').value = yStart;
+            document.getElementById('newYearEnd').value = yStart + 1;
+            
+            // Mở Modal an toàn
+            const el = document.getElementById('addSubjectModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(el);
+            modal.show();
+        }
+
         async function saveNewSubject() {
             const name = document.getElementById('newSubjectName').value.trim();
             if (!name) return alert("Nhập tên môn!");
             
-            // Lấy năm từ 2 ô nhập liệu
             const y1 = document.getElementById('newYearStart').value;
             const y2 = document.getElementById('newYearEnd').value;
-            if(!y1 || !y2) return alert("Vui lòng nhập đầy đủ năm học!");
-            const schoolYear = `${y1}-${y2}`; // Ghép lại thành chuỗi lưu DB
+            if(!y1 || !y2) return alert("Nhập năm học đầy đủ!");
+            const schoolYear = `${y1}-${y2}`;
 
             const body = {
                 subject_name: name,
@@ -405,20 +408,26 @@
                 default_group: document.getElementById('newDefaultGroup').value
             };
             
-            await fetch('/api/data/subjects', { 
-                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) 
-            });
-            bootstrap.Modal.getInstance(document.getElementById('addSubjectModal')).hide();
-            
-            // Reload và update filter
-            const res = await fetch('/api/data/subjects'); 
-            allSubjects = await res.json(); 
-            populateYearFilter(); // Cập nhật lại list năm học nếu có năm mới
-            
-            // Tự động chuyển bộ lọc sang năm/kỳ vừa tạo
-            document.getElementById('yearSelect').value = schoolYear;
-            document.getElementById('semesterSelect').value = body.semester;
-            filterSubjects();
+            try {
+                await fetch('/api/data/subjects', { 
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) 
+                });
+                
+                // Đóng modal
+                const el = document.getElementById('addSubjectModal');
+                const modal = bootstrap.Modal.getInstance(el);
+                if(modal) modal.hide();
+                
+                // Tải lại
+                const res = await fetch('/api/data/subjects'); 
+                allSubjects = await res.json(); 
+                populateYearFilter(); 
+                
+                // Chuyển tới môn vừa tạo
+                document.getElementById('yearSelect').value = schoolYear;
+                document.getElementById('semesterSelect').value = body.semester;
+                filterSubjects();
+            } catch(e) { alert('Lỗi khi lưu: ' + e.message); }
         }
 
         function openEditSubjectModal() {
@@ -428,30 +437,23 @@
             
             document.getElementById('editSubjectName').value = sub.subject_name;
             document.getElementById('editTeacherName').value = sub.teacher_name || '';
-            
-            // Tách năm học từ chuỗi "2025-2026" ra 2 ô input
-            const sy = sub.school_year || "2024-2025";
-            const parts = sy.split('-');
-            if(parts.length === 2) {
+            const parts = (sub.school_year || "2024-2025").split('-');
+            if(parts.length===2) {
                 document.getElementById('editYearStart').value = parts[0];
                 document.getElementById('editYearEnd').value = parts[1];
-            } else {
-                document.getElementById('editYearStart').value = '';
-                document.getElementById('editYearEnd').value = '';
             }
-
             document.getElementById('editSemester').value = sub.semester || 'HK1';
             document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : '';
             document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : '';
             document.getElementById('editDefaultSession').value = sub.default_session || 'Sáng';
             document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1';
             
-            new bootstrap.Modal(document.getElementById('editSubjectModal')).show();
+            const el = document.getElementById('editSubjectModal');
+            bootstrap.Modal.getOrCreateInstance(el).show();
         }
 
         async function saveEditedSubject() {
              const id = document.getElementById('subjectSelect').value;
-             
              const y1 = document.getElementById('editYearStart').value;
              const y2 = document.getElementById('editYearEnd').value;
              const schoolYear = `${y1}-${y2}`;
@@ -466,16 +468,25 @@
                  default_session: document.getElementById('editDefaultSession').value, 
                  default_group: document.getElementById('editDefaultGroup').value
              };
-             await fetch(`/api/data/subjects/${id}`, { 
-                 method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) 
-             });
-             bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); 
              
-             const res = await fetch('/api/data/subjects'); 
-             allSubjects = await res.json(); 
-             populateYearFilter();
-             // Giữ nguyên lựa chọn hiện tại nếu vẫn hợp lệ
-             filterSubjects();
+             try {
+                 await fetch(`/api/data/subjects/${id}`, { 
+                     method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) 
+                 });
+                 
+                 const el = document.getElementById('editSubjectModal');
+                 bootstrap.Modal.getInstance(el).hide(); 
+                 
+                 const res = await fetch('/api/data/subjects'); 
+                 allSubjects = await res.json(); 
+                 populateYearFilter();
+                 // Refresh thông tin môn hiện tại nếu vẫn trong bộ lọc
+                 if(document.getElementById('yearSelect').value === schoolYear && document.getElementById('semesterSelect').value === body.semester) {
+                    changeSubject();
+                 } else {
+                    filterSubjects();
+                 }
+             } catch(e) { alert('Lỗi cập nhật'); }
         }
 
         // --- CÁC HÀM CŨ (GIỮ NGUYÊN) ---
@@ -494,7 +505,7 @@
         function addNewGroup() { const n = prompt("Tên nhóm mới:"); if(n) { document.getElementById('groupSelect').add(new Option(n,n)); document.getElementById('groupSelect').value=n; renderList(); } }
         async function renameCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; const n=prompt("Tên mới:",g); if(n&&n!==g) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',subject_id:sub,group_name:g,new_group_name:n})}); changeSubject(); } }
         async function deleteCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; if(confirm(`Xóa nhóm ${g}?`)) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',subject_id:sub,group_name:g})}); changeSubject(); } }
-        async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
+        async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); const el=document.getElementById('editSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
         
         async function loadSavedAttendance() {
             const subjectId = document.getElementById('subjectSelect').value;
@@ -546,7 +557,7 @@
             document.getElementById('filteredCount').innerText = c;
         }
         function importClassList() { document.getElementById('fileInput').click(); }
-        function handleFileSelect(e) { /* Logic import giữ nguyên */ 
+        function handleFileSelect(e) { 
             const f=e.target.files[0]; const r=new FileReader();
             r.onload=function(ev){ 
                 const wb=XLSX.read(ev.target.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const d=XLSX.utils.sheet_to_json(ws);
