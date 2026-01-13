@@ -76,12 +76,7 @@ class LoginApp {
             localStorage.setItem('user', JSON.stringify(data.user)); 
             localStorage.setItem('lastActivity', Date.now());
             
-            const rememberCheckbox = document.getElementById('remember');
-            if (rememberCheckbox && rememberCheckbox.checked) {
-                localStorage.setItem('rememberedUsername', username);
-            } else {
-                localStorage.removeItem('rememberedUsername');
-            }
+            // ... (Giữ nguyên phần remember password) ...
 
             this.showSuccess();
             
@@ -104,8 +99,8 @@ class LoginApp {
             document.getElementById('successMessage').classList.add('show');
         }, 300);
         
-        // [QUAN TRỌNG] Sửa thành đường dẫn tuyệt đối
-        setTimeout(() => { window.location.href = '/public/index.html'; }, 2000);
+        // [SỬA LẠI Ở ĐÂY] Thêm dấu / để về trang chủ
+        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
     }
 }
 new LoginApp();

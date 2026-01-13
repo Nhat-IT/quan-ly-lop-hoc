@@ -11,21 +11,22 @@ class AuthGuard {
     // 1. KIỂM TRA ĐĂNG NHẬP
     checkLogin() {
         const user = localStorage.getItem('user'); 
-        const path = window.location.pathname; // Lấy đường dẫn hiện tại
+        const path = window.location.pathname; 
 
-        // Danh sách các trang công khai (không cần login)
-        // Lưu ý: Dùng đường dẫn tuyệt đối hoặc từ khóa để kiểm tra
+        // Kiểm tra xem có đang ở trang public không
         const isPublicPage = path.includes('/login/login.html') || path.includes('/login/forgot-password.html');
 
         if (!user) {
-            // Chưa đăng nhập -> Nếu không phải trang login thì đá về Login
+            // Chưa đăng nhập -> Đá về Login (nếu không phải đang ở đó)
             if (!isPublicPage) {
+                // [QUAN TRỌNG] Thêm dấu / ở đầu
                 window.location.href = '/login/login.html'; 
             }
         } else {
-            // Đã đăng nhập -> Nếu cố vào trang Login thì đá về Index
+            // Đã đăng nhập -> Đá về Index (nếu cố vào trang Login)
             if (isPublicPage) {
-                window.location.href = '/public/index.html';
+                // [QUAN TRỌNG] Thêm dấu / ở đầu
+                window.location.href = '/index.html';
             }
         }
     }
@@ -53,12 +54,12 @@ class AuthGuard {
         }, 10000); 
     }
 
-    // 4. HÀM ĐĂNG XUẤT
+   // 4. HÀM ĐĂNG XUẤT
     logout(message = "") {
         localStorage.removeItem('user'); 
         localStorage.removeItem('lastActivity');
         if (message) alert(message);
-        // [QUAN TRỌNG] Đường dẫn tuyệt đối về trang login
+        // [QUAN TRỌNG] Thêm dấu / ở đầu
         window.location.href = '/login/login.html';
     }
 }
@@ -81,6 +82,7 @@ function checkPermission() {
         if (user.role === 'viewer') {
             if (path.includes('diemdanh.html') || path.includes('quanly.html')) {
                 alert('Tài khoản chỉ xem!');
+                // [QUAN TRỌNG] Thêm dấu / ở đầu
                 window.location.href = '/index.html';
             }
         }
@@ -88,6 +90,7 @@ function checkPermission() {
         if (user.role === 'teacher') {
             if (path.includes('quanly.html')) {
                 alert('Bạn không có quyền truy cập!');
+                // [QUAN TRỌNG] Thêm dấu / ở đầu
                 window.location.href = '/index.html';
             }
         }
