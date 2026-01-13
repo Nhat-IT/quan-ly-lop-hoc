@@ -105,7 +105,7 @@ class LoginApp {
         }, 300);
         
         // [QUAN TRỌNG] Sửa thành đường dẫn tuyệt đối
-        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
+        setTimeout(() => { window.location.href = '/public/index.html'; }, 2000);
     }
 }
 new LoginApp();

@@ -25,7 +25,7 @@ class AuthGuard {
         } else {
             // Đã đăng nhập -> Nếu cố vào trang Login thì đá về Index
             if (isPublicPage) {
-                window.location.href = '/index.html';
+                window.location.href = '/public/index.html';
             }
         }
     }
