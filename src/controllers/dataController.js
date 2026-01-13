@@ -123,6 +123,8 @@ exports.saveAttendance = async (req, res) => {
         await connection.commit();
         res.json({ message: 'Lưu điểm danh thành công!' });
     } catch (error) { await connection.rollback(); res.status(500).json({ message: 'Lỗi lưu: ' + error.message }); } finally { connection.release(); }
+    // Ghi log
+    await logAction('current_user', `Điểm danh môn ${subject_id}`, `Nhóm: ${learning_group}`);
 };
 
 // 9. Lấy điểm danh cũ (ĐÃ SỬA: Thêm API này vì file cũ của bạn thiếu)

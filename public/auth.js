@@ -73,3 +73,34 @@ const auth = new AuthGuard();
 function performLogout() {
     auth.logout();
 }
+
+// Ví dụ logic kiểm tra quyền
+function checkPermission() {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        window.location.href = 'login.html'; // Chưa login
+        return;
+    }
+
+    const user = JSON.parse(userStr);
+    const currentPage = window.location.pathname.split("/").pop();
+
+    // 1. Chặn Viewer vào trang Điểm danh hoặc Quản lý
+    if (user.role === 'viewer') {
+        if (currentPage === 'diemdanh.html' || currentPage === 'quanly.html') {
+            alert('Tài khoản của bạn chỉ được phép xem Trang chủ (Dashboard).');
+            window.location.href = 'index.html';
+        }
+    }
+
+    // 2. Chặn Giáo viên (Teacher) vào trang Quản lý Admin
+    if (user.role === 'teacher') {
+        if (currentPage === 'quanly.html') {
+            alert('Bạn không có quyền truy cập trang Quản trị.');
+            window.location.href = 'index.html';
+        }
+    }
+}
+
+// Gọi hàm này ngay khi trang load
+checkPermission();
