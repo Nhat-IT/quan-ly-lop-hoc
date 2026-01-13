@@ -1,4 +1,4 @@
-// CẤU HÌNH THỜI GIAN
+// CẤU HÌNH THỜI GIAN (Ví dụ: 15 phút)
 const INACTIVITY_LIMIT = 15 * 60 * 1000; 
 
 class AuthGuard {
@@ -13,20 +13,19 @@ class AuthGuard {
         const user = localStorage.getItem('user'); 
         const path = window.location.pathname; 
 
-        // Kiểm tra xem có đang ở trang public không
+        // Danh sách các trang không cần kiểm tra (Trang công khai)
+        // [QUAN TRỌNG] Kiểm tra từ khóa trong đường dẫn để linh hoạt hơn
         const isPublicPage = path.includes('/login/login.html') || path.includes('/login/forgot-password.html');
 
         if (!user) {
-            // Chưa đăng nhập -> Đá về Login (nếu không phải đang ở đó)
+            // Chưa đăng nhập -> Đá về Login (nếu đang ở trang nội bộ)
             if (!isPublicPage) {
-                // [QUAN TRỌNG] Thêm dấu / ở đầu
-                window.location.href = '/login/login.html'; 
+                window.location.href = '/login/login.html'; // Đường dẫn tuyệt đối
             }
         } else {
-            // Đã đăng nhập -> Đá về Index (nếu cố vào trang Login)
+            // Đã đăng nhập -> Đá về Index (nếu cố tình vào trang Login)
             if (isPublicPage) {
-                // [QUAN TRỌNG] Thêm dấu / ở đầu
-                window.location.href = '/index.html';
+                window.location.href = '/index.html'; // Đường dẫn tuyệt đối
             }
         }
     }
@@ -54,22 +53,25 @@ class AuthGuard {
         }, 10000); 
     }
 
-   // 4. HÀM ĐĂNG XUẤT
+    // 4. HÀM ĐĂNG XUẤT CHUNG
     logout(message = "") {
         localStorage.removeItem('user'); 
         localStorage.removeItem('lastActivity');
         if (message) alert(message);
-        // [QUAN TRỌNG] Thêm dấu / ở đầu
+        // [QUAN TRỌNG] Dùng đường dẫn tuyệt đối bắt đầu bằng /
         window.location.href = '/login/login.html';
     }
 }
 
+// Khởi chạy bảo vệ ngay khi file được tải
 const auth = new AuthGuard();
 
+// Hàm logout toàn cục
 function performLogout() {
     auth.logout();
 }
 
+// Hàm phân quyền
 function checkPermission() {
     const userStr = localStorage.getItem('user');
     if (!userStr) return; 
@@ -82,15 +84,13 @@ function checkPermission() {
         if (user.role === 'viewer') {
             if (path.includes('diemdanh.html') || path.includes('quanly.html')) {
                 alert('Tài khoản chỉ xem!');
-                // [QUAN TRỌNG] Thêm dấu / ở đầu
                 window.location.href = '/index.html';
             }
         }
         // Chặn Teacher vào Admin
         if (user.role === 'teacher') {
             if (path.includes('quanly.html')) {
-                alert('Bạn không có quyền truy cập!');
-                // [QUAN TRỌNG] Thêm dấu / ở đầu
+                alert('Bạn không có quyền truy cập trang Quản trị!');
                 window.location.href = '/index.html';
             }
         }

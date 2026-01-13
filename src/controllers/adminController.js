@@ -60,4 +60,4 @@ exports.getLogs = async (req, res) => {
         const [rows] = await db.query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 100');
         res.json(rows);
     } catch (e) { res.status(500).json({ message: e.message }); }
-};
+};   

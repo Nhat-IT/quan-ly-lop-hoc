@@ -10,6 +10,13 @@ class LoginApp {
     }
     
     init() {
+        // [MỚI] Kiểm tra nếu đã đăng nhập thì vào thẳng Index
+        const user = localStorage.getItem('user');
+        if (user) {
+            window.location.href = '/index.html';
+            return;
+        }
+
         if(this.form) {
             this.form.addEventListener('submit', (e) => { e.preventDefault(); this.handleSubmit(); });
         }
@@ -73,10 +80,16 @@ class LoginApp {
             
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
+            // [QUAN TRỌNG] Lưu key 'user'
             localStorage.setItem('user', JSON.stringify(data.user)); 
             localStorage.setItem('lastActivity', Date.now());
             
-            // ... (Giữ nguyên phần remember password) ...
+            const rememberCheckbox = document.getElementById('remember');
+            if (rememberCheckbox && rememberCheckbox.checked) {
+                localStorage.setItem('rememberedUsername', username);
+            } else {
+                localStorage.removeItem('rememberedUsername');
+            }
 
             this.showSuccess();
             
@@ -99,7 +112,7 @@ class LoginApp {
             document.getElementById('successMessage').classList.add('show');
         }, 300);
         
-        // [SỬA LẠI Ở ĐÂY] Thêm dấu / để về trang chủ
+        // [QUAN TRỌNG] Đường dẫn tuyệt đối về trang chủ
         setTimeout(() => { window.location.href = '/index.html'; }, 2000);
     }
 }
