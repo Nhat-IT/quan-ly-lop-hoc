@@ -10,21 +10,26 @@ class LoginApp {
     }
     
     init() {
-        this.form.addEventListener('submit', (e) => { e.preventDefault(); this.handleSubmit(); });
-        this.setupToggle();
+        if(this.form) {
+            this.form.addEventListener('submit', (e) => { e.preventDefault(); this.handleSubmit(); });
+        }
+        if(this.toggleBtn) this.setupToggle();
         
-        // Khôi phục username nếu đã lưu
         const rememberedUsername = localStorage.getItem('rememberedUsername');
-        if (rememberedUsername) {
+        if (rememberedUsername && this.usernameInput) {
             this.usernameInput.value = rememberedUsername;
             const rememberCheckbox = document.getElementById('remember');
             if (rememberCheckbox) rememberCheckbox.checked = true;
         }
         
-        [this.usernameInput, this.passwordInput].forEach(inp => {
-            inp.setAttribute('placeholder', ' ');
-            inp.addEventListener('input', () => this.clearError(inp.id));
-        });
+        if(this.usernameInput) {
+            [this.usernameInput, this.passwordInput].forEach(inp => {
+                if(inp) {
+                    inp.setAttribute('placeholder', ' ');
+                    inp.addEventListener('input', () => this.clearError(inp.id));
+                }
+            });
+        }
     }
     
     setupToggle() {
@@ -59,7 +64,6 @@ class LoginApp {
         this.setLoading(true);
         
         try {
-            // GỌI API BACKEND
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -69,11 +73,9 @@ class LoginApp {
             
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
-            // [QUAN TRỌNG] Lưu với key 'user' để đồng bộ với auth.js
             localStorage.setItem('user', JSON.stringify(data.user)); 
             localStorage.setItem('lastActivity', Date.now());
             
-            // Xử lý nhớ mật khẩu
             const rememberCheckbox = document.getElementById('remember');
             if (rememberCheckbox && rememberCheckbox.checked) {
                 localStorage.setItem('rememberedUsername', username);
@@ -102,7 +104,8 @@ class LoginApp {
             document.getElementById('successMessage').classList.add('show');
         }, 300);
         
-        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        // [QUAN TRỌNG] Sửa thành đường dẫn tuyệt đối
+        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
     }
 }
 new LoginApp();

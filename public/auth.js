@@ -1,4 +1,4 @@
-// CẤU HÌNH THỜI GIAN (Ví dụ: 15 phút = 15 * 60 * 1000 mili giây)
+// CẤU HÌNH THỜI GIAN
 const INACTIVITY_LIMIT = 15 * 60 * 1000; 
 
 class AuthGuard {
@@ -10,27 +10,27 @@ class AuthGuard {
 
     // 1. KIỂM TRA ĐĂNG NHẬP
     checkLogin() {
-        // [QUAN TRỌNG] Dùng key 'user'
         const user = localStorage.getItem('user'); 
-        const currentPage = window.location.pathname.split("/").pop();
+        const path = window.location.pathname; // Lấy đường dẫn hiện tại
 
-        // Danh sách các trang không cần kiểm tra (Trang công khai)
-        const publicPages = ['login.html', 'forgot-password.html'];
+        // Danh sách các trang công khai (không cần login)
+        // Lưu ý: Dùng đường dẫn tuyệt đối hoặc từ khóa để kiểm tra
+        const isPublicPage = path.includes('/login/login.html') || path.includes('/login/forgot-password.html');
 
         if (!user) {
-            // Nếu chưa đăng nhập -> Đá về Login (trừ khi đang ở trang public)
-            if (!publicPages.some(page => currentPage.includes(page))) {
-                window.location.href = 'login.html'; 
+            // Chưa đăng nhập -> Nếu không phải trang login thì đá về Login
+            if (!isPublicPage) {
+                window.location.href = '/login/login.html'; 
             }
         } else {
-            // Nếu đã đăng nhập -> Đá về Index (nếu cố vào trang Login)
-            if (publicPages.some(page => currentPage.includes(page))) {
-                window.location.href = 'index.html';
+            // Đã đăng nhập -> Nếu cố vào trang Login thì đá về Index
+            if (isPublicPage) {
+                window.location.href = '/index.html';
             }
         }
     }
 
-    // 2. LẮNG NGHE HÀNH ĐỘNG CỦA NGƯỜI DÙNG
+    // 2. LẮNG NGHE HÀNH ĐỘNG
     setupActivityListener() {
         const resetTimer = () => {
             localStorage.setItem('lastActivity', Date.now());
@@ -42,7 +42,7 @@ class AuthGuard {
         resetTimer();
     }
 
-    // 3. KIỂM TRA THỜI GIAN KHÔNG HOẠT ĐỘNG
+    // 3. KIỂM TRA TIMEOUT
     startInactivityCheck() {
         setInterval(() => {
             const lastActivity = localStorage.getItem('lastActivity');
@@ -53,46 +53,42 @@ class AuthGuard {
         }, 10000); 
     }
 
-    // 4. HÀM ĐĂNG XUẤT CHUNG
+    // 4. HÀM ĐĂNG XUẤT
     logout(message = "") {
-        // [QUAN TRỌNG] Xóa key 'user'
         localStorage.removeItem('user'); 
         localStorage.removeItem('lastActivity');
         if (message) alert(message);
-        window.location.href = 'login.html';
+        // [QUAN TRỌNG] Đường dẫn tuyệt đối về trang login
+        window.location.href = '/login/login.html';
     }
 }
 
-// Khởi chạy bảo vệ ngay khi file được tải
 const auth = new AuthGuard();
 
-// Hàm logout toàn cục
 function performLogout() {
     auth.logout();
 }
 
-// Kiểm tra quyền hạn (Admin/Teacher/Viewer)
 function checkPermission() {
     const userStr = localStorage.getItem('user');
     if (!userStr) return; 
 
     try {
         const user = JSON.parse(userStr);
-        const currentPage = window.location.pathname.split("/").pop();
+        const path = window.location.pathname;
 
-        // Chặn Viewer vào trang quản lý hoặc điểm danh
+        // Chặn Viewer
         if (user.role === 'viewer') {
-            if (currentPage.includes('diemdanh.html') || currentPage.includes('quanly.html')) {
-                alert('Tài khoản của bạn chỉ được phép xem Trang chủ!');
-                window.location.href = 'index.html';
+            if (path.includes('diemdanh.html') || path.includes('quanly.html')) {
+                alert('Tài khoản chỉ xem!');
+                window.location.href = '/index.html';
             }
         }
-
-        // Chặn Teacher vào trang quản lý Admin
+        // Chặn Teacher vào Admin
         if (user.role === 'teacher') {
-            if (currentPage.includes('quanly.html')) {
-                alert('Bạn không có quyền truy cập trang Quản trị.');
-                window.location.href = 'index.html';
+            if (path.includes('quanly.html')) {
+                alert('Bạn không có quyền truy cập!');
+                window.location.href = '/index.html';
             }
         }
     } catch (e) {
@@ -100,5 +96,4 @@ function checkPermission() {
     }
 }
 
-// Gọi hàm này ngay khi trang load
 checkPermission();
