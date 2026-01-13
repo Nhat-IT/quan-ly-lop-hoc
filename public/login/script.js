@@ -69,8 +69,8 @@ class LoginApp {
             
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
-            // Lưu thông tin user
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            // [QUAN TRỌNG] Lưu với key 'user' để đồng bộ với auth.js
+            localStorage.setItem('user', JSON.stringify(data.user)); 
             localStorage.setItem('lastActivity', Date.now());
             
             // Xử lý nhớ mật khẩu
@@ -82,8 +82,6 @@ class LoginApp {
             }
 
             this.showSuccess();
-
-            // ...
             
         } catch (err) {
             this.showError('password', err.message);
@@ -104,7 +102,7 @@ class LoginApp {
             document.getElementById('successMessage').classList.add('show');
         }, 300);
         
-        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
+        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
     }
 }
 new LoginApp();

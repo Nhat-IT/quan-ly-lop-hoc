@@ -461,7 +461,12 @@
         }
 
         function performLogout() { localStorage.removeItem('isLoggedIn'); window.location.href = '/login/login.html'; }
-
+        
+        // [SỬA LẠI] Dùng hàm từ auth.js
+        function performLogout() { 
+            auth.logout(); 
+        }
+        
         init();
     </script>
 </body>
