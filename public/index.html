@@ -141,9 +141,10 @@
                     <option value="warning" class="text-danger">🔴 Cảnh báo</option>
                 </select>
             </div>
-            <div class="mt-2 mt-md-0 d-flex gap-2">
-                <button class="btn btn-success btn-sm w-100 w-md-auto" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-                <a href="diemdanh.html" class="btn btn-primary btn-sm w-100 w-md-auto" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
+            
+            <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
+                <button class="btn btn-success btn-sm" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+                <a href="diemdanh.html" class="btn btn-primary btn-sm" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
             </div>
         </div>
 
@@ -210,7 +211,7 @@
                 if(!res.ok) throw new Error('Lỗi Server');
                 
                 db = await res.json();
-                globalTotalStudents = db.globalTotal || 0; // Tổng sĩ số lớp (cố định)
+                globalTotalStudents = db.globalTotal || 0; 
 
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
@@ -262,8 +263,6 @@
             
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm: Tất cả' : `Năm: ${selYear}`;
-            
-            // Hiển thị tổng sĩ số lớp (Card to)
             document.getElementById('totalCount').innerText = globalTotalStudents;
 
             const subSelect = document.getElementById('subFilter');
@@ -286,17 +285,15 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            // Reset đếm số lượng hiển thị trên bộ lọc
             let visibleCount = 0;
 
             if (!currentData.data || currentData.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng.</td></tr>';
                 document.getElementById('warningCount').innerText = 0;
                 document.getElementById('subWarningCount').innerText = 0;
-                document.getElementById('filterTotalCount').innerText = 0; // Update số lượng = 0
+                document.getElementById('filterTotalCount').innerText = 0; 
                 return;
             }
-            
             const search = document.getElementById('search').value.toLowerCase();
             const subFilter = document.getElementById('subFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
@@ -317,12 +314,7 @@
                 let isWarning = total >= 2;
                 if (statusFilter === 'warning' && !isWarning) return;
                 
-                // Nếu sinh viên có dữ liệu vắng hiển thị ra -> Tăng biến đếm
-                if (total > 0) {
-                    visibleCount++;
-                } else {
-                    return; // Không có dữ liệu vắng sau khi lọc thì bỏ qua
-                }
+                if (total > 0) visibleCount++; else return;
 
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
                 const rowClass = isWarning ? 'alert-row' : '';
@@ -349,12 +341,8 @@
                     });
                 }
             });
-            
-            // Cập nhật các con số
             document.getElementById('warningCount').innerText = warnCount;
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
-            
-            // [MỚI] Cập nhật con số "Sinh viên vắng" trên thanh bộ lọc
             document.getElementById('filterTotalCount').innerText = visibleCount;
         }
 
