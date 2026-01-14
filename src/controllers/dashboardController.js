@@ -2,8 +2,8 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // [ĐÃ SỬA] Sửa lỗi JOIN: st.id thay vì st.student_id
-        const sql = `
+        // 1. Lấy dữ liệu vắng (Giữ nguyên logic cũ)
+        const sqlAbsent = `
             SELECT 
                 st.id AS student_id, st.mssv, st.full_name, st.class_name,
                 s.subject_name, s.semester, 
@@ -17,21 +17,32 @@ exports.getDashboardData = async (req, res) => {
             WHERE ar.is_absent = 1
             ORDER BY ses.session_date DESC
         `;
+
+        // 2. [MỚI] Đếm tổng sinh viên của lớp 25TH01 và 25TH02
+        const sqlCount = `
+            SELECT COUNT(*) as total FROM students 
+            WHERE class_name IN ('25TH01', '25TH02')
+        `;
+
+        const [rows] = await db.query(sqlAbsent);
+        const [countResult] = await db.query(sqlCount);
         
-        const [rows] = await db.query(sql);
+        // Lấy con số tổng thực tế
+        const realTotalStudents = countResult[0].total || 0;
 
         const result = {
-            "HK1": { total: 0, subjects: [], data: [] },
-            "HK2": { total: 0, subjects: [], data: [] },
-            "HK3": { total: 0, subjects: [], data: [] }
+            "HK1": { total: realTotalStudents, subjects: [], data: [] },
+            "HK2": { total: realTotalStudents, subjects: [], data: [] },
+            "HK3": { total: realTotalStudents, subjects: [], data: [] },
+            "globalTotal": realTotalStudents // Gửi kèm tổng toàn cục
         };
 
         const tempMap = {};
 
         rows.forEach(row => {
             const sem = row.semester || 'HK1';
-            // Đảm bảo semester tồn tại trong result
-            if (!result[sem]) result[sem] = { total: 0, subjects: [], data: [] };
+            // Đảm bảo semester tồn tại
+            if (!result[sem]) result[sem] = { total: realTotalStudents, subjects: [], data: [] };
 
             const key = `${sem}_${row.mssv}`;
             
@@ -59,9 +70,6 @@ exports.getDashboardData = async (req, res) => {
                 result[sem].subjects.push(row.subject_name);
             }
         });
-
-        // Tính tổng số sinh viên vắng
-        for (const k in result) result[k].total = result[k].data.length;
 
         res.json(result);
     } catch (error) {

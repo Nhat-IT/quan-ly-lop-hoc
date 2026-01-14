@@ -8,16 +8,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="auth.js"></script> 
     <style>
-        body { background-color: #f4f7fa; font-family: 'Segoe UI', sans-serif; }
-        .sidebar { width: 250px; background: #2c3e50; min-height: 100vh; color: white; position: fixed; }
-        .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 15px 20px; font-weight: 500; cursor: pointer; }
+        body { background-color: #f4f7fa; font-family: 'Segoe UI', sans-serif; padding-bottom: 70px; /* Chừa chỗ cho mobile nav */ }
+        
+        /* Sidebar cho PC */
+        .sidebar { width: 250px; background: #2c3e50; min-height: 100vh; color: white; position: fixed; top: 0; left: 0; z-index: 100; transition: 0.3s; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 15px 20px; font-weight: 500; cursor: pointer; display: flex; align-items: center; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #34495e; color: white; border-left: 4px solid #3498db; }
-        .main-content { margin-left: 250px; padding: 20px; }
-        .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 10px; }
+        .sidebar .nav-link i { width: 25px; text-align: center; margin-right: 10px; }
+        
+        .main-content { margin-left: 250px; padding: 25px; transition: 0.3s; }
+        .card { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+
+        /* RESPONSIVE CHO MOBILE */
         @media (max-width: 768px) {
-            .sidebar { width: 70px; }
-            .sidebar .nav-link span { display: none; }
-            .main-content { margin-left: 70px; }
+            /* Sidebar biến thành Bottom Navigation Bar */
+            .sidebar { 
+                width: 100%; height: auto; min-height: auto; 
+                position: fixed; bottom: 0; top: auto; left: 0;
+                flex-direction: row !important; justify-content: space-around;
+                padding: 0; border-top: 1px solid rgba(255,255,255,0.1);
+            }
+            .sidebar h4 { display: none; } /* Ẩn tiêu đề ADMIN */
+            .sidebar .nav { flex-direction: row !important; width: 100%; justify-content: space-around; }
+            .sidebar .nav-item { flex: 1; text-align: center; }
+            .sidebar .nav-link { 
+                flex-direction: column; padding: 10px 0; font-size: 0.8rem; border-left: none !important; border-top: 4px solid transparent; 
+            }
+            .sidebar .nav-link i { margin-right: 0; font-size: 1.2rem; margin-bottom: 2px; }
+            .sidebar .nav-link.active { border-top: 4px solid #3498db; border-left: none; }
+            
+            .main-content { margin-left: 0; padding: 15px; padding-bottom: 80px; }
+            
+            /* Ẩn bớt cột không quan trọng trên bảng mobile */
+            .table-responsive { overflow-x: auto; }
+            .table th, .table td { white-space: nowrap; }
         }
     </style>
 </head>
@@ -26,62 +50,75 @@
     <div class="sidebar d-flex flex-column p-3">
         <h4 class="text-center mb-4 fw-bold"><i class="fas fa-shield-alt"></i> <span>ADMIN</span></h4>
         <ul class="nav flex-column">
-            <li class="nav-item"><a href="index.html" class="nav-link"><i class="fas fa-home me-2"></i> <span>Trang Chủ</span></a></li>
-            <li class="nav-item"><a onclick="showTab('users')" class="nav-link active" id="nav-users"><i class="fas fa-users-cog me-2"></i> <span>Tài Khoản</span></a></li>
-            <li class="nav-item"><a onclick="showTab('logs')" class="nav-link" id="nav-logs"><i class="fas fa-history me-2"></i> <span>Nhật Ký</span></a></li>
-            <li class="nav-item mt-auto"><a onclick="performLogout()" class="nav-link text-danger"><i class="fas fa-sign-out-alt me-2"></i> <span>Đăng Xuất</span></a></li>
+            <li class="nav-item"><a href="index.html" class="nav-link"><i class="fas fa-home"></i> <span>Trang Chủ</span></a></li>
+            <li class="nav-item"><a onclick="showTab('users')" class="nav-link active" id="nav-users"><i class="fas fa-users-cog"></i> <span>Tài Khoản</span></a></li>
+            <li class="nav-item"><a onclick="showTab('logs')" class="nav-link" id="nav-logs"><i class="fas fa-history"></i> <span>Nhật Ký</span></a></li>
+            <li class="nav-item mt-auto"><a onclick="performLogout()" class="nav-link text-danger"><i class="fas fa-sign-out-alt"></i> <span>Thoát</span></a></li>
         </ul>
     </div>
 
     <div class="main-content">
         <div id="tab-users">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3>Quản Lý Tài Khoản</h3>
-                <button class="btn btn-primary" onclick="openUserModal()"><i class="fas fa-plus"></i> Thêm Tài Khoản</button>
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h3 class="mb-0 fw-bold text-primary">Quản Lý Tài Khoản</h3>
+                <button class="btn btn-primary shadow-sm" onclick="openUserModal()"><i class="fas fa-plus"></i> <span class="d-none d-sm-inline">Thêm Tài Khoản</span></button>
             </div>
-            <div class="card p-0">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th><th>Tên Đăng Nhập</th><th>Họ Tên</th><th>Vai Trò</th><th>Ngày Tạo</th><th class="text-end">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody"></tbody>
-                </table>
+            
+            <div class="card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" width="50">STT</th>
+                                <th>Tên Đăng Nhập</th>
+                                <th>Họ Tên</th>
+                                <th>Vai Trò</th>
+                                <th class="d-none d-md-table-cell">Ngày Tạo</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div id="tab-logs" style="display: none;">
-            <h3 class="mb-4">Lịch Sử Hoạt Động</h3>
-            <div class="card p-0">
-                <table class="table table-striped mb-0">
-                    <thead class="table-dark">
-                        <tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th><th>Chi tiết</th></tr>
-                    </thead>
-                    <tbody id="logTableBody"></tbody>
-                </table>
+            <h3 class="mb-4 fw-bold text-primary">Lịch Sử Hoạt Động</h3>
+            <div class="card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th><th>Chi tiết</th></tr>
+                        </thead>
+                        <tbody id="logTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="userModal">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" id="userModalTitle">Thêm Tài Khoản</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header border-0"><h5 class="modal-title fw-bold" id="userModalTitle">Thêm Tài Khoản</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="userId">
-                    <div class="mb-3"><label>Tên đăng nhập</label><input type="text" class="form-control" id="username"></div>
-                    <div class="mb-3"><label>Mật khẩu (Để trống nếu không đổi)</label><input type="password" class="form-control" id="password"></div>
-                    <div class="mb-3"><label>Họ và tên</label><input type="text" class="form-control" id="fullname"></div>
-                    <div class="mb-3"><label>Vai trò</label>
+                    <div class="mb-3"><label class="fw-bold small">Tên đăng nhập</label><input type="text" class="form-control" id="username"></div>
+                    <div class="mb-3"><label class="fw-bold small">Mật khẩu</label><input type="password" class="form-control" id="password" placeholder="Để trống nếu không đổi"></div>
+                    <div class="mb-3"><label class="fw-bold small">Họ và tên</label><input type="text" class="form-control" id="fullname"></div>
+                    <div class="mb-3"><label class="fw-bold small">Vai trò</label>
                         <select class="form-select" id="role">
-                            <option value="teacher">Ban cán sự (Điểm danh)</option>
+                            <option value="teacher">Giáo Viên (Điểm danh)</option>
                             <option value="viewer">Viewer (Chỉ xem)</option>
                             <option value="admin">Quản Trị Viên</option>
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button class="btn btn-primary" onclick="saveUser()">Lưu</button></div>
+                <div class="modal-footer border-0 bg-light">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-primary px-4" onclick="saveUser()">Lưu</button>
+                </div>
             </div>
         </div>
     </div>
@@ -103,9 +140,24 @@
                 const res = await fetch('/api/data/admin/users');
                 const users = await res.json();
                 const tbody = document.getElementById('userTableBody'); tbody.innerHTML = '';
-                users.forEach(u => {
+                
+                // [ĐÃ SỬA] Sử dụng index + 1 để làm STT
+                users.forEach((u, index) => {
                     let badge = u.role==='admin'?'bg-danger':(u.role==='teacher'?'bg-success':'bg-info text-dark');
-                    tbody.insertAdjacentHTML('beforeend', `<tr><td>${u.id}</td><td class="fw-bold">${u.username}</td><td>${u.full_name}</td><td><span class="badge ${badge}">${u.role.toUpperCase()}</span></td><td>${new Date(u.created_at).toLocaleDateString('vi-VN')}</td><td class="text-end"><button class="btn btn-sm btn-warning" onclick="editUser(${u.id},'${u.username}','${u.full_name}','${u.role}')"><i class="fas fa-pen"></i></button> ${u.username!=='admin'?`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>`:''}</td></tr>`);
+                    let roleName = u.role==='admin'?'Quản trị':(u.role==='teacher'?'Giáo viên':'Người xem');
+                    
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td class="text-center fw-bold text-secondary">${index + 1}</td> <td class="fw-bold text-primary">${u.username}</td>
+                            <td>${u.full_name}</td>
+                            <td><span class="badge ${badge}">${roleName}</span></td>
+                            <td class="d-none d-md-table-cell text-muted small">${new Date(u.created_at).toLocaleDateString('vi-VN')}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" onclick="editUser(${u.id},'${u.username}','${u.full_name}','${u.role}')"><i class="fas fa-pen"></i></button> 
+                                ${u.username!=='admin' ? `<button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}
+                            </td>
+                        </tr>
+                    `);
                 });
             } catch(e) { console.error(e); }
         }
@@ -129,11 +181,12 @@
             } catch(e) { alert('Lỗi server'); }
         }
         async function deleteUser(id) { if(confirm('Xóa tài khoản này?')) { await fetch(`/api/data/admin/users/${id}`, { method: 'DELETE' }); loadUsers(); } }
+        
         async function loadLogs() {
             try {
                 const res = await fetch('/api/data/admin/logs'); const logs = await res.json();
                 const tbody = document.getElementById('logTableBody'); tbody.innerHTML = '';
-                logs.forEach(l => tbody.insertAdjacentHTML('beforeend', `<tr><td>${new Date(l.created_at).toLocaleString('vi-VN')}</td><td class="fw-bold">${l.username}</td><td>${l.action}</td><td class="small text-muted">${l.details||''}</td></tr>`));
+                logs.forEach(l => tbody.insertAdjacentHTML('beforeend', `<tr><td class="text-muted small">${new Date(l.created_at).toLocaleString('vi-VN')}</td><td class="fw-bold">${l.username}</td><td>${l.action}</td><td class="small text-muted text-wrap" style="max-width: 200px;">${l.details||''}</td></tr>`));
             } catch(e) { console.error(e); }
         }
         init();
