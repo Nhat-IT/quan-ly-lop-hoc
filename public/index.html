@@ -36,7 +36,7 @@
         }
         
         /* =========================================
-           BẢNG DỮ LIỆU (ĐÃ TỐI ƯU GIAO DIỆN)
+           BẢNG DỮ LIỆU
            ========================================= */
         .table-card { 
             background: white; border-radius: 15px; padding: 20px; 
@@ -48,8 +48,8 @@
         /* --- ĐỊNH DẠNG CỘT CHUNG --- */
         .table thead th, .table tbody td {
             vertical-align: middle;
-            white-space: nowrap; /* Không xuống dòng */
-            padding: 12px 8px;   /* Khoảng cách đệm */
+            white-space: nowrap; 
+            padding: 12px 8px;   
         }
 
         .table thead th {
@@ -59,49 +59,49 @@
         }
 
         /* -----------------------------------------------------------
-           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH CÁC CỘT
+           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH (ĐÃ CÂN ĐỐI)
            ----------------------------------------------------------- */
 
-        /* 1. CỘT STT (5%) - Căn giữa */
+        /* 1. CỘT STT - Căn giữa, Cách lề TRÁI 24px */
         .table th:first-child, .table td:first-child {
             text-align: center;
-            width: 5%;
+            padding-left: 24px !important; /* [ĐÃ SỬA] Cách đều lề trái */
+            width: 60px; /* Cố định chiều rộng tối thiểu */
         }
 
-        /* 2. CỘT HỌ TÊN (25%) - Dịch sang phải 50px */
+        /* 2. CỘT HỌ TÊN - Căn trái, Đẩy sang phải 30px */
         .table th:nth-child(2), .table td:nth-child(2) {
             text-align: left;
-            padding-left: 50px !important; /* [ĐÃ SỬA] Đẩy chữ sang phải */
+            padding-left: 30px !important; 
             width: 25%;
         }
 
-        /* 3. CỘT MÔN HỌC (25%) - Dịch sang phải 40px, thẳng hàng */
+        /* 3. CỘT MÔN HỌC - Căn trái, Đẩy sang phải 30px (Thẳng hàng với Họ tên) */
         .table th:nth-child(3), .table td:nth-child(3) {
             text-align: left;
-            padding-left: 40px !important; /* [ĐÃ SỬA] Đẩy chữ sang phải */
+            padding-left: 30px !important; /* [ĐÃ SỬA] Đồng bộ padding để thẳng hàng */
             width: 25%;
         }
 
-        /* 4. CỘT NGÀY (10%) - Thu hẹp để gần Buổi */
-        .table th:nth-child(4), .table td:nth-child(4) {
+        /* 4. NGÀY & BUỔI - Gần nhau hơn */
+        .table th:nth-child(4), .table td:nth-child(4) { /* Ngày */
             text-align: center;
-            width: 10%; /* [ĐÃ SỬA] Nhỏ lại cho gọn */
+            width: 100px;
+        }
+        .table th:nth-child(5), .table td:nth-child(5) { /* Buổi */
+            text-align: center;
+            width: 80px;
         }
 
-        /* 5. CỘT BUỔI (8%) - Thu hẹp để gần Ngày */
-        .table th:nth-child(5), .table td:nth-child(5) {
-            text-align: center;
-            width: 8%;  /* [ĐÃ SỬA] Nhỏ lại cho gọn */
-        }
-
-        /* 6. CÁC CỘT CÒN LẠI (Lý do, Minh chứng, Vắng) */
-        .table th:nth-child(6), .table td:nth-child(6) { text-align: center; width: 12%; } /* Lý do */
-        .table th:nth-child(7), .table td:nth-child(7) { text-align: center; width: 8%; }  /* Minh chứng */
+        /* 5. CÁC CỘT GIỮA (Lý do, Minh chứng) */
+        .table th:nth-child(6), .table td:nth-child(6) { text-align: center; width: 15%; }
+        .table th:nth-child(7), .table td:nth-child(7) { text-align: center; width: 80px; }
         
+        /* 6. CỘT VẮNG - Căn giữa, Cách lề PHẢI 24px (Đối xứng với STT) */
         .table th:last-child, .table td:last-child {
             text-align: center;
-            padding-right: 20px !important; 
-            width: 7%;
+            padding-right: 24px !important; /* [ĐÃ SỬA] Cách đều lề phải */
+            width: 80px;
         }
 
         /* ----------------------------------------------------------- */
@@ -113,17 +113,17 @@
             padding: 6px 10px; font-weight: 600; 
             
             display: inline-block;
-            width: auto;                  /* Tự co dãn */
-            max-width: calc(100% - 30px); /* Không tràn ô */
+            width: auto;                  
+            max-width: calc(100% - 30px); 
             
             white-space: nowrap; 
             overflow: hidden; 
-            text-overflow: ellipsis;      /* 3 chấm nếu quá dài */
+            text-overflow: ellipsis;      
             vertical-align: middle;
             text-align: left;             
         }
         
-        /* Các nút bấm nhỏ */
+        /* Nút con mắt, nút tải */
         .btn-action { 
             width: 32px; height: 32px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
@@ -136,11 +136,9 @@
         .alert-row { background-color: #fff5f5 !important; }
         .alert-row td:first-child { border-left: 5px solid #dc3545; }
         
-        /* Card chi tiết */
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
 
-        /* Ô sửa lý do */
         .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
         .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
@@ -158,13 +156,14 @@
             .btn i { margin: 0; }
             #semesterDisplay, #yearHeaderDisplay { display: none; }
             .table-card { padding: 10px; }
-            .badge-sub { max-width: 150px; }
             
-            /* Reset padding trên mobile để không bị lệch */
+            /* Reset padding trên mobile */
+            .table th:first-child, .table td:first-child { padding-left: 8px !important; }
+            .table th:last-child, .table td:last-child { padding-right: 8px !important; }
             .table th:nth-child(2), .table td:nth-child(2),
-            .table th:nth-child(3), .table td:nth-child(3) {
-                padding-left: 10px !important;
-            }
+            .table th:nth-child(3), .table td:nth-child(3) { padding-left: 10px !important; }
+            
+            .badge-sub { max-width: 150px; }
         }
     </style>
 </head>
@@ -273,7 +272,8 @@
                             <th>Ngày</th>
                             <th>Buổi</th>
                             <th>Lý do</th>
-                            <th>Minh chứng</th> <th>Vắng</th>
+                            <th>Minh chứng</th>
+                            <th>Vắng</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -289,7 +289,7 @@
             <div class="modal-content">
                 <div class="modal-body text-center p-0">
                     <img id="proofImg" class="img-fluid w-100" style="display:none;">
-                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có minh chứng</h5></div>
+                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có ảnh</h5></div>
                 </div>
             </div>
         </div>
