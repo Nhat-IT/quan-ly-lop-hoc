@@ -14,125 +14,143 @@
     <script src="auth.js"></script> 
     
     <style>
-    /* =========================================
-       CẤU HÌNH CHUNG
-       ========================================= */
-    body { 
-        background-color: #f0f2f5; 
-        font-family: 'Segoe UI', sans-serif; 
-        padding-bottom: 60px; 
-    }
+        /* =========================================
+           CẤU HÌNH CHUNG
+           ========================================= */
+        body { 
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', sans-serif; 
+            padding-bottom: 60px; 
+        }
 
-    /* =========================================
-       THẺ THỐNG KÊ (CARDS)
-       ========================================= */
-    .stat-card { 
-        border: none; border-radius: 15px; background: white; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; 
-    }
-    .stat-card:hover { transform: translateY(-3px); }
-    .icon-box { 
-        width: 55px; height: 55px; border-radius: 12px; 
-        display: flex; align-items: center; justify-content: center; 
-        font-size: 1.8rem; flex-shrink: 0; 
-    }
-    
-    /* =========================================
-       BẢNG DỮ LIỆU (TABLE)
-       ========================================= */
-    .table-card { 
-        background: white; border-radius: 15px; padding: 20px; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; 
-    }
-    .table-responsive { overflow-x: auto; }
-    .table { margin-bottom: 0; }
-    
-    /* Header bảng */
-    .table thead th {
-        vertical-align: middle; font-weight: 700; color: #495057; 
-        text-transform: uppercase; font-size: 0.85rem;
-        background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; 
-        white-space: nowrap; text-align: center; /* Mặc định căn giữa */
-    }
-
-    /* Nội dung bảng */
-    .table tbody td { 
-        vertical-align: middle; padding: 12px; white-space: nowrap; 
-    }
-
-    /* -----------------------------------------------------------
-       [BẠN SỬA Ở ĐÂY] - CẤU HÌNH VỊ TRÍ CỘT
-       ----------------------------------------------------------- */
-    
-    /* 1. Cấu hình Cột HỌ VÀ TÊN (Cột thứ 2) */
-    .table th:nth-child(2), 
-    .table td:nth-child(2) {
-        text-align: left !important;    /* Bắt buộc căn trái */
-        padding-left: 40px !important;  /* Đẩy chữ sang phải (Tăng số này để dịch sang phải nhiều hơn) */
-    }
-
-    /* 2. Cấu hình Cột MÔN HỌC (Cột thứ 3) */
-    .table th:nth-child(3), 
-    .table td:nth-child(3) {
-        text-align: left !important;    /* Bắt buộc căn trái để thẳng hàng */
-        padding-left: 40px !important;  /* Đẩy chữ sang phải (Chỉnh số này để vừa ý bạn) */
-        width: 30%;                     /* Đặt độ rộng tương đối để tên môn có chỗ hiển thị */
-    }
-
-    /* ----------------------------------------------------------- */
-
-    /* Badge tên môn học */
-    .badge-sub { 
-        background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; 
-        border-radius: 6px; padding: 6px 10px; font-weight: 600; 
+        /* Card thống kê */
+        .stat-card { 
+            border: none; border-radius: 15px; background: white; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; 
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .icon-box { 
+            width: 55px; height: 55px; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.8rem; flex-shrink: 0; 
+        }
         
-        display: inline-block;
-        width: auto;                  /* Tự co dãn theo chữ */
-        max-width: calc(100% - 30px); /* Giới hạn chiều rộng để không đè lên icon xóa */
+        /* =========================================
+           BẢNG DỮ LIỆU (QUAN TRỌNG)
+           ========================================= */
+        .table-card { 
+            background: white; border-radius: 15px; padding: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; 
+        }
+        .table-responsive { overflow-x: auto; }
+        .table { margin-bottom: 0; }
         
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;      /* Hiện dấu ... khi chạm giới hạn */
-        vertical-align: middle;
-        text-align: left;             /* Đảm bảo chữ bên trong badge cũng căn trái */
-    }
-    
-    /* Các nút bấm nhỏ */
-    .btn-action { 
-        width: 32px; height: 32px; border-radius: 50%; 
-        display: flex; align-items: center; justify-content: center; 
-        border: 1px solid #dee2e6; background: white; color: #6c757d; 
-        transition: 0.2s; cursor: pointer; margin: 0 auto; 
-    }
-    .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
-    
-    .alert-row { background-color: #fff5f5 !important; }
-    .alert-row td:first-child { border-left: 5px solid #dc3545; }
-    
-    .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
-    .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
+        /* --- ĐỊNH DẠNG CỘT --- */
+        .table thead th, .table tbody td {
+            vertical-align: middle;
+            white-space: nowrap; /* Không xuống dòng */
+            padding: 12px 8px;   /* Khoảng cách đệm trong ô */
+        }
 
-    .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
-    .editable-reason:hover { background-color: #fff3cd; }
-    
-    .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
-    .editable-reason:hover .edit-icon { opacity: 1; }
+        .table thead th {
+            font-weight: 700; color: #495057; text-transform: uppercase; 
+            font-size: 0.85rem; background-color: #f8f9fa; 
+            border-bottom: 2px solid #dee2e6;
+        }
 
-    .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
-    .subject-col:hover .delete-absence-icon { opacity: 1; }
-    .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
+        /* 1. CỘT STT (Cột 1) - Căn giữa, cách lề trái 1 khoảng */
+        .table th:first-child, .table td:first-child {
+            text-align: center;
+            padding-left: 20px !important; /* [CHỈNH Ở ĐÂY] Cách lề trái */
+            width: 5%;
+        }
 
-    /* Mobile Responsive */
-    @media (max-width: 576px) {
-        .navbar .container { padding-left: 10px; padding-right: 10px; }
-        .stat-card { margin-bottom: 10px; }
-        .btn span { display: none; } 
-        .btn i { margin: 0; }
-        #semesterDisplay, #yearHeaderDisplay { display: none; }
-        .table-card { padding: 10px; }
-        .badge-sub { max-width: 150px; }
-    }
-</style>
+        /* 2. CỘT HỌ TÊN (Cột 2) - Căn trái */
+        .table th:nth-child(2), .table td:nth-child(2) {
+            text-align: left;
+            padding-left: 15px;
+            width: 20%;
+        }
+
+        /* 3. CỘT MÔN HỌC (Cột 3) - Căn trái, thẳng hàng */
+        .table th:nth-child(3), .table td:nth-child(3) {
+            text-align: left; /* Đảm bảo tên môn luôn bắt đầu từ trái */
+            width: 25%;
+        }
+
+        /* 4. CÁC CỘT GIỮA (Ngày, Buổi, Lý do, Minh chứng) - Căn giữa */
+        .table th:nth-child(4), .table td:nth-child(4),
+        .table th:nth-child(5), .table td:nth-child(5),
+        .table th:nth-child(6), .table td:nth-child(6),
+        .table th:nth-child(7), .table td:nth-child(7) {
+            text-align: center;
+        }
+
+        /* 5. CỘT TỔNG VẮNG (Cột cuối) - Căn giữa, cách lề phải 1 khoảng */
+        .table th:last-child, .table td:last-child {
+            text-align: center;
+            padding-right: 20px !important; /* [CHỈNH Ở ĐÂY] Cách lề phải */
+            width: 10%;
+        }
+
+        /* --- BADGE TÊN MÔN HỌC --- */
+        .badge-sub { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            color: #495057; 
+            border-radius: 6px; 
+            padding: 6px 10px; 
+            font-weight: 600; 
+            
+            display: inline-block;
+            width: auto;                  /* Tự động co dãn theo độ dài tên */
+            max-width: 100%;              /* Không tràn ra ngoài cột */
+            
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;      /* Hiện 3 chấm nếu quá dài */
+            vertical-align: middle;
+            text-align: left;             /* Chữ bên trong căn trái */
+        }
+        
+        /* Các nút bấm nhỏ */
+        .btn-action { 
+            width: 32px; height: 32px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 1px solid #dee2e6; background: white; color: #6c757d; 
+            transition: 0.2s; cursor: pointer; margin: 0 auto; 
+        }
+        .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
+        
+        /* Dòng cảnh báo */
+        .alert-row { background-color: #fff5f5 !important; }
+        .alert-row td:first-child { border-left: 5px solid #dc3545; }
+        
+        /* Card chi tiết */
+        .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
+
+        /* Ô sửa lý do */
+        .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
+        .editable-reason:hover { background-color: #fff3cd; }
+        .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
+        .editable-reason:hover .edit-icon { opacity: 1; }
+
+        .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
+        .subject-col:hover .delete-absence-icon { opacity: 1; }
+        .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
+
+        /* Mobile Responsive */
+        @media (max-width: 576px) {
+            .navbar .container { padding-left: 10px; padding-right: 10px; }
+            .stat-card { margin-bottom: 10px; }
+            .btn span { display: none; } 
+            .btn i { margin: 0; }
+            #semesterDisplay, #yearHeaderDisplay { display: none; }
+            .table-card { padding: 10px; }
+            .badge-sub { max-width: 150px; }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm sticky-top">
@@ -233,13 +251,13 @@
                 <table class="table table-hover align-middle mb-0" id="mainTable">
                     <thead class="bg-light">
                         <tr>
-                            <th class="text-center" width="40">STT</th>
-                            <th class="ps-3">Họ và tên</th>
+                            <th>STT</th>
+                            <th>Họ và tên</th>
                             <th>Môn học</th>
-                            <th class="text-center">Ngày</th>
-                            <th class="text-center">Buổi</th>
-                            <th class="text-center">Lý do</th>
-                            <th class="text-center">Minh chứng</th> <th class="text-center">Vắng</th>
+                            <th>Ngày</th>
+                            <th>Buổi</th>
+                            <th>Lý do</th>
+                            <th>Minh chứng</th> <th>Vắng</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -408,7 +426,7 @@
                         const html = `
                             <tr class="${rowClass}">
                                 ${isFirstRow ? `<td class="text-center fw-bold text-muted small" rowspan="${rowspan}">${stt++}</td>` : ''}
-                                ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
+                                ${isFirstRow ? `<td class="text-start" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
                                 <td class="text-start subject-col"><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
                                 <td class="text-center small">${dateStr}</td>
                                 <td class="text-center small">${d.session_time || '-'}</td>
