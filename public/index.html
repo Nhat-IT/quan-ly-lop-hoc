@@ -47,9 +47,9 @@
         @media (max-width: 576px) {
             .navbar .container { padding-left: 10px; padding-right: 10px; }
             .stat-card { margin-bottom: 10px; }
-            .btn span { display: none; } /* Ẩn chữ nút trên mobile nếu cần */
+            .btn span { display: none; }
             .btn i { margin: 0; }
-            #semesterDisplay, #yearHeaderDisplay { display: none; } /* Ẩn thông tin năm trên header mobile cho gọn */
+            #semesterDisplay, #yearHeaderDisplay { display: none; }
             .table-card { padding: 10px; }
         }
     </style>
@@ -68,7 +68,7 @@
                 <div class="d-flex align-items-center text-white border-start border-white ps-3 ms-2" style="height: 35px;">
                     <div class="text-end lh-1 me-2">
                         <div class="fw-bold" id="userNameDisplay" style="font-size: 0.9rem;">--</div>
-                        </div>
+                    </div>
                     <i class="fas fa-user-circle fs-3"></i>
                 </div>
 
@@ -127,7 +127,7 @@
                 </select>
                 
                 <div class="bg-white px-2 py-1 rounded border fw-bold text-secondary shadow-sm" style="font-size: 0.9rem;">
-                    Sĩ số: <span class="text-primary" id="filterTotalCount">--</span>
+                    Sinh viên vắng: <span class="text-danger" id="filterTotalCount">0</span>
                 </div>
 
                 <input type="text" class="form-control form-control-sm w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm kiếm...">
@@ -210,7 +210,7 @@
                 if(!res.ok) throw new Error('Lỗi Server');
                 
                 db = await res.json();
-                globalTotalStudents = db.globalTotal || 0;
+                globalTotalStudents = db.globalTotal || 0; // Tổng sĩ số lớp (cố định)
 
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
@@ -224,7 +224,6 @@
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                // Chỉ hiển thị tên, bỏ role
                 document.getElementById('userNameDisplay').innerText = user.full_name || user.username;
             }
         }
@@ -240,7 +239,6 @@
             }
         }
 
-        // ... (Giữ nguyên các hàm logic populateYearFilter, render, renderTable, v.v. từ code cũ) ...
         function populateYearFilter() {
             const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); 
             if (allSubjectsInfo && allSubjectsInfo.length > 0) allSubjectsInfo.forEach(s => { if (s.school_year) years.add(s.school_year); });
@@ -264,8 +262,9 @@
             
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm: Tất cả' : `Năm: ${selYear}`;
+            
+            // Hiển thị tổng sĩ số lớp (Card to)
             document.getElementById('totalCount').innerText = globalTotalStudents;
-            document.getElementById('filterTotalCount').innerText = globalTotalStudents;
 
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
@@ -286,12 +285,18 @@
         function renderTable(currentData) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            
+            // Reset đếm số lượng hiển thị trên bộ lọc
+            let visibleCount = 0;
+
             if (!currentData.data || currentData.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng.</td></tr>';
                 document.getElementById('warningCount').innerText = 0;
                 document.getElementById('subWarningCount').innerText = 0;
+                document.getElementById('filterTotalCount').innerText = 0; // Update số lượng = 0
                 return;
             }
+            
             const search = document.getElementById('search').value.toLowerCase();
             const subFilter = document.getElementById('subFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
@@ -307,10 +312,18 @@
                     const matchYear = yearFilter === 'all' || recordYear === yearFilter;
                     return matchSub && matchYear;
                 });
+                
                 let total = visibleDetails.length;
                 let isWarning = total >= 2;
                 if (statusFilter === 'warning' && !isWarning) return;
-                if (total === 0) return;
+                
+                // Nếu sinh viên có dữ liệu vắng hiển thị ra -> Tăng biến đếm
+                if (total > 0) {
+                    visibleCount++;
+                } else {
+                    return; // Không có dữ liệu vắng sau khi lọc thì bỏ qua
+                }
+
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
                 const rowClass = isWarning ? 'alert-row' : '';
                 const totalColor = isWarning ? 'text-danger' : 'text-success';
@@ -336,8 +349,13 @@
                     });
                 }
             });
+            
+            // Cập nhật các con số
             document.getElementById('warningCount').innerText = warnCount;
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
+            
+            // [MỚI] Cập nhật con số "Sinh viên vắng" trên thanh bộ lọc
+            document.getElementById('filterTotalCount').innerText = visibleCount;
         }
 
         function editReason(td, recordId) {
