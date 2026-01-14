@@ -15,189 +15,122 @@
     
     <style>
     /* =========================================
-       CẤU HÌNH CHUNG (BODY & FONT)
+       CẤU HÌNH CHUNG
        ========================================= */
     body { 
         background-color: #f0f2f5; 
         font-family: 'Segoe UI', sans-serif; 
-        padding-bottom: 60px; /* Chừa chỗ cho footer/mobile nav */
+        padding-bottom: 60px; 
     }
 
     /* =========================================
-       CARD THỐNG KÊ (STATISTIC CARDS)
+       THẺ THỐNG KÊ (CARDS)
        ========================================= */
     .stat-card { 
-        border: none; 
-        border-radius: 15px; 
-        background: white; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-        transition: 0.2s; 
+        border: none; border-radius: 15px; background: white; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; 
     }
-    .stat-card:hover { 
-        transform: translateY(-3px); /* Hiệu ứng nổi lên khi di chuột */
-    }
+    .stat-card:hover { transform: translateY(-3px); }
     .icon-box { 
-        width: 55px; 
-        height: 55px; 
-        border-radius: 12px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        font-size: 1.8rem; 
-        flex-shrink: 0; 
+        width: 55px; height: 55px; border-radius: 12px; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 1.8rem; flex-shrink: 0; 
     }
     
     /* =========================================
-       BẢNG DỮ LIỆU (TABLE STYLES)
+       BẢNG DỮ LIỆU (TABLE)
        ========================================= */
     .table-card { 
-        background: white; 
-        border-radius: 15px; 
-        padding: 20px; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-        overflow: hidden; 
+        background: white; border-radius: 15px; padding: 20px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; 
     }
-    .table-responsive { 
-        overflow-x: auto; /* Cho phép cuộn ngang trên màn hình nhỏ */
-    }
-    
+    .table-responsive { overflow-x: auto; }
     .table { margin-bottom: 0; }
     
-    /* Style cho Header của bảng */
+    /* Header bảng */
     .table thead th {
-        vertical-align: middle; 
-        font-weight: 700; 
-        color: #495057; 
-        text-transform: uppercase; 
-        font-size: 0.85rem;
-        background-color: #f8f9fa; 
-        border-bottom: 2px solid #dee2e6; 
-        white-space: nowrap;
-        text-align: center; /* Mặc định căn giữa tiêu đề */
+        vertical-align: middle; font-weight: 700; color: #495057; 
+        text-transform: uppercase; font-size: 0.85rem;
+        background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; 
+        white-space: nowrap; text-align: center; /* Mặc định căn giữa */
     }
 
-    /* Style cho các ô dữ liệu */
+    /* Nội dung bảng */
     .table tbody td { 
-        vertical-align: middle; 
-        padding: 12px; 
-        white-space: nowrap; 
+        vertical-align: middle; padding: 12px; white-space: nowrap; 
     }
 
-    /* --- [YÊU CẦU CỦA BẠN]: CHỈNH VỊ TRÍ CỘT --- */
-    /* Cột 2 (Sinh viên) và Cột 3 (Môn học) đẩy sang phải */
-    .table th:nth-child(2), .table td:nth-child(2),
-    .table th:nth-child(3), .table td:nth-child(3) {
-        text-align: left !important; /* Căn trái văn bản */
-        padding-left: 50px !important; /* Đẩy nội dung qua phải 1 tí */
+    /* -----------------------------------------------------------
+       [BẠN SỬA Ở ĐÂY] - CẤU HÌNH VỊ TRÍ CỘT
+       ----------------------------------------------------------- */
+    
+    /* 1. Cấu hình Cột HỌ VÀ TÊN (Cột thứ 2) */
+    .table th:nth-child(2), 
+    .table td:nth-child(2) {
+        text-align: left !important;    /* Bắt buộc căn trái */
+        padding-left: 40px !important;  /* Đẩy chữ sang phải (Tăng số này để dịch sang phải nhiều hơn) */
     }
 
+    /* 2. Cấu hình Cột MÔN HỌC (Cột thứ 3) */
+    .table th:nth-child(3), 
+    .table td:nth-child(3) {
+        text-align: left !important;    /* Bắt buộc căn trái để thẳng hàng */
+        padding-left: 40px !important;  /* Đẩy chữ sang phải (Chỉnh số này để vừa ý bạn) */
+        width: 30%;                     /* Đặt độ rộng tương đối để tên môn có chỗ hiển thị */
+    }
+
+    /* ----------------------------------------------------------- */
+
+    /* Badge tên môn học */
     .badge-sub { 
-        background: #f8f9fa; 
-        border: 1px solid #dee2e6; 
-        color: #495057; 
-        border-radius: 6px; 
-        padding: 6px 10px; 
-        font-weight: 600; 
+        background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; 
+        border-radius: 6px; padding: 6px 10px; font-weight: 600; 
         
         display: inline-block;
-        
-        /* [ĐÃ SỬA] */
-        width: auto;                  /* Để chiều rộng tự co dãn theo chữ */
-        max-width: calc(100% - 25px); /* Giới hạn tối đa bằng chiều rộng cột trừ đi chỗ cho icon xóa (khoảng 25px) */
+        width: auto;                  /* Tự co dãn theo chữ */
+        max-width: calc(100% - 30px); /* Giới hạn chiều rộng để không đè lên icon xóa */
         
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;      /* Chỉ hiện 3 chấm khi chữ vượt quá max-width trên */
+        text-overflow: ellipsis;      /* Hiện dấu ... khi chạm giới hạn */
         vertical-align: middle;
+        text-align: left;             /* Đảm bảo chữ bên trong badge cũng căn trái */
     }
     
-    /* =========================================
-       CÁC NÚT BẤM VÀ ICON (ACTIONS)
-       ========================================= */
+    /* Các nút bấm nhỏ */
     .btn-action { 
-        width: 32px; 
-        height: 32px; 
-        border-radius: 50%; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        border: 1px solid #dee2e6; 
-        background: white; 
-        color: #6c757d; 
-        transition: 0.2s; 
-        cursor: pointer; 
-        margin: 0 auto; 
+        width: 32px; height: 32px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        border: 1px solid #dee2e6; background: white; color: #6c757d; 
+        transition: 0.2s; cursor: pointer; margin: 0 auto; 
     }
-    .btn-action:hover { 
-        transform: scale(1.1); 
-        color: #0d6efd; 
-        border-color: #0d6efd; 
-    }
+    .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
     
-    /* Dòng cảnh báo (màu đỏ) */
     .alert-row { background-color: #fff5f5 !important; }
     .alert-row td:first-child { border-left: 5px solid #dc3545; }
     
-    /* Card chi tiết môn học */
-    .detail-card { 
-        background: #fff3cd; 
-        border: 1px solid #ffeeba; 
-        border-radius: 12px; 
-        cursor: pointer; 
-        transition: 0.2s; 
-    }
-    .detail-card:hover { 
-        background: #ffe69c; 
-        transform: translateY(-2px); 
-    }
+    .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+    .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
 
-    /* Ô sửa lý do */
-    .editable-reason { 
-        position: relative; 
-        cursor: pointer; 
-        transition: background 0.2s; 
-        padding-right: 30px !important; 
-    }
+    .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
     .editable-reason:hover { background-color: #fff3cd; }
     
-    .edit-icon { 
-        position: absolute; 
-        right: 10px; 
-        top: 50%; 
-        transform: translateY(-50%); 
-        opacity: 0; 
-        transition: opacity 0.2s; 
-        color: #0d6efd; 
-    }
+    .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
     .editable-reason:hover .edit-icon { opacity: 1; }
 
-    .delete-absence-icon { 
-        opacity: 0; 
-        transition: all 0.2s; 
-        cursor: pointer; 
-        color: #dc3545; 
-        margin-left: 8px; 
-        font-size: 0.9rem; 
-    }
+    .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
     .subject-col:hover .delete-absence-icon { opacity: 1; }
     .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
 
-    /* =========================================
-       RESPONSIVE (MOBILE ADJUSTMENTS)
-       ========================================= */
+    /* Mobile Responsive */
     @media (max-width: 576px) {
         .navbar .container { padding-left: 10px; padding-right: 10px; }
         .stat-card { margin-bottom: 10px; }
-        
-        /* Ẩn bớt chi tiết thừa trên mobile */
         .btn span { display: none; } 
         .btn i { margin: 0; }
         #semesterDisplay, #yearHeaderDisplay { display: none; }
-        
         .table-card { padding: 10px; }
-        
-        /* Giảm chiều rộng badge môn học trên mobile */
-        .badge-sub { width: 120px; }
+        .badge-sub { max-width: 150px; }
     }
 </style>
 </head>
@@ -306,8 +239,7 @@
                             <th class="text-center">Ngày</th>
                             <th class="text-center">Buổi</th>
                             <th class="text-center">Lý do</th>
-                            <th class="text-center">Ảnh</th>
-                            <th class="text-center">Vắng</th>
+                            <th class="text-center">Minh chứng</th> <th class="text-center">Vắng</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -477,10 +409,7 @@
                             <tr class="${rowClass}">
                                 ${isFirstRow ? `<td class="text-center fw-bold text-muted small" rowspan="${rowspan}">${stt++}</td>` : ''}
                                 ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
-                                <td class="text-start subject-col">
-                                    <span class="badge-sub" title="${d.sub}">${d.sub}</span>
-                                    <i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i>
-                                </td>
+                                <td class="text-start subject-col"><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
                                 <td class="text-center small">${dateStr}</td>
                                 <td class="text-center small">${d.session_time || '-'}</td>
                                 <td class="text-center small editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${reasonText}</span><i class="fas fa-pen edit-icon"></i></td>
