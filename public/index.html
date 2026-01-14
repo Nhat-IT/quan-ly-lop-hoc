@@ -56,11 +56,15 @@
         <div class="container">
             <span class="navbar-brand fw-bold"><i class="fas fa-user-shield"></i> DASHBOARD QUẢN LÝ SINH VIÊN</span>
             <div class="d-flex align-items-center gap-3">
+                
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải dữ liệu...</div>
                     <div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
                     <div>Lớp: 25TH01 - 25TH02</div>
                 </div>
+
+                <div id="adminButtonPlaceholder"></div>
+
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()">
                     <i class="fas fa-sign-out-alt"></i> Thoát
                 </button>
@@ -180,6 +184,9 @@
         }
 
         async function init() {
+            // [MỚI] Kiểm tra và hiển thị nút Admin
+            checkAdminDisplay();
+
             try {
                 const semSelect = document.getElementById('semFilter');
                 const savedSem = localStorage.getItem('currentSemester');
@@ -201,11 +208,26 @@
             }
         }
 
-        // [ĐÃ SỬA] Lấy năm học từ Danh Sách Môn Học (allSubjectsInfo)
+        // [MỚI] Hàm kiểm tra Admin để hiển thị nút
+        function checkAdminDisplay() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if (user.role === 'admin') {
+                    const placeholder = document.getElementById('adminButtonPlaceholder');
+                    // Chèn nút vào
+                    placeholder.innerHTML = `
+                        <a href="quanly.html" class="btn btn-warning btn-sm fw-bold">
+                            <i class="fas fa-user-cog"></i> Quản Lý
+                        </a>
+                    `;
+                }
+            }
+        }
+
         function populateYearFilter() {
-            const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); // Năm mặc định
+            const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); 
             
-            // Quét từ danh sách môn học thực tế
             if (allSubjectsInfo && allSubjectsInfo.length > 0) {
                 allSubjectsInfo.forEach(s => {
                     if (s.school_year) years.add(s.school_year);
@@ -218,13 +240,11 @@
             yearSelect.innerHTML = '<option value="all">Tất cả năm</option>';
             sortedYears.forEach(y => yearSelect.add(new Option(y, y)));
 
-            // Tự động chọn năm hiện tại theo thời gian thực
             const today = new Date();
             const year = today.getFullYear();
             const month = today.getMonth() + 1;
             const currentYear = month >= 8 ? `${year}-${year+1}` : `${year-1}-${year}`;
 
-            // Ưu tiên chọn năm hiện tại nếu có trong list
             if (years.has(currentYear)) {
                 yearSelect.value = currentYear;
             } else {
@@ -286,15 +306,10 @@
             currentData.data.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
                 
-                // [LỌC DỮ LIỆU]
                 const visibleDetails = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
-                    
-                    // Logic: Nếu chọn năm cụ thể -> Chỉ hiện record có năm đó
-                    // Nếu dữ liệu cũ (d.school_year = null) -> Mặc định gán về '2024-2025' để lọc cho đúng
                     const recordYear = d.school_year || '2024-2025';
                     const matchYear = yearFilter === 'all' || recordYear === yearFilter;
-                    
                     return matchSub && matchYear;
                 });
 
@@ -352,7 +367,6 @@
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
         }
 
-        // --- HÀM SỬA LÝ DO ---
         function editReason(td, recordId) {
             if (td.querySelector('input')) return;
             const span = td.querySelector('.reason-text');
@@ -385,7 +399,6 @@
             } catch(e) { alert("Lỗi kết nối!"); }
         }
 
-        // --- HÀM XÓA VẮNG ---
         async function removeAbsence(id, name, sub) {
             if (confirm(`HỦY VẮNG cho sinh viên:\n${name} - Môn: ${sub}?`)) {
                 try {
@@ -405,12 +418,10 @@
             if (!data || data.length === 0) return;
             const subCounts = {};
             
-            // [FIXED] Filter warning cards by Year
             const selYear = document.getElementById('yearFilter').value;
 
             data.forEach(sv => {
                 const grouped = {};
-                // Lọc chi tiết trước khi đếm
                 const filteredDetails = sv.details.filter(d => {
                     const recordYear = d.school_year || '2024-2025';
                     return selYear === 'all' || recordYear === selYear;
@@ -460,9 +471,6 @@
             XLSX.writeFile(wb, "Danh_Sach_Canh_Bao.xlsx");
         }
 
-        function performLogout() { localStorage.removeItem('isLoggedIn'); window.location.href = '/login/login.html'; }
-        
-        // [SỬA LẠI] Dùng hàm từ auth.js
         function performLogout() { 
             auth.logout(); 
         }
