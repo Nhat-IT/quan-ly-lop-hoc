@@ -14,45 +14,191 @@
     <script src="auth.js"></script> 
     
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding-bottom: 60px; }
-        .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
-        .stat-card:hover { transform: translateY(-3px); }
-        .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
-        
-        .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
-        .table-responsive { overflow-x: auto; }
-        
-        .table thead th {
-            vertical-align: middle; font-weight: 700; color: #495057; text-transform: uppercase; font-size: 0.85rem;
-            background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; white-space: nowrap;
-        }
-        .table tbody td { vertical-align: middle; padding: 12px; white-space: nowrap; }
+    /* =========================================
+       CẤU HÌNH CHUNG (BODY & FONT)
+       ========================================= */
+    body { 
+        background-color: #f0f2f5; 
+        font-family: 'Segoe UI', sans-serif; 
+        padding-bottom: 60px; /* Chừa chỗ cho footer/mobile nav */
+    }
 
-        .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 4px 8px; font-weight: 600; display: inline-block; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; margin: 0 auto; }
-        .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
-        
-        .alert-row { background-color: #fff5f5 !important; }
-        .alert-row td:first-child { border-left: 5px solid #dc3545; }
-        .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
-        .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
-        .editable-reason:hover { background-color: #fff3cd; }
-        .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
-        .editable-reason:hover .edit-icon { opacity: 1; }
-        .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
-        .subject-col:hover .delete-absence-icon { opacity: 1; }
+    /* =========================================
+       CARD THỐNG KÊ (STATISTIC CARDS)
+       ========================================= */
+    .stat-card { 
+        border: none; 
+        border-radius: 15px; 
+        background: white; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        transition: 0.2s; 
+    }
+    .stat-card:hover { 
+        transform: translateY(-3px); /* Hiệu ứng nổi lên khi di chuột */
+    }
+    .icon-box { 
+        width: 55px; 
+        height: 55px; 
+        border-radius: 12px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 1.8rem; 
+        flex-shrink: 0; 
+    }
+    
+    /* =========================================
+       BẢNG DỮ LIỆU (TABLE STYLES)
+       ========================================= */
+    .table-card { 
+        background: white; 
+        border-radius: 15px; 
+        padding: 20px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        overflow: hidden; 
+    }
+    .table-responsive { 
+        overflow-x: auto; /* Cho phép cuộn ngang trên màn hình nhỏ */
+    }
+    
+    .table { margin-bottom: 0; }
+    
+    /* Style cho Header của bảng */
+    .table thead th {
+        vertical-align: middle; 
+        font-weight: 700; 
+        color: #495057; 
+        text-transform: uppercase; 
+        font-size: 0.85rem;
+        background-color: #f8f9fa; 
+        border-bottom: 2px solid #dee2e6; 
+        white-space: nowrap;
+        text-align: center; /* Mặc định căn giữa tiêu đề */
+    }
 
-        /* Mobile Adjustments */
-        @media (max-width: 576px) {
-            .navbar .container { padding-left: 10px; padding-right: 10px; }
-            .stat-card { margin-bottom: 10px; }
-            .btn span { display: none; }
-            .btn i { margin: 0; }
-            #semesterDisplay, #yearHeaderDisplay { display: none; }
-            .table-card { padding: 10px; }
-        }
-    </style>
+    /* Style cho các ô dữ liệu */
+    .table tbody td { 
+        vertical-align: middle; 
+        padding: 12px; 
+        white-space: nowrap; 
+    }
+
+    /* --- [YÊU CẦU CỦA BẠN]: CHỈNH VỊ TRÍ CỘT --- */
+    /* Cột 2 (Sinh viên) và Cột 3 (Môn học) đẩy sang phải */
+    .table th:nth-child(2), .table td:nth-child(2),
+    .table th:nth-child(3), .table td:nth-child(3) {
+        text-align: left !important; /* Căn trái văn bản */
+        padding-left: 30px !important; /* Đẩy nội dung qua phải 1 tí */
+    }
+
+    /* --- [YÊU CẦU CỦA BẠN]: BADGE MÔN HỌC KHÔNG CO DÃN --- */
+    .badge-sub { 
+        background: #f8f9fa; 
+        border: 1px solid #dee2e6; 
+        color: #495057; 
+        border-radius: 6px; 
+        padding: 6px 10px; 
+        font-weight: 600; 
+        
+        display: inline-block;      /* Giữ khối cố định */
+        width: 180px;               /* Đặt chiều rộng cố định (hoặc dùng max-width) */
+        max-width: 100%;            /* Đảm bảo không tràn trên mobile */
+        
+        white-space: nowrap;        /* Không xuống dòng */
+        overflow: hidden;           /* Ẩn phần chữ thừa */
+        text-overflow: ellipsis;    /* Thêm dấu ... nếu tên quá dài */
+        vertical-align: middle;
+    }
+    
+    /* =========================================
+       CÁC NÚT BẤM VÀ ICON (ACTIONS)
+       ========================================= */
+    .btn-action { 
+        width: 32px; 
+        height: 32px; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border: 1px solid #dee2e6; 
+        background: white; 
+        color: #6c757d; 
+        transition: 0.2s; 
+        cursor: pointer; 
+        margin: 0 auto; 
+    }
+    .btn-action:hover { 
+        transform: scale(1.1); 
+        color: #0d6efd; 
+        border-color: #0d6efd; 
+    }
+    
+    /* Dòng cảnh báo (màu đỏ) */
+    .alert-row { background-color: #fff5f5 !important; }
+    .alert-row td:first-child { border-left: 5px solid #dc3545; }
+    
+    /* Card chi tiết môn học */
+    .detail-card { 
+        background: #fff3cd; 
+        border: 1px solid #ffeeba; 
+        border-radius: 12px; 
+        cursor: pointer; 
+        transition: 0.2s; 
+    }
+    .detail-card:hover { 
+        background: #ffe69c; 
+        transform: translateY(-2px); 
+    }
+
+    /* Ô sửa lý do */
+    .editable-reason { 
+        position: relative; 
+        cursor: pointer; 
+        transition: background 0.2s; 
+        padding-right: 30px !important; 
+    }
+    .editable-reason:hover { background-color: #fff3cd; }
+    
+    .edit-icon { 
+        position: absolute; 
+        right: 10px; 
+        top: 50%; 
+        transform: translateY(-50%); 
+        opacity: 0; 
+        transition: opacity 0.2s; 
+        color: #0d6efd; 
+    }
+    .editable-reason:hover .edit-icon { opacity: 1; }
+
+    .delete-absence-icon { 
+        opacity: 0; 
+        transition: all 0.2s; 
+        cursor: pointer; 
+        color: #dc3545; 
+        margin-left: 8px; 
+        font-size: 0.9rem; 
+    }
+    .subject-col:hover .delete-absence-icon { opacity: 1; }
+    .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
+
+    /* =========================================
+       RESPONSIVE (MOBILE ADJUSTMENTS)
+       ========================================= */
+    @media (max-width: 576px) {
+        .navbar .container { padding-left: 10px; padding-right: 10px; }
+        .stat-card { margin-bottom: 10px; }
+        
+        /* Ẩn bớt chi tiết thừa trên mobile */
+        .btn span { display: none; } 
+        .btn i { margin: 0; }
+        #semesterDisplay, #yearHeaderDisplay { display: none; }
+        
+        .table-card { padding: 10px; }
+        
+        /* Giảm chiều rộng badge môn học trên mobile */
+        .badge-sub { width: 120px; }
+    }
+</style>
 </head>
 <body>
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm sticky-top">
