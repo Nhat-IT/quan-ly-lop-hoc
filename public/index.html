@@ -36,7 +36,7 @@
         }
         
         /* =========================================
-           BẢNG DỮ LIỆU (QUAN TRỌNG)
+           BẢNG DỮ LIỆU (ĐÃ TỐI ƯU GIAO DIỆN)
            ========================================= */
         .table-card { 
             background: white; border-radius: 15px; padding: 20px; 
@@ -45,11 +45,11 @@
         .table-responsive { overflow-x: auto; }
         .table { margin-bottom: 0; }
         
-        /* --- ĐỊNH DẠNG CỘT --- */
+        /* --- ĐỊNH DẠNG CỘT CHUNG --- */
         .table thead th, .table tbody td {
             vertical-align: middle;
             white-space: nowrap; /* Không xuống dòng */
-            padding: 12px 8px;   /* Khoảng cách đệm trong ô */
+            padding: 12px 8px;   /* Khoảng cách đệm */
         }
 
         .table thead th {
@@ -58,59 +58,69 @@
             border-bottom: 2px solid #dee2e6;
         }
 
-        /* 1. CỘT STT (Cột 1) - Căn giữa, cách lề trái 1 khoảng */
+        /* -----------------------------------------------------------
+           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH CÁC CỘT
+           ----------------------------------------------------------- */
+
+        /* 1. CỘT STT (5%) - Căn giữa */
         .table th:first-child, .table td:first-child {
             text-align: center;
-            padding-left: 20px !important; /* [CHỈNH Ở ĐÂY] Cách lề trái */
             width: 5%;
         }
 
-        /* 2. CỘT HỌ TÊN (Cột 2) - Căn trái */
+        /* 2. CỘT HỌ TÊN (25%) - Dịch sang phải 50px */
         .table th:nth-child(2), .table td:nth-child(2) {
             text-align: left;
-            padding-left: 15px;
-            width: 20%;
-        }
-
-        /* 3. CỘT MÔN HỌC (Cột 3) - Căn trái, thẳng hàng */
-        .table th:nth-child(3), .table td:nth-child(3) {
-            text-align: left; /* Đảm bảo tên môn luôn bắt đầu từ trái */
+            padding-left: 50px !important; /* [ĐÃ SỬA] Đẩy chữ sang phải */
             width: 25%;
         }
 
-        /* 4. CÁC CỘT GIỮA (Ngày, Buổi, Lý do, Minh chứng) - Căn giữa */
-        .table th:nth-child(4), .table td:nth-child(4),
-        .table th:nth-child(5), .table td:nth-child(5),
-        .table th:nth-child(6), .table td:nth-child(6),
-        .table th:nth-child(7), .table td:nth-child(7) {
-            text-align: center;
+        /* 3. CỘT MÔN HỌC (25%) - Dịch sang phải 40px, thẳng hàng */
+        .table th:nth-child(3), .table td:nth-child(3) {
+            text-align: left;
+            padding-left: 40px !important; /* [ĐÃ SỬA] Đẩy chữ sang phải */
+            width: 25%;
         }
 
-        /* 5. CỘT TỔNG VẮNG (Cột cuối) - Căn giữa, cách lề phải 1 khoảng */
+        /* 4. CỘT NGÀY (10%) - Thu hẹp để gần Buổi */
+        .table th:nth-child(4), .table td:nth-child(4) {
+            text-align: center;
+            width: 10%; /* [ĐÃ SỬA] Nhỏ lại cho gọn */
+        }
+
+        /* 5. CỘT BUỔI (8%) - Thu hẹp để gần Ngày */
+        .table th:nth-child(5), .table td:nth-child(5) {
+            text-align: center;
+            width: 8%;  /* [ĐÃ SỬA] Nhỏ lại cho gọn */
+        }
+
+        /* 6. CÁC CỘT CÒN LẠI (Lý do, Minh chứng, Vắng) */
+        .table th:nth-child(6), .table td:nth-child(6) { text-align: center; width: 12%; } /* Lý do */
+        .table th:nth-child(7), .table td:nth-child(7) { text-align: center; width: 8%; }  /* Minh chứng */
+        
         .table th:last-child, .table td:last-child {
             text-align: center;
-            padding-right: 20px !important; /* [CHỈNH Ở ĐÂY] Cách lề phải */
-            width: 10%;
+            padding-right: 20px !important; 
+            width: 7%;
         }
 
-        /* --- BADGE TÊN MÔN HỌC --- */
+        /* ----------------------------------------------------------- */
+
+        /* Badge tên môn học */
         .badge-sub { 
-            background: #f8f9fa; 
-            border: 1px solid #dee2e6; 
-            color: #495057; 
-            border-radius: 6px; 
-            padding: 6px 10px; 
-            font-weight: 600; 
+            background: #f8f9fa; border: 1px solid #dee2e6; 
+            color: #495057; border-radius: 6px; 
+            padding: 6px 10px; font-weight: 600; 
             
             display: inline-block;
-            width: auto;                  /* Tự động co dãn theo độ dài tên */
-            max-width: 100%;              /* Không tràn ra ngoài cột */
+            width: auto;                  /* Tự co dãn */
+            max-width: calc(100% - 30px); /* Không tràn ô */
             
             white-space: nowrap; 
             overflow: hidden; 
-            text-overflow: ellipsis;      /* Hiện 3 chấm nếu quá dài */
+            text-overflow: ellipsis;      /* 3 chấm nếu quá dài */
             vertical-align: middle;
-            text-align: left;             /* Chữ bên trong căn trái */
+            text-align: left;             
         }
         
         /* Các nút bấm nhỏ */
@@ -149,6 +159,12 @@
             #semesterDisplay, #yearHeaderDisplay { display: none; }
             .table-card { padding: 10px; }
             .badge-sub { max-width: 150px; }
+            
+            /* Reset padding trên mobile để không bị lệch */
+            .table th:nth-child(2), .table td:nth-child(2),
+            .table th:nth-child(3), .table td:nth-child(3) {
+                padding-left: 10px !important;
+            }
         }
     </style>
 </head>
@@ -273,7 +289,7 @@
             <div class="modal-content">
                 <div class="modal-body text-center p-0">
                     <img id="proofImg" class="img-fluid w-100" style="display:none;">
-                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có ảnh</h5></div>
+                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có minh chứng</h5></div>
                 </div>
             </div>
         </div>
@@ -426,7 +442,7 @@
                         const html = `
                             <tr class="${rowClass}">
                                 ${isFirstRow ? `<td class="text-center fw-bold text-muted small" rowspan="${rowspan}">${stt++}</td>` : ''}
-                                ${isFirstRow ? `<td class="text-start" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
+                                ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
                                 <td class="text-start subject-col"><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
                                 <td class="text-center small">${dateStr}</td>
                                 <td class="text-center small">${d.session_time || '-'}</td>
