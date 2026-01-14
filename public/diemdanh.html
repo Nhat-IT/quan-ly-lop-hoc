@@ -236,8 +236,8 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-6"><label class="small text-muted">Buổi mặc định</label><select class="form-select" id="newDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
-            <div class="col-6"><label class="small text-muted">Nhóm mặc định</label><select class="form-select" id="newDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
+            <div class="col-6"><label class="small text-muted">Buổi học</label><select class="form-select" id="newDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
+            <div class="col-6"><label class="small text-muted">Nhóm học</label><select class="form-select" id="newDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
         </div>
 
         <div class="row">
@@ -274,8 +274,8 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-6"><label class="small text-muted">Buổi mặc định</label><select class="form-select" id="editDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
-            <div class="col-6"><label class="small text-muted">Nhóm mặc định</label><select class="form-select" id="editDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
+            <div class="col-6"><label class="small text-muted">Buổi học</label><select class="form-select" id="editDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div>
+            <div class="col-6"><label class="small text-muted">Nhóm học</label><select class="form-select" id="editDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div>
         </div>
 
         <div class="row">
@@ -306,46 +306,35 @@
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 
-                // 1. Tạo danh sách năm học ĐỘNG từ dữ liệu môn học
                 populateYearFilter();
 
-                // 2. Lấy thông tin ưu tiên từ Dashboard (localStorage)
                 const savedSem = localStorage.getItem('currentSemester') || 'HK1';
-                
-                // Logic thông minh: Nếu dữ liệu "mất", có thể do mặc định HK1 (đầu năm) chưa có môn.
-                // Thử tìm năm học hiện tại, nếu không thấy môn nào thì tự động chuyển sang năm học có dữ liệu mới nhất.
                 const curY = new Date().getFullYear();
                 const m = new Date().getMonth() + 1;
                 const defaultYear = m >= 8 ? `${curY}-${curY+1}` : `${curY-1}-${curY}`;
                 const savedYear = localStorage.getItem('currentYear') || defaultYear; 
 
-                // Set giá trị cho bộ lọc
                 const semSelect = document.getElementById('semesterSelect');
                 if(semSelect) semSelect.value = savedSem;
 
                 const yearSelect = document.getElementById('yearSelect');
-                // Kiểm tra xem savedYear có trong options không
                 const yearOptionExists = Array.from(yearSelect.options).some(o => o.value === savedYear);
                 
                 if(yearOptionExists) {
                     yearSelect.value = savedYear;
                 } else if(yearSelect.options.length > 0) {
-                    // Nếu năm đã lưu không còn tồn tại (hoặc DB mới), chọn năm đầu tiên (mới nhất)
                     yearSelect.selectedIndex = 0;
                 }
 
-                // Gọi lọc lần đầu. Nếu không ra kết quả, thử đổi học kỳ để tìm dữ liệu cho người dùng đỡ hoang mang
                 const count = filterSubjects(true); 
                 if(count === 0 && allSubjects.length > 0) {
-                   // Nếu lọc ra 0 môn, thử tìm môn gần nhất để hiển thị
-                   const newest = allSubjects[0]; // Môn mới nhất do sort ID DESC
+                   const newest = allSubjects[0]; 
                    if(newest) {
                        yearSelect.value = newest.school_year || defaultYear;
                        semSelect.value = newest.semester || 'HK1';
-                       filterSubjects(); // Lọc lại
+                       filterSubjects(); 
                    }
                 } else if (count > 0) {
-                   // [ĐÃ SỬA] Nếu tìm thấy môn, tải dữ liệu ngay
                    changeSubject(); 
                 }
 
@@ -355,7 +344,6 @@
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect');
             yearSelect.innerHTML = '';
-            // Lấy tất cả năm học từ allSubjects, lọc trùng và sắp xếp
             const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
             if (years.length === 0) {
                 const curY = new Date().getFullYear();
@@ -364,7 +352,6 @@
             years.forEach(y => {
                 const opt = document.createElement('option');
                 opt.value = y; 
-                // [ĐÃ SỬA] Xóa ngoặc vuông, hiển thị: 2025 - 2026
                 const parts = y.split('-');
                 if(parts.length === 2) opt.text = `${parts[0]} - ${parts[1]}`;
                 else opt.text = y;
@@ -372,7 +359,6 @@
             });
         }
 
-        // Hàm lọc trả về số lượng môn tìm thấy
         function filterSubjects(silent = false) {
             const year = document.getElementById('yearSelect').value;
             const sem = document.getElementById('semesterSelect').value;
@@ -392,7 +378,6 @@
             }
 
             filtered.forEach(s => subSelect.add(new Option(s.subject_name, s.id)));
-            // Nếu không silent (hoặc được gọi từ onchange), thì load data luôn
             if(!silent) changeSubject();
             return filtered.length;
         }
@@ -406,8 +391,6 @@
                 document.getElementById('displayTeacherName').innerText = sub.teacher_name || "--";
                 const sy = sub.school_year || "2024-2025";
                 const parts = sy.split('-');
-                
-                // [ĐÃ SỬA] Xóa ngoặc vuông hiển thị thông tin
                 if(parts.length === 2) document.getElementById('displaySchoolYear').innerText = `${parts[0]} - ${parts[1]}`;
                 else document.getElementById('displaySchoolYear').innerText = sy;
 
@@ -434,19 +417,14 @@
             return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
         }
 
-        // --- XỬ LÝ MODAL THÊM MÔN ---
         function openAddSubjectModal() {
-            // Reset form
             document.getElementById('newSubjectName').value = '';
             document.getElementById('newTeacherName').value = '';
-            // Default năm
             const y = new Date().getFullYear();
             const m = new Date().getMonth() + 1;
             const yStart = m >= 8 ? y : y - 1;
             document.getElementById('newYearStart').value = yStart;
             document.getElementById('newYearEnd').value = yStart + 1;
-            
-            // Mở Modal an toàn
             const el = document.getElementById('addSubjectModal');
             const modal = bootstrap.Modal.getOrCreateInstance(el);
             modal.show();
@@ -455,12 +433,10 @@
         async function saveNewSubject() {
             const name = document.getElementById('newSubjectName').value.trim();
             if (!name) return alert("Nhập tên môn!");
-            
             const y1 = document.getElementById('newYearStart').value;
             const y2 = document.getElementById('newYearEnd').value;
             if(!y1 || !y2) return alert("Nhập năm học đầy đủ!");
             const schoolYear = `${y1}-${y2}`;
-
             const body = {
                 subject_name: name,
                 teacher_name: document.getElementById('newTeacherName').value,
@@ -471,23 +447,13 @@
                 default_session: document.getElementById('newDefaultSession').value,
                 default_group: document.getElementById('newDefaultGroup').value
             };
-            
             try {
-                await fetch('/api/data/subjects', { 
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) 
-                });
-                
-                // Đóng modal
+                await fetch('/api/data/subjects', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
                 const el = document.getElementById('addSubjectModal');
-                const modal = bootstrap.Modal.getInstance(el);
-                if(modal) modal.hide();
-                
-                // Tải lại
+                bootstrap.Modal.getInstance(el).hide();
                 const res = await fetch('/api/data/subjects'); 
                 allSubjects = await res.json(); 
                 populateYearFilter(); 
-                
-                // Chuyển tới môn vừa tạo
                 document.getElementById('yearSelect').value = schoolYear;
                 document.getElementById('semesterSelect').value = body.semester;
                 filterSubjects();
@@ -498,7 +464,6 @@
             const id = document.getElementById('subjectSelect').value;
             if(!id) return;
             const sub = allSubjects.find(s => s.id == id);
-            
             document.getElementById('editSubjectName').value = sub.subject_name;
             document.getElementById('editTeacherName').value = sub.teacher_name || '';
             const parts = (sub.school_year || "2024-2025").split('-');
@@ -511,7 +476,6 @@
             document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : '';
             document.getElementById('editDefaultSession').value = sub.default_session || 'Sáng';
             document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1';
-            
             const el = document.getElementById('editSubjectModal');
             bootstrap.Modal.getOrCreateInstance(el).show();
         }
@@ -521,7 +485,6 @@
              const y1 = document.getElementById('editYearStart').value;
              const y2 = document.getElementById('editYearEnd').value;
              const schoolYear = `${y1}-${y2}`;
-
              const body = {
                  subject_name: document.getElementById('editSubjectName').value,
                  teacher_name: document.getElementById('editTeacherName').value,
@@ -532,19 +495,12 @@
                  default_session: document.getElementById('editDefaultSession').value, 
                  default_group: document.getElementById('editDefaultGroup').value
              };
-             
              try {
-                 await fetch(`/api/data/subjects/${id}`, { 
-                     method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) 
-                 });
-                 
-                 const el = document.getElementById('editSubjectModal');
-                 bootstrap.Modal.getInstance(el).hide(); 
-                 
+                 await fetch(`/api/data/subjects/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+                 bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); 
                  const res = await fetch('/api/data/subjects'); 
                  allSubjects = await res.json(); 
                  populateYearFilter();
-                 // Refresh thông tin môn hiện tại nếu vẫn trong bộ lọc
                  if(document.getElementById('yearSelect').value === schoolYear && document.getElementById('semesterSelect').value === body.semester) {
                     changeSubject();
                  } else {
@@ -553,7 +509,6 @@
              } catch(e) { alert('Lỗi cập nhật'); }
         }
 
-        // --- CÁC HÀM CŨ (GIỮ NGUYÊN) ---
         function resetInfo() { document.getElementById('displaySubjectName').innerText = "--"; document.getElementById('displayTeacherName').innerText = "--"; document.getElementById('displayStartDate').innerText = "--"; document.getElementById('displayEndDate').innerText = "--"; document.getElementById('displaySchoolYear').innerText = "--"; }
         function populateGroupDropdown() {
             const select = document.getElementById('groupSelect');
@@ -569,7 +524,7 @@
         function addNewGroup() { const n = prompt("Tên nhóm mới:"); if(n) { document.getElementById('groupSelect').add(new Option(n,n)); document.getElementById('groupSelect').value=n; renderList(); } }
         async function renameCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; const n=prompt("Tên mới:",g); if(n&&n!==g) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',subject_id:sub,group_name:g,new_group_name:n})}); changeSubject(); } }
         async function deleteCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; if(confirm(`Xóa nhóm ${g}?`)) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',subject_id:sub,group_name:g})}); changeSubject(); } }
-        async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); const el=document.getElementById('editSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
+        async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
         
         async function loadSavedAttendance() {
             const subjectId = document.getElementById('subjectSelect').value;
