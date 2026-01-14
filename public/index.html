@@ -88,10 +88,9 @@
     .table th:nth-child(2), .table td:nth-child(2),
     .table th:nth-child(3), .table td:nth-child(3) {
         text-align: left !important; /* Căn trái văn bản */
-        padding-left: 30px !important; /* Đẩy nội dung qua phải 1 tí */
+        padding-left: 50px !important; /* Đẩy nội dung qua phải 1 tí */
     }
 
-    /* --- [YÊU CẦU CỦA BẠN]: BADGE MÔN HỌC KHÔNG CO DÃN --- */
     .badge-sub { 
         background: #f8f9fa; 
         border: 1px solid #dee2e6; 
@@ -100,13 +99,15 @@
         padding: 6px 10px; 
         font-weight: 600; 
         
-        display: inline-block;      /* Giữ khối cố định */
-        width: 180px;               /* Đặt chiều rộng cố định (hoặc dùng max-width) */
-        max-width: 100%;            /* Đảm bảo không tràn trên mobile */
+        display: inline-block;
         
-        white-space: nowrap;        /* Không xuống dòng */
-        overflow: hidden;           /* Ẩn phần chữ thừa */
-        text-overflow: ellipsis;    /* Thêm dấu ... nếu tên quá dài */
+        /* [ĐÃ SỬA] */
+        width: auto;                  /* Để chiều rộng tự co dãn theo chữ */
+        max-width: calc(100% - 25px); /* Giới hạn tối đa bằng chiều rộng cột trừ đi chỗ cho icon xóa (khoảng 25px) */
+        
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;      /* Chỉ hiện 3 chấm khi chữ vượt quá max-width trên */
         vertical-align: middle;
     }
     
@@ -300,7 +301,7 @@
                     <thead class="bg-light">
                         <tr>
                             <th class="text-center" width="40">STT</th>
-                            <th class="ps-3">Sinh viên</th>
+                            <th class="ps-3">Họ và tên</th>
                             <th>Môn học</th>
                             <th class="text-center">Ngày</th>
                             <th class="text-center">Buổi</th>
@@ -476,7 +477,10 @@
                             <tr class="${rowClass}">
                                 ${isFirstRow ? `<td class="text-center fw-bold text-muted small" rowspan="${rowspan}">${stt++}</td>` : ''}
                                 ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
-                                <td class="text-start subject-col"><span class="badge-sub">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
+                                <td class="text-start subject-col">
+                                    <span class="badge-sub" title="${d.sub}">${d.sub}</span>
+                                    <i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i>
+                                </td>
                                 <td class="text-center small">${dateStr}</td>
                                 <td class="text-center small">${d.session_time || '-'}</td>
                                 <td class="text-center small editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${reasonText}</span><i class="fas fa-pen edit-icon"></i></td>
