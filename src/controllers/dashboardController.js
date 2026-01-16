@@ -2,11 +2,8 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // [MỚI] Nhận tham số classFilter từ client (nếu không phải admin)
-        const { classFilter } = req.query;
-
-        // 1. Câu query cơ bản lấy dữ liệu vắng
-        let sqlAbsent = `
+        // 1. Lấy dữ liệu vắng (Giữ nguyên logic cũ)
+        const sqlAbsent = `
             SELECT 
                 st.id AS student_id, st.mssv, st.full_name, st.class_name,
                 s.subject_name, s.semester, 
@@ -18,41 +15,33 @@ exports.getDashboardData = async (req, res) => {
             JOIN subjects s ON ses.subject_id = s.id
             JOIN students st ON ar.student_id = st.id 
             WHERE ar.is_absent = 1
+            ORDER BY ses.session_date DESC
         `;
 
-        // 2. Câu query đếm tổng sinh viên
-        let sqlCount = `SELECT COUNT(*) as total FROM students`;
+        // 2. [MỚI] Đếm tổng sinh viên của lớp 25TH01 và 25TH02
+        const sqlCount = `
+            SELECT COUNT(*) as total FROM students 
+            WHERE class_name IN ('25TH01', '25TH02')
+        `;
 
-        // [LOGIC MỚI] Nếu có classFilter, thêm điều kiện WHERE
-        const params = [];
-        if (classFilter && classFilter !== 'admin') {
-            sqlAbsent += ` AND st.class_name = ?`;
-            params.push(classFilter);
-
-            sqlCount += ` WHERE class_name = ?`;
-        }
-
-        sqlAbsent += ` ORDER BY ses.session_date DESC`;
-
-        const [rows] = await db.query(sqlAbsent, params);
+        const [rows] = await db.query(sqlAbsent);
+        const [countResult] = await db.query(sqlCount);
         
-        // Query đếm tổng (dùng params nếu có classFilter)
-        const [countResult] = await db.query(sqlCount, classFilter && classFilter !== 'admin' ? [classFilter] : []);
-        
+        // Lấy con số tổng thực tế
         const realTotalStudents = countResult[0].total || 0;
 
-        // --- (Phần xử lý gom nhóm dữ liệu giữ nguyên như cũ) ---
         const result = {
             "HK1": { total: realTotalStudents, subjects: [], data: [] },
             "HK2": { total: realTotalStudents, subjects: [], data: [] },
             "HK3": { total: realTotalStudents, subjects: [], data: [] },
-            "globalTotal": realTotalStudents
+            "globalTotal": realTotalStudents // Gửi kèm tổng toàn cục
         };
 
         const tempMap = {};
 
         rows.forEach(row => {
             const sem = row.semester || 'HK1';
+            // Đảm bảo semester tồn tại
             if (!result[sem]) result[sem] = { total: realTotalStudents, subjects: [], data: [] };
 
             const key = `${sem}_${row.mssv}`;
@@ -84,7 +73,7 @@ exports.getDashboardData = async (req, res) => {
 
         res.json(result);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi server' });
+        console.error("Lỗi Dashboard:", error);
+        res.status(500).json({ message: 'Lỗi lấy dữ liệu Dashboard' });
     }
 };

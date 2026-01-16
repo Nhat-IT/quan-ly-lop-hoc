@@ -61,9 +61,6 @@ exports.deleteSubject = async (req, res) => {
 // 5. Lấy danh sách SV
 exports.getStudentsBySubject = async (req, res) => {
     const { subjectId } = req.params;
-    // [MỚI] Lấy user từ session/token (đã được middleware auth giải mã gán vào req.user)
-    // Nếu bạn chưa có middleware auth ở route này, bạn có thể truyền qua query param giống dashboard
-    const { classFilter } = req.query;
     try {
         const sql = `SELECT s.id, s.mssv, s.full_name, s.class_name, e.learning_group 
                      FROM students s JOIN enrollments e ON s.id = e.student_id 

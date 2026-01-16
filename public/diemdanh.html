@@ -32,31 +32,31 @@
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* --- DANH SÁCH CÓ THANH CUỘN & STICKY HEADER --- */
+        /* --- [MỚI] DANH SÁCH CÓ THANH CUỘN --- */
         #studentListContainer {
             background-color: #fff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            overflow: hidden; 
+            overflow: hidden; /* Bo góc */
         }
 
         .list-scroll-wrapper {
-            max-height: 60vh; /* Giới hạn chiều cao để hiện thanh cuộn */
-            overflow-y: auto;
+            max-height: 600px; /* [QUAN TRỌNG] Giới hạn chiều cao ~10 dòng */
+            overflow-y: auto;  /* Hiện thanh cuộn dọc */
             overflow-x: hidden;
         }
 
+        /* Sticky Header cho danh sách */
         .list-header { 
-            position: sticky; top: 0; z-index: 10;
+            position: sticky; top: 0; z-index: 10; /* Cố định khi cuộn */
             background-color: #e9ecef; color: #495057; padding: 15px 0; 
             border-bottom: 2px solid var(--border-color); 
             display: grid; grid-template-columns: var(--student-grid); align-items: center; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .list-header > div { font-weight: 800 !important; font-size: 0.85rem; text-transform: uppercase; color: #2c3e50; text-align: center; }
         .list-header .col-name { text-align: left; padding-left: 20px; }
 
-        /* --- DÒNG SINH VIÊN --- */
+        /* --- CÁC DÒNG SINH VIÊN --- */
         .student-row { background: var(--bg-white); border-bottom: 1px solid var(--border-color); padding: 0; transition: background 0.2s; }
         .student-row:hover { background-color: #f8f9fa; }
         .student-row.is-absent { background-color: #fff0f3; border-left: 4px solid var(--danger-color); }
@@ -80,7 +80,7 @@
         .btn-excel { background-color: #217346 !important; border-color: #217346 !important; color: white !important; }
         .empty-state { padding: 40px; text-align: center; background: white; border-top: 1px solid var(--border-color); }
 
-        /* Nút Scroll Top */
+        /* [MỚI] Button Scroll Top */
         #btnScrollTop {
             position: fixed; bottom: 80px; right: 20px; z-index: 999;
             width: 45px; height: 45px; border-radius: 50%;
@@ -91,7 +91,7 @@
         }
         #btnScrollTop:hover { transform: translateY(-3px); background-color: #2546d1; }
 
-        /* Dropdown Checkbox */
+        /* [MỚI] Dropdown Checkbox cho Class Filter */
         .dropdown-check-item { cursor: pointer; padding: 8px 15px; display: flex; align-items: center; }
         .dropdown-check-item:hover { background-color: #f8f9fa; }
         .dropdown-check-item input { margin-right: 10px; width: 18px; height: 18px; cursor: pointer; }
@@ -224,7 +224,7 @@
                         <span><i class="fas fa-filter me-1"></i> <span id="classFilterText">Tất cả lớp</span></span>
                     </button>
                     <ul class="dropdown-menu shadow w-100" id="classFilterMenu" style="max-height: 300px; overflow-y: auto;">
-                    </ul>
+                        </ul>
                 </div>
             </div>
         </div>
@@ -275,32 +275,28 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- 1. AUTO LOGOUT & USER ---
-        let idleTime = 0;
-        const idleInterval = setInterval(timerIncrement, 60000); 
-        function timerIncrement() { idleTime++; if (idleTime >= 15) { auth.logout(); } }
-        function resetTimer() { idleTime = 0; }
-        window.onload = resetTimer; window.onmousemove = resetTimer; window.onkeypress = resetTimer; window.ontouchstart = resetTimer;
-
         document.getElementById('todayDate').valueAsDate = new Date();
         let allSubjects = [];
         let currentStudents = [];
         let proofImages = {}; 
-        let selectedClasses = new Set();
-        let currentUser = null;
-
-        // Scroll Top
-        window.onscroll = function() { document.getElementById("btnScrollTop").style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "flex" : "none"; };
-        function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
+        let selectedClasses = new Set(); // [MỚI] Lưu các lớp đang được chọn
 
         async function init() {
+            // [LOGIC SCROLL TOP]
+            window.onscroll = function() {
+                const btn = document.getElementById("btnScrollTop");
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    btn.style.display = "flex";
+                } else {
+                    btn.style.display = "none";
+                }
+            };
+
             const userStr = localStorage.getItem('user');
             if(userStr) {
-                currentUser = JSON.parse(userStr);
-                document.getElementById('ddUserName').innerText = currentUser.fullName || currentUser.username;
-                document.getElementById('ddUserRole').innerText = currentUser.role.toUpperCase();
-            } else {
-                window.location.href = 'login.html'; return;
+                const user = JSON.parse(userStr);
+                document.getElementById('ddUserName').innerText = user.full_name || user.username;
+                document.getElementById('ddUserRole').innerText = user.role.toUpperCase();
             }
 
             try {
@@ -318,7 +314,9 @@
                 if(semSelect) semSelect.value = savedSem;
 
                 const yearSelect = document.getElementById('yearSelect');
-                if(Array.from(yearSelect.options).some(o => o.value === savedYear)) yearSelect.value = savedYear;
+                const yearOptionExists = Array.from(yearSelect.options).some(o => o.value === savedYear);
+                
+                if(yearOptionExists) yearSelect.value = savedYear;
                 else if(yearSelect.options.length > 0) yearSelect.selectedIndex = 0;
 
                 const count = filterSubjects(true); 
@@ -335,23 +333,30 @@
             } catch (error) { console.error(error); }
         }
 
-        // ... [GIỮ NGUYÊN CÁC HÀM CƠ BẢN NHƯ CŨ: populateYearFilter, filterSubjects] ...
+        function scrollToTop() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect'); yearSelect.innerHTML = '';
             const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
             if (years.length === 0) { const curY = new Date().getFullYear(); years.push(`${curY}-${curY+1}`); }
-            years.forEach(y => { const opt = document.createElement('option'); opt.value = y; const parts = y.split('-'); if(parts.length === 2) opt.text = `${parts[0]} - ${parts[1]}`; else opt.text = y; yearSelect.appendChild(opt); });
+            years.forEach(y => {
+                const opt = document.createElement('option'); opt.value = y; 
+                const parts = y.split('-'); if(parts.length === 2) opt.text = `${parts[0]} - ${parts[1]}`; else opt.text = y;
+                yearSelect.appendChild(opt);
+            });
         }
         function filterSubjects(silent = false) {
-            const year = document.getElementById('yearSelect').value; const sem = document.getElementById('semesterSelect').value; const subSelect = document.getElementById('subjectSelect'); subSelect.innerHTML = '';
+            const year = document.getElementById('yearSelect').value;
+            const sem = document.getElementById('semesterSelect').value;
+            const subSelect = document.getElementById('subjectSelect'); subSelect.innerHTML = '';
             const filtered = allSubjects.filter(s => { const sYear = s.school_year || '2024-2025'; return sYear === year && (s.semester || 'HK1') === sem; });
             if (filtered.length === 0) { subSelect.innerHTML = '<option value="">-- Không có môn --</option>'; if(!silent) { resetInfo(); currentStudents = []; renderList(); } return 0; }
             filtered.forEach(s => subSelect.add(new Option(s.subject_name, s.id)));
             if(!silent) changeSubject();
             return filtered.length;
         }
-
-        // --- HÀM THAY ĐỔI MÔN (QUAN TRỌNG: LỌC THEO USER) ---
         async function changeSubject() {
             const id = document.getElementById('subjectSelect').value; if(!id) return;
             const sub = allSubjects.find(s => s.id == id);
@@ -366,34 +371,44 @@
                 if (sub.default_session) document.getElementById('sessionTime').value = sub.default_session;
                 if (sub.default_group) { const grpSel = document.getElementById('groupSelect'); grpSel.dataset.default = sub.default_group; }
             }
-            try { 
-                const res = await fetch(`/api/data/students/${id}`); 
-                let fetchedStudents = await res.json(); 
-                
-                // [LOGIC MỚI] Lọc sinh viên theo lớp nếu không phải Admin
-                if (currentUser && currentUser.role !== 'admin') {
-                    // Giả sử 'fullname' của user chính là Tên Lớp (VD: 25TH01)
-                    fetchedStudents = fetchedStudents.filter(s => s.class_name === currentUser.fullName);
-                }
-
-                currentStudents = fetchedStudents;
-                populateGroupDropdown(); 
-            } catch (e) { currentStudents = []; }
+            try { const res = await fetch(`/api/data/students/${id}`); currentStudents = await res.json(); populateGroupDropdown(); } catch (e) { currentStudents = []; }
             renderList(); await loadSavedAttendance();
         }
-
-        // [MỚI] Render Danh Sách với Bộ Lọc Lớp Đa Chọn
+        function formatDateVN(dateStr) { if(!dateStr) return ''; const d = new Date(dateStr); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
+        function openAddSubjectModal() { document.getElementById('newSubjectName').value = ''; document.getElementById('newTeacherName').value = ''; const y = new Date().getFullYear(); const m = new Date().getMonth() + 1; const yStart = m >= 8 ? y : y - 1; document.getElementById('newYearStart').value = yStart; document.getElementById('newYearEnd').value = yStart + 1; const el = document.getElementById('addSubjectModal'); const modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
+        async function saveNewSubject() { const name = document.getElementById('newSubjectName').value.trim(); if (!name) return alert("Nhập tên môn!"); const y1 = document.getElementById('newYearStart').value; const y2 = document.getElementById('newYearEnd').value; if(!y1 || !y2) return alert("Nhập năm học đầy đủ!"); const schoolYear = `${y1}-${y2}`; const body = { subject_name: name, teacher_name: document.getElementById('newTeacherName').value, school_year: schoolYear, semester: document.getElementById('newSemester').value, start_date: document.getElementById('newStartDate').value, end_date: document.getElementById('newEndDate').value, default_session: document.getElementById('newDefaultSession').value, default_group: document.getElementById('newDefaultGroup').value }; try { await fetch('/api/data/subjects', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); const el = document.getElementById('addSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); populateYearFilter(); document.getElementById('yearSelect').value = schoolYear; document.getElementById('semesterSelect').value = body.semester; filterSubjects(); } catch(e) { alert('Lỗi khi lưu: ' + e.message); } }
+        function openEditSubjectModal() { const id = document.getElementById('subjectSelect').value; if(!id) return; const sub = allSubjects.find(s => s.id == id); document.getElementById('editSubjectName').value = sub.subject_name; document.getElementById('editTeacherName').value = sub.teacher_name || ''; const parts = (sub.school_year || "2024-2025").split('-'); if(parts.length===2) { document.getElementById('editYearStart').value = parts[0]; document.getElementById('editYearEnd').value = parts[1]; } document.getElementById('editSemester').value = sub.semester || 'HK1'; document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : ''; document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : ''; document.getElementById('editDefaultSession').value = sub.default_session || 'Sáng'; document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1'; const el = document.getElementById('editSubjectModal'); bootstrap.Modal.getOrCreateInstance(el).show(); }
+        async function saveEditedSubject() { const id = document.getElementById('subjectSelect').value; const y1 = document.getElementById('editYearStart').value; const y2 = document.getElementById('editYearEnd').value; const schoolYear = `${y1}-${y2}`; const body = { subject_name: document.getElementById('editSubjectName').value, teacher_name: document.getElementById('editTeacherName').value, school_year: schoolYear, semester: document.getElementById('editSemester').value, start_date: document.getElementById('editStartDate').value, end_date: document.getElementById('editEndDate').value, default_session: document.getElementById('editDefaultSession').value, default_group: document.getElementById('editDefaultGroup').value }; try { await fetch(`/api/data/subjects/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); populateYearFilter(); if(document.getElementById('yearSelect').value === schoolYear && document.getElementById('semesterSelect').value === body.semester) { changeSubject(); } else { filterSubjects(); } } catch(e) { alert('Lỗi cập nhật'); } }
+        function resetInfo() { document.getElementById('displaySubjectName').innerText = "--"; document.getElementById('displayTeacherName').innerText = "--"; document.getElementById('displayStartDate').innerText = "--"; document.getElementById('displayEndDate').innerText = "--"; document.getElementById('displaySchoolYear').innerText = "--"; }
+        function populateGroupDropdown() { const select = document.getElementById('groupSelect'); const currentSelection = select.value; select.innerHTML = ''; const groups = [...new Set(currentStudents.map(s => s.learning_group || 'Nhóm 1'))].sort(); if (groups.length === 0) groups.push('Nhóm 1'); groups.forEach(g => select.add(new Option(g, g))); if(select.dataset.default && groups.includes(select.dataset.default)) select.value = select.dataset.default; else select.value = groups.includes(currentSelection) ? currentSelection : groups[0]; delete select.dataset.default; }
+        function addNewGroup() { const n = prompt("Tên nhóm mới:"); if(n) { document.getElementById('groupSelect').add(new Option(n,n)); document.getElementById('groupSelect').value=n; renderList(); } }
+        async function renameCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; const n=prompt("Tên mới:",g); if(n&&n!==g) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',subject_id:sub,group_name:g,new_group_name:n})}); changeSubject(); } }
+        async function deleteCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; if(confirm(`Xóa nhóm ${g}?`)) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',subject_id:sub,group_name:g})}); changeSubject(); } }
+        async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); const el=document.getElementById('editSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
+        async function loadSavedAttendance() {
+            const subjectId = document.getElementById('subjectSelect').value; const date = document.getElementById('todayDate').value; const session = document.getElementById('sessionTime').value; const group = document.getElementById('groupSelect').value;
+            if (!subjectId || !date) return;
+            document.querySelectorAll('.student-row').forEach(row => { row.classList.remove('is-absent'); row.querySelector('.form-check-input').checked = false; row.querySelector('.txt-reason').value = ''; });
+            updateCount();
+            try {
+                const res = await fetch(`/api/data/attendance/check?subject_id=${subjectId}&session_date=${date}&session_time=${session}&learning_group=${encodeURIComponent(group)}`);
+                if (res.ok) { const saved = await res.json(); saved.forEach(r => { if(r.is_absent==1){ const row=document.querySelector(`.student-row[data-id="${r.student_id}"]`); if(row){ row.classList.add('is-absent'); row.querySelector('.form-check-input').checked=true; row.querySelector('.txt-reason').value=r.reason||''; if(r.proof_image_url){ proofImages[r.student_id]=r.proof_image_url; displayProofPreview(r.student_id, r.proof_image_url); } } } }); updateCount(); }
+            } catch (e) {}
+        }
+        
+        // [MỚI] Render Danh Sách với Bộ Lọc Lớp Checkbox
         function renderList() {
-            const list = document.getElementById('listBody'); list.innerHTML = '';
-            const grp = document.getElementById('groupSelect').value;
+            const list = document.getElementById('listBody'); 
+            list.innerHTML = '';
             
-            // Lấy danh sách gốc theo nhóm học
+            const grp = document.getElementById('groupSelect').value;
+            // Lọc theo nhóm học trước
             let filteredStudents = currentStudents.filter(s => (s.learning_group || 'Nhóm 1') === grp);
             
-            // Tạo/Cập nhật bộ lọc lớp
+            // Tạo lại menu lọc lớp nếu danh sách sinh viên thay đổi (hoặc lần đầu)
             updateClassFilterMenu(filteredStudents);
 
-            // Áp dụng bộ lọc checkbox
+            // Lọc tiếp theo các lớp đã tích chọn (nếu có)
             if (selectedClasses.size > 0) {
                 filteredStudents = filteredStudents.filter(s => selectedClasses.has(s.class_name));
             }
@@ -401,7 +416,10 @@
             document.getElementById('studentCount').innerText = currentStudents.filter(s => (s.learning_group || 'Nhóm 1') === grp).length;
             document.getElementById('filteredCount').innerText = filteredStudents.length;
 
-            if (filteredStudents.length === 0) { list.innerHTML = `<div class="empty-state">Không tìm thấy sinh viên. <a href="#" onclick="importClassList()">Nhập Excel</a></div>`; return; }
+            if (filteredStudents.length === 0) { 
+                list.innerHTML = `<div class="empty-state">Không tìm thấy sinh viên. <a href="#" onclick="importClassList()">Nhập Excel</a></div>`; 
+                return; 
+            }
 
             filteredStudents.forEach((s, i) => {
                 list.insertAdjacentHTML('beforeend', `
@@ -414,65 +432,112 @@
                     <div class="note-input-group"><input type="text" class="form-control form-control-sm txt-reason" placeholder="Lý do..."><div class="mt-1"><input type="file" class="form-control form-control-sm" onchange="handleProofUpload(${s.id},this)"><div id="proof-preview-${s.id}" class="proof-preview"></div></div></div>
                 </div>`);
             });
-            updateCount(); filterListBySearch();
+            updateCount(); 
+            // Không gọi filterList() ở đây nữa vì đã lọc ở trên rồi, chỉ dùng search text thôi
+            filterListBySearch();
         }
 
+        // [MỚI] Cập nhật menu lọc lớp checkbox
         function updateClassFilterMenu(students) {
             const menu = document.getElementById('classFilterMenu');
-            menu.innerHTML = '';
+            // Lấy danh sách các lớp duy nhất
             const classes = [...new Set(students.map(s => s.class_name))].sort();
             
+            // Nếu menu chưa có nội dung hoặc số lượng lớp thay đổi thì vẽ lại
+            // (Đơn giản nhất là vẽ lại mỗi lần renderList được gọi từ changeSubject)
+            // Tuy nhiên để giữ trạng thái check, ta kiểm tra xem có cần reset selectedClasses không
+            
+            // Xóa menu cũ
+            menu.innerHTML = '';
+
             // Nút "Tất cả"
             const allLi = document.createElement('li');
             allLi.className = 'dropdown-check-item border-bottom fw-bold text-primary';
-            allLi.onclick = (e) => { e.stopPropagation(); e.preventDefault(); selectedClasses.clear(); renderList(); };
+            allLi.onclick = (e) => toggleAllClasses(e);
             allLi.innerHTML = `<span class="ms-2">Chọn tất cả</span>`;
             menu.appendChild(allLi);
 
             classes.forEach(c => {
                 const li = document.createElement('li');
                 li.className = 'dropdown-check-item';
-                li.onclick = (e) => { e.stopPropagation(); e.preventDefault(); if(selectedClasses.has(c)) selectedClasses.delete(c); else selectedClasses.add(c); renderList(); };
+                li.onclick = (e) => toggleClassFilter(e, c);
+                
                 const isChecked = selectedClasses.has(c);
-                li.innerHTML = `<input type="checkbox" ${isChecked ? 'checked' : ''} class="form-check-input me-2"><label>${c}</label>`;
+                li.innerHTML = `
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} class="form-check-input me-2">
+                    <label>${c}</label>
+                `;
                 menu.appendChild(li);
             });
-            document.getElementById('classFilterText').innerText = selectedClasses.size === 0 ? "Tất cả lớp" : `Đã chọn ${selectedClasses.size} lớp`;
+
+            // Cập nhật text nút
+            updateClassFilterButtonText();
+        }
+
+        function toggleClassFilter(e, className) {
+            e.stopPropagation(); // Ngăn đóng dropdown
+            e.preventDefault();  // Ngăn check mặc định để xử lý thủ công cho mượt
+
+            if (selectedClasses.has(className)) {
+                selectedClasses.delete(className);
+            } else {
+                selectedClasses.add(className);
+            }
+            // Render lại danh sách sinh viên
+            renderList();
+        }
+
+        function toggleAllClasses(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            selectedClasses.clear(); // Clear nghĩa là chọn tất cả (mặc định)
+            renderList();
+        }
+
+        function updateClassFilterButtonText() {
+            const btnText = document.getElementById('classFilterText');
+            if (selectedClasses.size === 0) {
+                btnText.innerText = "Tất cả lớp";
+            } else {
+                btnText.innerText = `Đã chọn ${selectedClasses.size} lớp`;
+            }
         }
 
         function filterListBySearch() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             document.querySelectorAll('.student-row').forEach(r => {
-                const show = r.dataset.name.includes(txt) || r.dataset.mssv.includes(txt);
-                r.style.display = show ? 'block' : 'none';
+                const name = r.dataset.name;
+                const mssv = r.dataset.mssv;
+                if (name.includes(txt) || mssv.includes(txt)) {
+                    r.style.display = 'block';
+                } else {
+                    r.style.display = 'none';
+                }
             });
         }
-        
-        // Hàm filterList cũ đổi thành gọi hàm mới
+
+        // Thay thế hàm filterList cũ
         function filterList() { filterListBySearch(); }
 
-        // ... [GIỮ NGUYÊN CÁC HÀM KHÁC: import, save, edit...] ...
-        function formatDateVN(dateStr) { if(!dateStr) return ''; const d = new Date(dateStr); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
-        function resetInfo() { document.getElementById('displaySubjectName').innerText = "--"; document.getElementById('displayTeacherName').innerText = "--"; document.getElementById('displayStartDate').innerText = "--"; document.getElementById('displayEndDate').innerText = "--"; document.getElementById('displaySchoolYear').innerText = "--"; }
-        function populateGroupDropdown() { const select = document.getElementById('groupSelect'); const currentSelection = select.value; select.innerHTML = ''; const groups = [...new Set(currentStudents.map(s => s.learning_group || 'Nhóm 1'))].sort(); if (groups.length === 0) groups.push('Nhóm 1'); groups.forEach(g => select.add(new Option(g, g))); if(select.dataset.default && groups.includes(select.dataset.default)) select.value = select.dataset.default; else select.value = groups.includes(currentSelection) ? currentSelection : groups[0]; delete select.dataset.default; }
-        function addNewGroup() { const n = prompt("Tên nhóm mới:"); if(n) { document.getElementById('groupSelect').add(new Option(n,n)); document.getElementById('groupSelect').value=n; renderList(); } }
-        async function renameCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; const n=prompt("Tên mới:",g); if(n&&n!==g) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',subject_id:sub,group_name:g,new_group_name:n})}); changeSubject(); } }
-        async function deleteCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; if(confirm(`Xóa nhóm ${g}?`)) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',subject_id:sub,group_name:g})}); changeSubject(); } }
-        async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); const el=document.getElementById('editSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
         function toggleAbs(id) { document.getElementById(`row-${id}`).classList.toggle('is-absent'); updateCount(); }
         function updateCount() { document.getElementById('countAbsent').innerText = document.querySelectorAll('.student-row .form-check-input:checked').length; }
+        
         function importClassList() { document.getElementById('fileInput').click(); }
         
-        // [HÀM ĐỌC FILE EXCEL THÔNG MINH - ĐÃ CẬP NHẬT]
+        // [LOGIC MỚI] Xử lý đọc file Excel
         function handleFileSelect(e) { 
-            const f = e.target.files[0]; if (!f) return;
+            const f = e.target.files[0]; 
+            if (!f) return;
+
             const r = new FileReader();
             r.onload = function(ev) { 
                 try {
                     const wb = XLSX.read(ev.target.result, {type: 'array'}); 
                     const ws = wb.Sheets[wb.SheetNames[0]]; 
                     const jsonData = XLSX.utils.sheet_to_json(ws, {defval: ""});
+                    
                     if (jsonData.length === 0) { alert("File rỗng!"); return; }
+
                     const headers = Object.keys(jsonData[0]);
                     const keys = {
                         mssv: ['mssv', 'mã sv', 'mã sinh viên', 'mã số sinh viên', 'student id', 'code', 'masv'],
@@ -481,7 +546,14 @@
                         lastName: ['họ', 'họ sv', 'họ lót', 'họ đệm', 'last name', 'surname'], 
                         className: ['lớp', 'class', 'mã lớp', 'tên lớp', 'lớp học']
                     };
-                    const findHeader = (keywords) => headers.find(h => keywords.some(k => h.toLowerCase().trim().includes(k)));
+
+                    const findHeader = (keywords) => {
+                        return headers.find(h => {
+                            const normalizedHeader = h.toLowerCase().trim();
+                            return keywords.some(k => normalizedHeader.includes(k));
+                        });
+                    };
+
                     const colMSSV = findHeader(keys.mssv);
                     let colFirstName = findHeader(keys.firstName);
                     let colLastName = findHeader(keys.lastName);
@@ -492,17 +564,32 @@
 
                     const sts = jsonData.map(row => {
                         let nameFinal = "";
-                        if (colLastName && colFirstName && row[colLastName] && row[colFirstName]) nameFinal = `${row[colLastName]} ${row[colFirstName]}`;
-                        else if (colFullName) nameFinal = row[colFullName];
-                        else if (colFirstName) nameFinal = row[colFirstName];
-                        return { mssv: row[colMSSV]?String(row[colMSSV]).trim():'', full_name: nameFinal?String(nameFinal).trim():'', class_name: colClass&&row[colClass]?String(row[colClass]).trim():'' };
+                        if (colLastName && colFirstName && row[colLastName] && row[colFirstName]) {
+                            nameFinal = `${row[colLastName]} ${row[colFirstName]}`;
+                        } else if (colFullName) {
+                            nameFinal = row[colFullName];
+                        } else if (colFirstName) {
+                             nameFinal = row[colFirstName];
+                        }
+
+                        return {
+                            mssv: row[colMSSV] ? String(row[colMSSV]).trim() : '', 
+                            full_name: nameFinal ? String(nameFinal).trim() : '', 
+                            class_name: colClass && row[colClass] ? String(row[colClass]).trim() : ''
+                        };
                     }).filter(s => s.mssv && s.full_name); 
 
-                    if (sts.length === 0) alert("Không trích xuất được dữ liệu hợp lệ.");
-                    else if(confirm(`Đã tìm thấy ${sts.length} sinh viên. Nhập?`)) sendImport(sts);
+                    if (sts.length === 0) {
+                        alert("Không trích xuất được dữ liệu hợp lệ.");
+                    } else {
+                        if(confirm(`Đã tìm thấy ${sts.length} sinh viên. Bạn có muốn nhập không?`)) {
+                            sendImport(sts);
+                        }
+                    }
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             }; 
-            r.readAsArrayBuffer(f); e.target.value = ''; 
+            r.readAsArrayBuffer(f); 
+            e.target.value = ''; 
         }
         
         async function sendImport(sts) { await fetch('/api/data/students/import', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, students:sts, learning_group:document.getElementById('groupSelect').value}) }); alert('Xong'); changeSubject(); }
@@ -511,24 +598,39 @@
         function displayProofPreview(id, url) { document.getElementById(`proof-preview-${id}`).innerHTML = `<img src="${url}" onclick="window.open('${url}')">`; }
         
         // [MỚI] Hiển thị Modal Xuất Excel
-        function showExportModal() { new bootstrap.Modal(document.getElementById('exportOptionModal')).show(); }
+        function showExportModal() {
+            new bootstrap.Modal(document.getElementById('exportOptionModal')).show();
+        }
 
-        // [MỚI] Xử lý Xuất Excel Nâng Cao
+        // [MỚI] Xử lý Xuất Excel theo 3 tùy chọn
         function processExport(type) {
             const grp = document.getElementById('groupSelect').value;
+            // 1. Lấy dữ liệu cơ bản (theo nhóm học)
             let dataToExport = currentStudents.filter(s => (s.learning_group || 'Nhóm 1') === grp);
 
+            // 2. Lọc theo tùy chọn
             if (type === 'filtered') {
-                if (selectedClasses.size > 0) dataToExport = dataToExport.filter(s => selectedClasses.has(s.class_name));
+                // Áp dụng bộ lọc lớp
+                if (selectedClasses.size > 0) {
+                    dataToExport = dataToExport.filter(s => selectedClasses.has(s.class_name));
+                }
+                // Áp dụng tìm kiếm tên/mssv
                 const searchTxt = document.getElementById('searchInput').value.toLowerCase();
-                if (searchTxt) dataToExport = dataToExport.filter(s => s.full_name.toLowerCase().includes(searchTxt) || s.mssv.toLowerCase().includes(searchTxt));
+                if (searchTxt) {
+                    dataToExport = dataToExport.filter(s => s.full_name.toLowerCase().includes(searchTxt) || s.mssv.toLowerCase().includes(searchTxt));
+                }
             } else if (type === 'absent') {
+                // Lọc sinh viên vắng (dựa vào DOM checked)
                 const absentIds = Array.from(document.querySelectorAll('.student-row .form-check-input:checked')).map(cb => cb.closest('.student-row').dataset.id);
                 dataToExport = dataToExport.filter(s => absentIds.includes(String(s.id)));
             }
 
-            if (dataToExport.length === 0) { alert("Không có dữ liệu!"); return; }
+            if (dataToExport.length === 0) {
+                alert("Không có dữ liệu nào để xuất!");
+                return;
+            }
 
+            // 3. Định dạng dữ liệu xuất
             const finalData = dataToExport.map((s, i) => ({
                 STT: i + 1,
                 "Họ và tên": s.full_name,
@@ -537,26 +639,25 @@
                 "Trạng thái": type === 'absent' ? 'Vắng' : (document.querySelector(`.student-row[data-id="${s.id}"] .form-check-input`)?.checked ? 'Vắng' : 'Có mặt')
             }));
 
+            // 4. Tạo file Excel
             const ws = XLSX.utils.json_to_sheet(finalData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "DanhSach");
+            
             const fileName = `DiemDanh_${document.getElementById('todayDate').value}_${type}.xlsx`;
             XLSX.writeFile(wb, fileName);
+            
             bootstrap.Modal.getInstance(document.getElementById('exportOptionModal')).hide();
         }
-        
-        function exportExcel() { showExportModal(); } // Map nút cũ sang mới
 
-        // Modal Sửa/Xóa
+        // Hàm exportExcel cũ (đổi tên để tránh xung đột hoặc bỏ đi)
+        function exportToExcel() { showExportModal(); } // Map nút cũ sang modal mới
+
         function openAddStudentModal() { new bootstrap.Modal(document.getElementById('addStudentModal')).show(); }
         async function saveNewStudent() { await fetch('/api/data/students/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value,students:[{mssv:document.getElementById('newStudentMSSV').value,full_name:document.getElementById('newStudentName').value,class_name:document.getElementById('newStudentClass').value}]})}); bootstrap.Modal.getInstance(document.getElementById('addStudentModal')).hide(); changeSubject(); }
         function openEditStudent(id){ const s=currentStudents.find(x=>x.id==id); document.getElementById('editStudentId').value=id; document.getElementById('editStudentName').value=s.full_name; document.getElementById('editStudentMSSV').value=s.mssv; document.getElementById('editStudentClass').value=s.class_name; const sel=document.getElementById('editStudentGroup'); sel.innerHTML=''; document.getElementById('groupSelect').options.forEach(o=>sel.add(new Option(o.text,o.value))); sel.value=s.learning_group; new bootstrap.Modal(document.getElementById('editStudentModal')).show(); }
         async function saveEditedStudent(){ await fetch(`/api/data/students/${document.getElementById('editStudentId').value}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:document.getElementById('editStudentName').value,mssv:document.getElementById('editStudentMSSV').value,class_name:document.getElementById('editStudentClass').value,subject_id:document.getElementById('subjectSelect').value,learning_group:document.getElementById('editStudentGroup').value})}); bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject(); }
         async function deleteStudent(){ if(confirm('Xóa?')) await fetch(`/api/data/students/${document.getElementById('editStudentId').value}`,{method:'DELETE'}); bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide(); changeSubject(); }
-        function openAddSubjectModal() { document.getElementById('newSubjectName').value = ''; document.getElementById('newTeacherName').value = ''; const y = new Date().getFullYear(); const m = new Date().getMonth() + 1; const yStart = m >= 8 ? y : y - 1; document.getElementById('newYearStart').value = yStart; document.getElementById('newYearEnd').value = yStart + 1; const el = document.getElementById('addSubjectModal'); const modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
-        async function saveNewSubject() { const name = document.getElementById('newSubjectName').value.trim(); if (!name) return alert("Nhập tên môn!"); const y1 = document.getElementById('newYearStart').value; const y2 = document.getElementById('newYearEnd').value; if(!y1 || !y2) return alert("Nhập năm học đầy đủ!"); const schoolYear = `${y1}-${y2}`; const body = { subject_name: name, teacher_name: document.getElementById('newTeacherName').value, school_year: schoolYear, semester: document.getElementById('newSemester').value, start_date: document.getElementById('newStartDate').value, end_date: document.getElementById('newEndDate').value, default_session: document.getElementById('newDefaultSession').value, default_group: document.getElementById('newDefaultGroup').value }; try { await fetch('/api/data/subjects', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); const el = document.getElementById('addSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); populateYearFilter(); document.getElementById('yearSelect').value = schoolYear; document.getElementById('semesterSelect').value = body.semester; filterSubjects(); } catch(e) { alert('Lỗi khi lưu: ' + e.message); } }
-        function openEditSubjectModal() { const id = document.getElementById('subjectSelect').value; if(!id) return; const sub = allSubjects.find(s => s.id == id); document.getElementById('editSubjectName').value = sub.subject_name; document.getElementById('editTeacherName').value = sub.teacher_name || ''; const parts = (sub.school_year || "2024-2025").split('-'); if(parts.length===2) { document.getElementById('editYearStart').value = parts[0]; document.getElementById('editYearEnd').value = parts[1]; } document.getElementById('editSemester').value = sub.semester || 'HK1'; document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : ''; document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : ''; document.getElementById('editDefaultSession').value = sub.default_session || 'Sáng'; document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1'; const el = document.getElementById('editSubjectModal'); bootstrap.Modal.getOrCreateInstance(el).show(); }
-        async function saveEditedSubject() { const id = document.getElementById('subjectSelect').value; const y1 = document.getElementById('editYearStart').value; const y2 = document.getElementById('editYearEnd').value; const schoolYear = `${y1}-${y2}`; const body = { subject_name: document.getElementById('editSubjectName').value, teacher_name: document.getElementById('editTeacherName').value, school_year: schoolYear, semester: document.getElementById('editSemester').value, start_date: document.getElementById('editStartDate').value, end_date: document.getElementById('editEndDate').value, default_session: document.getElementById('editDefaultSession').value, default_group: document.getElementById('editDefaultGroup').value }; try { await fetch(`/api/data/subjects/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); populateYearFilter(); if(document.getElementById('yearSelect').value === schoolYear && document.getElementById('semesterSelect').value === body.semester) { changeSubject(); } else { filterSubjects(); } } catch(e) { alert('Lỗi cập nhật'); } }
 
         init();
     </script>
