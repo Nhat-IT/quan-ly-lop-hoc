@@ -1,21 +1,19 @@
 const db = require('../config/db');
 
-// --- HÀM GHI LOG (Dùng chung cho cả hệ thống) ---
+// --- HÀM GHI LOG DÙNG CHUNG ---
 const logAction = async (username, action, details = '') => {
     try {
-        // Nếu username không có (null/undefined), đặt là 'Ẩn danh'
         const user = username || 'Ẩn danh';
         await db.query('INSERT INTO activity_logs (username, action, details) VALUES (?, ?, ?)', 
             [user, action, details]);
-    } catch (e) {
-        console.error("Lỗi ghi log:", e);
-    }
+    } catch (e) { console.error("Lỗi log:", e); }
 };
 exports.logAction = logAction;
 
-// --- API QUẢN LÝ TÀI KHOẢN ---
+// --- QUẢN LÝ TÀI KHOẢN ---
 exports.getAllUsers = async (req, res) => {
     try {
+        // Lấy cả password để hiển thị (chỉ admin dùng)
         const [rows] = await db.query('SELECT id, username, password, full_name, role, created_at FROM users ORDER BY id DESC');
         res.json(rows);
     } catch (e) { res.status(500).json({ message: e.message }); }
@@ -27,7 +25,7 @@ exports.createUser = async (req, res) => {
         await db.query('INSERT INTO users (username, password, full_name, role) VALUES (?, ?, ?, ?)', 
             [username, password, full_name, role]);
         
-        await logAction('admin', 'Tạo tài khoản', `User: ${username} - Role: ${role}`); 
+        await logAction('admin', 'Tạo tài khoản', `User: ${username} - Lớp: ${full_name}`); 
         res.json({ message: 'Tạo thành công' });
     } catch (e) { res.status(500).json({ message: 'Lỗi: ' + e.message }); }
 };
@@ -45,7 +43,7 @@ exports.updateUser = async (req, res) => {
         }
 
         await db.query(sql, params);
-        await logAction('admin', 'Cập nhật tài khoản', `ID: ${id} - Lớp: ${full_name}`);
+        await logAction('admin', 'Cập nhật user', `ID: ${id}`);
         res.json({ message: 'Cập nhật thành công' });
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
@@ -54,15 +52,14 @@ exports.deleteUser = async (req, res) => {
     const { id } = req.params;
     try {
         await db.query('DELETE FROM users WHERE id=?', [id]);
-        await logAction('admin', 'Xóa tài khoản', `ID: ${id}`);
+        await logAction('admin', 'Xóa user', `ID: ${id}`);
         res.json({ message: 'Đã xóa' });
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
 
-// --- API LẤY NHẬT KÝ ---
+// --- API NHẬT KÝ ---
 exports.getLogs = async (req, res) => {
     try {
-        // Lấy 200 dòng mới nhất
         const [rows] = await db.query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 200');
         res.json(rows);
     } catch (e) { res.status(500).json({ message: e.message }); }

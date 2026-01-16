@@ -17,48 +17,37 @@
         .stat-card:hover { transform: translateY(-3px); }
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
         
-        /* --- BẢNG DỮ LIỆU CỐ ĐỊNH --- */
         .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        /* Khung cuộn dọc */
+        /* Bảng có thanh cuộn giới hạn 10 dòng */
         .table-responsive { 
             overflow-x: auto; 
-            max-height: 60vh; /* Hiển thị khoảng 10 dòng */
+            max-height: 60vh; 
             overflow-y: auto; 
             border: 1px solid #dee2e6;
             border-radius: 8px;
         }
         
-        /* Cố định Header */
+        /* Cố định header */
         .table thead th {
             position: sticky; top: 0; z-index: 10;
-            background-color: #f8f9fa; 
-            border-bottom: 2px solid #dee2e6;
+            background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;
             font-weight: 700; color: #495057; text-transform: uppercase; font-size: 0.85rem;
             vertical-align: middle; padding: 12px 8px; white-space: nowrap;
             box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
         }
         .table tbody td { vertical-align: middle; white-space: nowrap; padding: 12px 8px; }
 
-        /* [QUAN TRỌNG] CĂN CHỈNH ĐỘ RỘNG CỘT CHO THẲNG HÀNG */
-        /* Cột 1: STT */
-        .table th:nth-child(1), .table td:nth-child(1) { width: 50px; min-width: 50px; text-align: center; }
-        /* Cột 2: Họ tên */
-        .table th:nth-child(2), .table td:nth-child(2) { width: 20%; min-width: 180px; text-align: left; padding-left: 15px !important; }
-        /* Cột 3: Môn học */
-        .table th:nth-child(3), .table td:nth-child(3) { width: 20%; min-width: 180px; text-align: left; padding-left: 15px !important; }
-        /* Cột 4: Ngày */
-        .table th:nth-child(4), .table td:nth-child(4) { width: 100px; min-width: 100px; text-align: center; }
-        /* Cột 5: Buổi */
-        .table th:nth-child(5), .table td:nth-child(5) { width: 80px; min-width: 80px; text-align: center; }
-        /* Cột 6: Lý do */
-        .table th:nth-child(6), .table td:nth-child(6) { width: 15%; min-width: 150px; text-align: center; }
-        /* Cột 7: Minh chứng */
-        .table th:nth-child(7), .table td:nth-child(7) { width: 80px; min-width: 80px; text-align: center; }
-        /* Cột 8: Vắng */
-        .table th:nth-child(8), .table td:nth-child(8) { width: 60px; min-width: 60px; text-align: center; }
+        /* Căn chỉnh độ rộng cột cố định */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 50px; min-width: 50px; text-align: center; } /* STT */
+        .table th:nth-child(2), .table td:nth-child(2) { width: 20%; min-width: 200px; text-align: left; padding-left: 20px !important; } /* Tên */
+        .table th:nth-child(3), .table td:nth-child(3) { width: 20%; min-width: 180px; text-align: left; padding-left: 20px !important; } /* Môn */
+        .table th:nth-child(4), .table td:nth-child(4) { width: 100px; min-width: 100px; text-align: center; } /* Ngày */
+        .table th:nth-child(5), .table td:nth-child(5) { width: 80px; min-width: 80px; text-align: center; } /* Buổi */
+        .table th:nth-child(6), .table td:nth-child(6) { width: 15%; min-width: 150px; text-align: center; } /* Lý do */
+        .table th:nth-child(7), .table td:nth-child(7) { width: 80px; min-width: 80px; text-align: center; } /* Ảnh */
+        .table th:nth-child(8), .table td:nth-child(8) { width: 60px; min-width: 60px; text-align: center; } /* Vắng */
 
-        /* Các class phụ trợ */
         .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 6px 10px; font-weight: 600; display: inline-block; width: auto; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; cursor: pointer; margin: 0 auto; transition: 0.2s; }
         .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
@@ -68,7 +57,6 @@
         .editable-reason:hover .edit-icon { opacity: 1; }
         .edit-icon { opacity: 0; color: #0d6efd; margin-left: 5px; transition: 0.2s; }
         
-        /* Nút lên đầu trang */
         #btnScrollTop { position: fixed; bottom: 80px; right: 20px; width: 45px; height: 45px; background: #0d6efd; color: white; border: none; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: none; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 999; cursor: pointer; transition: 0.3s; }
         #btnScrollTop:hover { transform: translateY(-3px); background: #0b5ed7; }
 
@@ -133,9 +121,7 @@
         <div class="table-card p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="mainTable">
-                    <thead class="bg-light">
-                        <tr><th>STT</th><th>Họ và tên</th><th>Môn học</th><th>Ngày</th><th>Buổi</th><th>Lý do</th><th>Minh chứng</th><th>Vắng</th></tr>
-                    </thead>
+                    <thead class="bg-light"><tr><th>STT</th><th>Họ và tên</th><th>Môn học</th><th>Ngày</th><th>Buổi</th><th>Lý do</th><th>Minh chứng</th><th>Vắng</th></tr></thead>
                     <tbody id="tableBody"><tr><td colspan="8" class="text-center py-4 text-muted">Đang tải...</td></tr></tbody>
                 </table>
             </div>
@@ -146,83 +132,48 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- 1. AUTO LOGOUT (15 phút) ---
-        let idleTime = 0;
-        const idleInterval = setInterval(timerIncrement, 60000); // Check mỗi phút
-        function timerIncrement() {
-            idleTime++;
-            if (idleTime >= 15) { // 15 phút
-                auth.logout();
-            }
-        }
-        function resetTimer() { idleTime = 0; }
-        window.onload = resetTimer;
-        window.onmousemove = resetTimer;
-        window.onkeypress = resetTimer;
-        window.ontouchstart = resetTimer;
+        // Auto Logout 15p
+        let idleTime = 0; setInterval(() => { idleTime++; if(idleTime >= 15) auth.logout(); }, 60000);
+        window.onmousemove = () => idleTime = 0;
 
-        // --- 2. LOGIC DASHBOARD ---
-        let db = {}; 
-        let globalTotalStudents = 0;
-        let allSubjectsInfo = [];
-        let currentUser = null;
-
-        // Scroll Top
-        window.onscroll = function() { document.getElementById("btnScrollTop").style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "flex" : "none"; };
+        let db = {}; let globalTotalStudents = 0; let allSubjectsInfo = []; let currentUser = null;
+        window.onscroll = () => document.getElementById("btnScrollTop").style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "flex" : "none";
         function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
-
-        function formatDateVN(d) { if(!d) return '-'; const date=new Date(d); if(isNaN(date)) return '-'; return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`; }
+        function formatDateVN(d) { if(!d) return '-'; const date=new Date(d); return isNaN(date) ? '-' : `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`; }
 
         async function init() {
-            // Lấy thông tin user
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 currentUser = JSON.parse(userStr);
                 document.getElementById('userNameDisplay').innerText = currentUser.fullName || currentUser.username;
                 document.getElementById('userRoleDisplay').innerText = currentUser.role.toUpperCase();
-                
-                // Nếu là Admin thì hiện nút quản lý
-                if (currentUser.role === 'admin') {
-                    document.getElementById('adminButtonPlaceholder').innerHTML = `<a href="quanly.html" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-user-cog"></i></a>`;
-                }
-            } else {
-                window.location.href = 'login.html'; // Chưa đăng nhập thì đá về login
-                return;
-            }
+                if (currentUser.role === 'admin') document.getElementById('adminButtonPlaceholder').innerHTML = `<a href="quanly.html" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-user-cog"></i></a>`;
+            } else { window.location.href = 'login.html'; return; }
 
             try {
                 const semSelect = document.getElementById('semFilter');
                 const savedSem = localStorage.getItem('currentSemester');
                 if (savedSem) semSelect.value = savedSem;
 
-                // [QUAN TRỌNG] Gửi classFilter nếu không phải admin
+                // [QUAN TRỌNG] Gửi tham số classFilter để lọc dữ liệu theo lớp nếu không phải admin
                 let apiURL = '/api/data/dashboard';
-                if (currentUser.role !== 'admin') {
-                    // Nếu là user thường (lớp), gửi username hoặc full_name (chứa tên lớp) làm filter
-                    // Ở đây giả định 'Lớp' được lưu trong full_name như yêu cầu admin
-                    apiURL += `?classFilter=${encodeURIComponent(currentUser.fullName)}`;
-                }
+                if (currentUser.role !== 'admin') apiURL += `?classFilter=${encodeURIComponent(currentUser.fullName)}`;
 
                 const res = await fetch(apiURL);
                 if(!res.ok) throw new Error('Lỗi Server');
-                
                 db = await res.json();
                 globalTotalStudents = db.globalTotal || 0; 
-
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
-
-                populateYearFilter(); 
-                render();
+                populateYearFilter(); render();
             } catch (error) { console.error(error); db = {}; render(); }
         }
 
         function populateYearFilter() {
             const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); 
             if (allSubjectsInfo.length) allSubjectsInfo.forEach(s => { if (s.school_year) years.add(s.school_year); });
-            const sortedYears = Array.from(years).sort().reverse();
             const sel = document.getElementById('yearFilter'); sel.innerHTML = '<option value="all">Năm: Tất cả</option>';
-            sortedYears.forEach(y => sel.add(new Option(y, y)));
+            Array.from(years).sort().reverse().forEach(y => sel.add(new Option(y, y)));
             const curY = new Date().getMonth() >= 7 ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}` : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`;
             if (years.has(curY)) sel.value = curY;
         }
@@ -231,29 +182,21 @@
             const sem = document.getElementById('semFilter').value;
             localStorage.setItem('currentSemester', sem);
             updateDiemDanhLink();
-            
             const currentData = db[sem] || { total: globalTotalStudents, subjects: [], data: [] };
             const selYear = document.getElementById('yearFilter').value;
-            
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm: Tất cả' : `Năm: ${selYear}`;
             document.getElementById('totalCount').innerText = globalTotalStudents;
-
-            // Update Subject Filter
             const subSelect = document.getElementById('subFilter');
             const oldSub = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
             if(currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
             if(oldSub !== 'all' && currentData.subjects.includes(oldSub)) subSelect.value = oldSub;
-
             renderTable(currentData);
             renderWarningCards(currentData.data);
         }
         
-        function updateDiemDanhLink() {
-            const btn = document.getElementById('btnDiemDanh');
-            if(btn) btn.href = `diemdanh.html?semester=${document.getElementById('semFilter').value}`;
-        }
+        function updateDiemDanhLink() { const btn = document.getElementById('btnDiemDanh'); if(btn) btn.href = `diemdanh.html?semester=${document.getElementById('semFilter').value}`; }
 
         function renderTable(currentData) {
             const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
@@ -262,53 +205,31 @@
                 document.getElementById('warningCount').innerText = 0; document.getElementById('subWarningCount').innerText = 0; document.getElementById('filterTotalCount').innerText = 0;
                 return;
             }
-
             const search = document.getElementById('search').value.toLowerCase();
             const subFilter = document.getElementById('subFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
             const yearFilter = document.getElementById('yearFilter').value;
-            
             let stt = 1, warnCount = 0, subWarnSet = new Set(), visibleCount = 0;
 
             currentData.data.forEach(sv => {
                 if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
-                
                 const details = sv.details.filter(d => {
                     const matchSub = subFilter === 'all' || d.sub === subFilter;
                     const matchYear = yearFilter === 'all' || (d.school_year || '2024-2025') === yearFilter;
                     return matchSub && matchYear;
                 });
-
-                // Logic cảnh báo mới: Vắng >= 2 buổi TRÊN 1 MÔN
                 const subCounts = {};
                 details.forEach(d => subCounts[d.sub] = (subCounts[d.sub]||0) + 1);
                 let isWarning = Object.values(subCounts).some(c => c >= 2);
-
                 if (statusFilter === 'warning' && !isWarning) return;
                 if (details.length === 0) return;
-
                 visibleCount++;
                 if (isWarning) { warnCount++; Object.keys(subCounts).forEach(s => { if(subCounts[s]>=2) subWarnSet.add(s); }); }
-
                 details.forEach((d, i) => {
                     const rowClass = isWarning ? 'alert-row' : '';
-                    const rowspan = details.length;
-                    
-                    const html = `
-                        <tr class="${rowClass}">
-                            ${i===0 ? `<td rowspan="${rowspan}" class="text-center fw-bold text-muted">${stt++}</td>` : ''}
-                            ${i===0 ? `<td rowspan="${rowspan}" class="fw-bold ${isWarning?'text-danger':''}">${sv.name}<div class="small text-muted">${sv.mssv}</div></td>` : ''}
-                            <td><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy" onclick="removeAbsence(${d.record_id})"></i></td>
-                            <td class="text-center small">${formatDateVN(d.date)}</td>
-                            <td class="text-center small">${d.session_time||'-'}</td>
-                            <td class="editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${d.reason||'<i class="text-muted small">--</i>'}</span><i class="fas fa-pen edit-icon"></i></td>
-                            <td class="text-center"><button class="btn-action btn-sm" onclick="viewProof('${d.proof||''}')"><i class="fas fa-eye"></i></button></td>
-                            ${i===0 ? `<td rowspan="${rowspan}" class="text-center fw-bold ${isWarning?'text-danger':'text-success'}">${details.length}</td>` : ''}
-                        </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', html);
+                    tbody.insertAdjacentHTML('beforeend', `<tr class="${rowClass}">${i===0 ? `<td rowspan="${details.length}" class="text-center fw-bold text-muted">${stt++}</td><td rowspan="${details.length}" class="fw-bold ${isWarning?'text-danger':''}">${sv.name}<div class="small text-muted">${sv.mssv}</div></td>` : ''}<td><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" onclick="removeAbsence(${d.record_id})"></i></td><td class="text-center small">${formatDateVN(d.date)}</td><td class="text-center small">${d.session_time||'-'}</td><td class="editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${d.reason||'<i class="text-muted small">--</i>'}</span><i class="fas fa-pen edit-icon"></i></td><td class="text-center"><button class="btn-action btn-sm" onclick="viewProof('${d.proof||''}')"><i class="fas fa-eye"></i></button></td>${i===0 ? `<td rowspan="${details.length}" class="text-center fw-bold ${isWarning?'text-danger':'text-success'}">${details.length}</td>` : ''}</tr>`);
                 });
             });
-            
             document.getElementById('warningCount').innerText = warnCount;
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
             document.getElementById('filterTotalCount').innerText = visibleCount;
@@ -316,36 +237,23 @@
 
         function renderWarningCards(data) {
             const container = document.getElementById('warningSubjectList'); container.innerHTML = '';
-            // Logic tái tạo danh sách môn cảnh báo tương tự renderTable nhưng gom nhóm
-            // (Đã rút gọn cho ngắn, logic giữ nguyên như cũ)
-            // ...
-        }
-
-        // Các hàm editReason, removeAbsence, viewProof, exportExcel giữ nguyên...
-        function editReason(td, id) { 
-            if(td.querySelector('input')) return;
-            const txt = td.querySelector('.reason-text').innerText.replace('--','').trim();
-            td.innerHTML = `<input type="text" class="form-control form-control-sm" value="${txt}" onblur="saveReason(this, ${id})">`;
-            td.querySelector('input').focus();
-        }
-        async function saveReason(inp, id) {
-            const val = inp.value;
-            await fetch('/api/data/attendance/update-reason', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_id:id, reason:val}) });
-            init(); // Reload
-        }
-        async function removeAbsence(id) {
-            if(confirm('Xóa vắng này?')) {
-                await fetch('/api/data/attendance/remove-absence', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_id:id}) });
-                init();
+            if (!data || data.length === 0) { container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Không có cảnh báo.</div>'; return; }
+            const subCounts = {}; const selYear = document.getElementById('yearFilter').value;
+            data.forEach(sv => {
+                const grouped = {};
+                sv.details.filter(d => selYear === 'all' || (d.school_year||'2024-2025') === selYear).forEach(d => grouped[d.sub] = (grouped[d.sub]||0)+1);
+                for(let s in grouped) if(grouped[s]>=2) subCounts[s] = (subCounts[s]||0)+1;
+            });
+            for(let [k,v] of Object.entries(subCounts)) {
+                const t = allSubjectsInfo.find(s=>s.subject_name===k)?.teacher_name || "Chưa cập nhật";
+                container.insertAdjacentHTML('beforeend', `<div class="col-12 col-md-4"><div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${k}')"><div><div class="fw-bold text-dark">${k}</div><div class="small text-muted">GV: ${t}</div></div><div class="text-end"><span class="badge bg-danger">${v} SV</span></div></div></div>`);
             }
         }
-        function viewProof(url) {
-            const m = new bootstrap.Modal(document.getElementById('proofModal'));
-            const img = document.getElementById('proofImg'); const none = document.getElementById('noProof');
-            if(url && url !== 'undefined') { img.src = url; img.style.display='block'; none.style.display='none'; }
-            else { img.style.display='none'; none.style.display='block'; }
-            m.show();
-        }
+        function quickFilter(s) { document.getElementById('subFilter').value=s; document.getElementById('statusFilter').value='warning'; renderTable(db[document.getElementById('semFilter').value]); document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' }); }
+        function editReason(td, id) { if(td.querySelector('input')) return; const txt = td.querySelector('.reason-text').innerText.replace('--','').trim(); td.innerHTML = `<input type="text" class="form-control form-control-sm" value="${txt}" onblur="saveReason(this, ${id})">`; td.querySelector('input').focus(); }
+        async function saveReason(inp, id) { await fetch('/api/data/attendance/update-reason', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_id:id, reason:inp.value}) }); init(); }
+        async function removeAbsence(id) { if(confirm('Xóa vắng này?')) { await fetch('/api/data/attendance/remove-absence', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_id:id}) }); init(); } }
+        function viewProof(url) { const m = new bootstrap.Modal(document.getElementById('proofModal')); const img = document.getElementById('proofImg'); const none = document.getElementById('noProof'); if(url&&url!=='undefined') { img.src=url; img.style.display='block'; none.style.display='none'; } else { img.style.display='none'; none.style.display='block'; } m.show(); }
         function exportExcel() { const wb = XLSX.utils.table_to_book(document.getElementById('mainTable'), {sheet:"Data"}); XLSX.writeFile(wb, "Report.xlsx"); }
 
         init();
