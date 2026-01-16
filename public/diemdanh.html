@@ -271,7 +271,108 @@
             } catch (error) { console.error(error); }
         }
 
-        // ... (Giữ nguyên các hàm logic khác) ...
+        // [LOGIC MỚI] Xử lý đọc file Excel thông minh và chính xác
+        function handleFileSelect(e) { 
+            const f = e.target.files[0]; 
+            if (!f) return;
+
+            const r = new FileReader();
+            r.onload = function(ev) { 
+                try {
+                    const wb = XLSX.read(ev.target.result, {type: 'array'}); 
+                    const ws = wb.Sheets[wb.SheetNames[0]]; 
+                    
+                    const jsonData = XLSX.utils.sheet_to_json(ws, {defval: ""});
+                    
+                    if (jsonData.length === 0) {
+                        alert("File rỗng!");
+                        return;
+                    }
+
+                    const headers = Object.keys(jsonData[0]);
+
+                    // --- BỘ TỪ KHÓA CHUẨN XÁC ---
+                    const keys = {
+                        mssv: ['mssv', 'mã sv', 'mã sinh viên', 'mã số sinh viên', 'student id', 'code', 'masv'],
+                        // "họ và tên" là cụm từ đầy đủ, không để "tên" đứng một mình ở đây
+                        fullName: ['họ và tên', 'họ tên', 'full name', 'fullname'], 
+                        // Trường hợp tách cột
+                        firstName: ['tên', 'tên sv', 'first name', 'name'], 
+                        lastName: ['họ', 'họ sv', 'họ lót', 'họ đệm', 'last name', 'surname'], 
+                        className: ['lớp', 'class', 'mã lớp', 'tên lớp', 'lớp học']
+                    };
+
+                    const findHeader = (keywords) => {
+                        return headers.find(h => {
+                            const normalizedHeader = h.toLowerCase().trim();
+                            // So sánh chính xác từ hoặc chứa cụm từ rõ ràng
+                            return keywords.some(k => normalizedHeader.includes(k));
+                        });
+                    };
+
+                    const colMSSV = findHeader(keys.mssv);
+                    
+                    // Logic tìm tên:
+                    // 1. Tìm cột Tên riêng (First Name) và Cột Họ (Last Name) trước
+                    let colFirstName = findHeader(keys.firstName);
+                    let colLastName = findHeader(keys.lastName);
+                    let colFullName = findHeader(keys.fullName);
+                    
+                    const colClass = findHeader(keys.className);
+
+                    if (!colMSSV) {
+                        alert(`Lỗi: Không tìm thấy cột Mã sinh viên.`);
+                        return;
+                    }
+
+                    // --- MAPPING DỮ LIỆU ---
+                    const sts = jsonData.map(row => {
+                        let nameFinal = "";
+                        
+                        // ƯU TIÊN 1: Nếu có cả cột HỌ và cột TÊN -> Ghép lại
+                        if (colLastName && colFirstName && row[colLastName] && row[colFirstName]) {
+                            nameFinal = `${row[colLastName]} ${row[colFirstName]}`;
+                        } 
+                        // ƯU TIÊN 2: Nếu không thì mới dùng cột Họ tên gộp
+                        else if (colFullName) {
+                            nameFinal = row[colFullName];
+                        } 
+                        // fallback
+                        else if (colFirstName) {
+                             // Nếu chỉ tìm thấy cột Tên mà không thấy cột Họ -> Có thể cột Tên chính là Fullname
+                             nameFinal = row[colFirstName];
+                        }
+
+                        return {
+                            mssv: row[colMSSV] ? String(row[colMSSV]).trim() : '', 
+                            full_name: nameFinal ? String(nameFinal).trim() : '', 
+                            class_name: colClass && row[colClass] ? String(row[colClass]).trim() : ''
+                        };
+                    }).filter(s => s.mssv && s.full_name); 
+
+                    if (sts.length === 0) {
+                        alert("Không trích xuất được dữ liệu hợp lệ.");
+                    } else {
+                        // Hiển thị thông báo để bạn biết nó lấy cột nào
+                        let msg = `Đã tìm thấy ${sts.length} sinh viên.\n`;
+                        if (colLastName && colFirstName) msg += `✅ Đã ghép cột "${colLastName}" và "${colFirstName}" thành Họ tên.\n`;
+                        else if (colFullName) msg += `✅ Sử dụng cột "${colFullName}" làm Họ tên.\n`;
+                        
+                        if(confirm(msg + "Bạn có muốn nhập không?")) {
+                            sendImport(sts);
+                        }
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Lỗi đọc file: " + err.message);
+                }
+            }; 
+            r.readAsArrayBuffer(f); 
+            e.target.value = ''; 
+        }
+
+        // ... (Các hàm còn lại giữ nguyên) ...
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect'); yearSelect.innerHTML = '';
             const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
@@ -360,118 +461,6 @@
             document.getElementById('filteredCount').innerText = c;
         }
         function importClassList() { document.getElementById('fileInput').click(); }
-        
-        // [NÂNG CẤP] Hàm đọc file thông minh (Smart Detection)
-        function handleFileSelect(e) { 
-            const f = e.target.files[0]; 
-            if (!f) return;
-
-            const r = new FileReader();
-            r.onload = function(ev) { 
-                try {
-                    const wb = XLSX.read(ev.target.result, {type: 'array'}); 
-                    const ws = wb.Sheets[wb.SheetNames[0]]; 
-                    
-                    // Lấy dữ liệu thô, giữ nguyên tiêu đề cột
-                    const jsonData = XLSX.utils.sheet_to_json(ws, {defval: ""});
-                    
-                    if (jsonData.length === 0) {
-                        alert("File rỗng hoặc không đọc được dữ liệu!");
-                        return;
-                    }
-
-                    // Lấy danh sách tiêu đề các cột có trong file
-                    const headers = Object.keys(jsonData[0]);
-
-                    // --- BỘ TỪ KHÓA NHẬN DIỆN (Viết thường để so sánh) ---
-                    const keys = {
-                        mssv: ['mssv', 'mã sv', 'mã sinh viên', 'mã số sinh viên', 'student id', 'code', 'masv'],
-                        // Xoá "tên" khỏi fullName để tránh nhầm với cột Tên (First Name)
-                        fullName: ['họ và tên', 'họ tên', 'họ và tên sinh viên', 'full name', 'fullname', 'tên sinh viên'], 
-                        firstName: ['tên', 'tên sv', 'first name', 'name'], // Trường hợp tách cột
-                        lastName: ['họ', 'họ sv', 'họ lót', 'họ đệm', 'last name', 'surname'], // Trường hợp tách cột
-                        className: ['lớp', 'class', 'mã lớp', 'tên lớp', 'lớp học']
-                    };
-
-                    // Hàm tìm tên cột khớp với từ khóa
-                    const findHeader = (keywords) => {
-                        return headers.find(h => {
-                            const normalizedHeader = h.toLowerCase().trim();
-                            return keywords.some(k => normalizedHeader.includes(k)); // Chứa từ khóa là nhận
-                        });
-                    };
-
-                    // 1. Dò cột MSSV
-                    const colMSSV = findHeader(keys.mssv);
-
-                    // 2. Dò cột Tên (Ưu tiên cột "Họ và tên" gộp, nếu không có thì tìm Họ + Tên riêng)
-                    let colFullName = findHeader(keys.fullName);
-                    let colLastName = null;
-                    let colFirstName = null;
-
-                    // Nếu không thấy cột "Họ tên" gộp, thử tìm cột "Họ" và "Tên" riêng
-                    if (!colFullName) {
-                        colLastName = findHeader(keys.lastName);
-                        colFirstName = findHeader(keys.firstName);
-                    }
-
-                    // 3. Dò cột Lớp
-                    const colClass = findHeader(keys.className);
-
-                    // --- KIỂM TRA KẾT QUẢ DÒ TÌM ---
-                    if (!colMSSV) {
-                        alert(`Lỗi: Không tìm thấy cột Mã sinh viên.\n(Code đã dò các từ khóa: ${keys.mssv.join(', ')})`);
-                        return;
-                    }
-                    if (!colFullName && (!colLastName || !colFirstName)) {
-                        alert(`Lỗi: Không tìm thấy cột Họ tên.\n(Code đã dò: ${keys.fullName.join(', ')})`);
-                        return;
-                    }
-
-                    // --- MAPPING DỮ LIỆU ---
-                    const sts = jsonData.map(row => {
-                        let nameFinal = "";
-                        
-                        if (colFullName) {
-                            // Trường hợp 1: Có cột Họ tên gộp
-                            nameFinal = row[colFullName];
-                        } else if (colLastName && colFirstName) {
-                            // Trường hợp 2: Ghép cột Họ + cột Tên
-                            nameFinal = `${row[colLastName]} ${row[colFirstName]}`;
-                        }
-
-                        return {
-                            mssv: row[colMSSV] ? String(row[colMSSV]).trim() : '', 
-                            full_name: nameFinal ? String(nameFinal).trim() : '', 
-                            class_name: colClass && row[colClass] ? String(row[colClass]).trim() : ''
-                        };
-                    }).filter(s => s.mssv && s.full_name); // Lọc bỏ dòng lỗi
-
-                    // --- XÁC NHẬN VÀ GỬI ---
-                    if (sts.length === 0) {
-                        alert("Không trích xuất được sinh viên nào. Vui lòng kiểm tra nội dung file.");
-                    } else {
-                        let confirmMsg = `Đã tìm thấy ${sts.length} sinh viên.\n\n`;
-                        confirmMsg += `✔️ Cột MSSV: "${colMSSV}"\n`;
-                        confirmMsg += colFullName 
-                            ? `✔️ Cột Tên: "${colFullName}"\n` 
-                            : `✔️ Cột Tên: Ghép từ "${colLastName}" + "${colFirstName}"\n`;
-                        confirmMsg += colClass ? `✔️ Cột Lớp: "${colClass}"` : `⚠️ Cột Lớp: Không thấy (sẽ để trống)`;
-                        
-                        if(confirm(confirmMsg)) {
-                            sendImport(sts);
-                        }
-                    }
-
-                } catch (err) {
-                    console.error(err);
-                    alert("Lỗi đọc file: " + err.message);
-                }
-            }; 
-            r.readAsArrayBuffer(f); 
-            e.target.value = ''; // Reset input để chọn lại file khác nếu cần
-        }
-        
         async function sendImport(sts) { await fetch('/api/data/students/import', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, students:sts, learning_group:document.getElementById('groupSelect').value}) }); alert('Xong'); changeSubject(); }
         async function submitAttendance() { const d = Array.from(document.querySelectorAll('.student-row')).map(r=>({student_id:r.dataset.id, is_absent:r.querySelector('.form-check-input').checked?1:0, reason:r.querySelector('.txt-reason').value, proof_image_url:proofImages[r.dataset.id]})); await fetch('/api/data/attendance', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, session_date:document.getElementById('todayDate').value, session_time:document.getElementById('sessionTime').value, learning_group:document.getElementById('groupSelect').value, attendance_data:d}) }); alert('Đã lưu'); }
         async function handleProofUpload(id, inp) { const f=inp.files[0]; const fd=new FormData(); fd.append('proof',f); const r=await fetch('/api/data/upload-proof',{method:'POST',body:fd}); if(r.ok){ const d=await r.json(); proofImages[id]=d.url; displayProofPreview(id,d.url); } }
