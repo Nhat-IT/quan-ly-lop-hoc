@@ -1,19 +1,19 @@
 const db = require('../config/db');
 
-// --- [MỚI] HÀM DÙNG CHUNG ĐỂ GHI LOG ---
-// Các controller khác (dataController) sẽ import hàm này để ghi lại thao tác
+// --- HÀM GHI LOG (Dùng chung cho cả hệ thống) ---
 const logAction = async (username, action, details = '') => {
     try {
+        // Nếu username không có (null/undefined), đặt là 'Ẩn danh'
+        const user = username || 'Ẩn danh';
         await db.query('INSERT INTO activity_logs (username, action, details) VALUES (?, ?, ?)', 
-            [username, action, details]);
+            [user, action, details]);
     } catch (e) {
         console.error("Lỗi ghi log:", e);
     }
 };
-// Xuất hàm này để file khác dùng được
 exports.logAction = logAction;
 
-// --- QUẢN LÝ TÀI KHOẢN (Giữ nguyên code cũ) ---
+// --- API QUẢN LÝ TÀI KHOẢN ---
 exports.getAllUsers = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT id, username, password, full_name, role, created_at FROM users ORDER BY id DESC');
@@ -27,17 +27,27 @@ exports.createUser = async (req, res) => {
         await db.query('INSERT INTO users (username, password, full_name, role) VALUES (?, ?, ?, ?)', 
             [username, password, full_name, role]);
         
-        // Ghi log admin tạo user
         await logAction('admin', 'Tạo tài khoản', `User: ${username} - Role: ${role}`); 
-        
         res.json({ message: 'Tạo thành công' });
     } catch (e) { res.status(500).json({ message: 'Lỗi: ' + e.message }); }
 };
 
 exports.updateUser = async (req, res) => {
-    // ... (Giữ nguyên logic update)
-    // Thêm dòng này sau khi update thành công:
-    // await logAction('admin', 'Cập nhật tài khoản', `ID: ${req.params.id}`);
+    const { id } = req.params;
+    const { full_name, role, password } = req.body;
+    try {
+        let sql = 'UPDATE users SET full_name=?, role=? WHERE id=?';
+        let params = [full_name, role, id];
+        
+        if (password) { 
+            sql = 'UPDATE users SET full_name=?, role=?, password=? WHERE id=?';
+            params = [full_name, role, password, id];
+        }
+
+        await db.query(sql, params);
+        await logAction('admin', 'Cập nhật tài khoản', `ID: ${id} - Lớp: ${full_name}`);
+        res.json({ message: 'Cập nhật thành công' });
+    } catch (e) { res.status(500).json({ message: e.message }); }
 };
 
 exports.deleteUser = async (req, res) => {
@@ -49,7 +59,7 @@ exports.deleteUser = async (req, res) => {
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
 
-// --- [MỚI] API LẤY NHẬT KÝ CHO TRANG ADMIN ---
+// --- API LẤY NHẬT KÝ ---
 exports.getLogs = async (req, res) => {
     try {
         // Lấy 200 dòng mới nhất
