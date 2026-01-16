@@ -105,8 +105,6 @@
             .col-mssv, .col-class { width: auto; font-size: 0.9rem; color: #666; margin-right: 15px; text-align: left; }
             .col-mssv::before { content: "MSSV: "; } .col-class::before { content: "Lớp: "; }
             .col-action { position: absolute; right: 15px; top: 15px; }
-            
-            /* [ĐÃ SỬA] Đã xóa dòng lệnh ẩn nút Excel ở đây */
         }
     </style>
 </head>
@@ -149,8 +147,8 @@
                     </div>
                     <div class="filter-tools">
                         <button class="btn btn-warning shadow-sm" onclick="openEditSubjectModal()" title="Sửa môn"><i class="fas fa-pen text-white"></i></button>
-                        <button class="btn btn-excel d-none d-md-block shadow-sm" id="btnImportExcel" onclick="importClassList()">
-                            <i class="fas fa-file-excel"></i> Nhập DS
+                        <button class="btn btn-excel shadow-sm" id="btnImportExcel" onclick="importClassList()" title="Nhập danh sách sinh viên">
+                            <i class="fas fa-file-excel"></i> <span class="d-none d-md-inline">Nhập DS</span>
                         </button>
                         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
                     </div>
@@ -192,8 +190,6 @@
         <div class="d-flex justify-content-between mb-3 align-items-end">
             <span class="text-muted small">Sĩ số: <b id="studentCount">0</b> | Hiện: <b id="filteredCount">0</b></span>
             <div class="d-flex gap-2">
-                <button class="btn btn-excel d-md-none btn-sm" onclick="importClassList()" title="Nhập danh sách từ Excel"><i class="fas fa-file-excel"></i></button>
-                
                 <button class="btn btn-success btn-sm" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Thêm SV</button>
             </div>
         </div>
@@ -275,6 +271,7 @@
             } catch (error) { console.error(error); }
         }
 
+        // ... (Giữ nguyên các hàm logic khác) ...
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect'); yearSelect.innerHTML = '';
             const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
@@ -363,6 +360,7 @@
             document.getElementById('filteredCount').innerText = c;
         }
         function importClassList() { document.getElementById('fileInput').click(); }
+        
         // [NÂNG CẤP] Hàm đọc file thông minh (Smart Detection)
         function handleFileSelect(e) { 
             const f = e.target.files[0]; 
@@ -388,9 +386,10 @@
                     // --- BỘ TỪ KHÓA NHẬN DIỆN (Viết thường để so sánh) ---
                     const keys = {
                         mssv: ['mssv', 'mã sv', 'mã sinh viên', 'mã số sinh viên', 'student id', 'code', 'masv'],
-                        fullName: ['họ và tên', 'họ tên', 'họ và tên sinh viên', 'tên sinh viên', 'full name', 'fullname', 'tên'],
-                        firstName: ['tên', 'first name', 'name'], // Trường hợp tách cột
-                        lastName: ['họ', 'họ lót', 'họ đệm', 'last name', 'surname'], // Trường hợp tách cột
+                        // Xoá "tên" khỏi fullName để tránh nhầm với cột Tên (First Name)
+                        fullName: ['họ và tên', 'họ tên', 'họ và tên sinh viên', 'full name', 'fullname', 'tên sinh viên'], 
+                        firstName: ['tên', 'tên sv', 'first name', 'name'], // Trường hợp tách cột
+                        lastName: ['họ', 'họ sv', 'họ lót', 'họ đệm', 'last name', 'surname'], // Trường hợp tách cột
                         className: ['lớp', 'class', 'mã lớp', 'tên lớp', 'lớp học']
                     };
 
@@ -398,7 +397,7 @@
                     const findHeader = (keywords) => {
                         return headers.find(h => {
                             const normalizedHeader = h.toLowerCase().trim();
-                            return keywords.some(k => normalizedHeader.includes(k));
+                            return keywords.some(k => normalizedHeader.includes(k)); // Chứa từ khóa là nhận
                         });
                     };
 
@@ -472,6 +471,7 @@
             r.readAsArrayBuffer(f); 
             e.target.value = ''; // Reset input để chọn lại file khác nếu cần
         }
+        
         async function sendImport(sts) { await fetch('/api/data/students/import', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, students:sts, learning_group:document.getElementById('groupSelect').value}) }); alert('Xong'); changeSubject(); }
         async function submitAttendance() { const d = Array.from(document.querySelectorAll('.student-row')).map(r=>({student_id:r.dataset.id, is_absent:r.querySelector('.form-check-input').checked?1:0, reason:r.querySelector('.txt-reason').value, proof_image_url:proofImages[r.dataset.id]})); await fetch('/api/data/attendance', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, session_date:document.getElementById('todayDate').value, session_time:document.getElementById('sessionTime').value, learning_group:document.getElementById('groupSelect').value, attendance_data:d}) }); alert('Đã lưu'); }
         async function handleProofUpload(id, inp) { const f=inp.files[0]; const fd=new FormData(); fd.append('proof',f); const r=await fetch('/api/data/upload-proof',{method:'POST',body:fd}); if(r.ok){ const d=await r.json(); proofImages[id]=d.url; displayProofPreview(id,d.url); } }
