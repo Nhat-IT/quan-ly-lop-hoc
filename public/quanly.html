@@ -8,170 +8,112 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="auth.js"></script> 
     <style>
-        body { background-color: #f4f7fa; font-family: 'Segoe UI', sans-serif; padding-bottom: 70px; /* Chừa chỗ cho mobile nav */ }
-        
-        /* Sidebar cho PC */
+        body { background-color: #f4f7fa; font-family: 'Segoe UI', sans-serif; padding-bottom: 70px; }
         .sidebar { width: 250px; background: #2c3e50; min-height: 100vh; color: white; position: fixed; top: 0; left: 0; z-index: 100; transition: 0.3s; }
         .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 15px 20px; font-weight: 500; cursor: pointer; display: flex; align-items: center; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #34495e; color: white; border-left: 4px solid #3498db; }
-        .sidebar .nav-link i { width: 25px; text-align: center; margin-right: 10px; }
-        
-        .main-content { margin-left: 250px; padding: 25px; transition: 0.3s; }
-        .card { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
-
-        /* RESPONSIVE CHO MOBILE */
-        @media (max-width: 768px) {
-            /* Sidebar biến thành Bottom Navigation Bar */
-            .sidebar { 
-                width: 100%; height: auto; min-height: auto; 
-                position: fixed; bottom: 0; top: auto; left: 0;
-                flex-direction: row !important; justify-content: space-around;
-                padding: 0; border-top: 1px solid rgba(255,255,255,0.1);
-            }
-            .sidebar h4 { display: none; } /* Ẩn tiêu đề ADMIN */
-            .sidebar .nav { flex-direction: row !important; width: 100%; justify-content: space-around; }
-            .sidebar .nav-item { flex: 1; text-align: center; }
-            .sidebar .nav-link { 
-                flex-direction: column; padding: 10px 0; font-size: 0.8rem; border-left: none !important; border-top: 4px solid transparent; 
-            }
-            .sidebar .nav-link i { margin-right: 0; font-size: 1.2rem; margin-bottom: 2px; }
-            .sidebar .nav-link.active { border-top: 4px solid #3498db; border-left: none; }
-            
-            .main-content { margin-left: 0; padding: 15px; padding-bottom: 80px; }
-            
-            /* Ẩn bớt cột không quan trọng trên bảng mobile */
-            .table-responsive { overflow-x: auto; }
-            .table th, .table td { white-space: nowrap; }
-        }
+        .main-content { margin-left: 250px; padding: 30px; transition: 0.3s; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .pass-wrapper { position: relative; width: 120px; }
+        .pass-wrapper input { width: 100%; border: none; background: transparent; pointer-events: none; }
+        .pass-wrapper .eye-btn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; font-size: 0.8rem; }
+        @media (max-width: 768px) { .sidebar { left: -250px; } .sidebar.active { left: 0; } .main-content { margin-left: 0; } }
     </style>
 </head>
 <body>
-
-    <div class="sidebar d-flex flex-column p-3">
-        <h4 class="text-center mb-4 fw-bold"><i class="fas fa-shield-alt"></i> <span>ADMIN</span></h4>
-        <ul class="nav flex-column">
-            <li class="nav-item"><a href="index.html" class="nav-link"><i class="fas fa-home"></i> <span>Trang Chủ</span></a></li>
-            <li class="nav-item"><a onclick="showTab('users')" class="nav-link active" id="nav-users"><i class="fas fa-users-cog"></i> <span>Tài Khoản</span></a></li>
-            <li class="nav-item"><a onclick="showTab('logs')" class="nav-link" id="nav-logs"><i class="fas fa-history"></i> <span>Nhật Ký</span></a></li>
-            <li class="nav-item mt-auto"><a onclick="performLogout()" class="nav-link text-danger"><i class="fas fa-sign-out-alt"></i> <span>Thoát</span></a></li>
-        </ul>
+    <div class="sidebar" id="sidebar">
+        <div class="p-3 text-center border-bottom border-secondary"><h4 class="fw-bold m-0"><i class="fas fa-shield-alt text-warning"></i> ADMIN</h4></div>
+        <nav class="nav flex-column mt-3">
+            <a class="nav-link active" onclick="showTab('users')"><i class="fas fa-users me-2"></i> Tài khoản</a>
+            <a class="nav-link" onclick="showTab('logs')"><i class="fas fa-history me-2"></i> Nhật ký</a>
+            <a class="nav-link text-danger mt-3" href="index.html"><i class="fas fa-sign-out-alt me-2"></i> Thoát</a>
+        </nav>
     </div>
 
     <div class="main-content">
+        <button class="btn btn-dark d-md-none mb-3" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        
         <div id="tab-users">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <h3 class="mb-0 fw-bold text-primary">Quản Lý Tài Khoản</h3>
-                <button class="btn btn-primary shadow-sm" onclick="openUserModal()"><i class="fas fa-plus"></i> <span class="d-none d-sm-inline">Thêm Tài Khoản</span></button>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-dark">Quản Lý Tài Khoản</h3>
+                <button class="btn btn-primary shadow-sm" onclick="openUserModal()"><i class="fas fa-plus"></i> Tạo mới</button>
             </div>
-            
-            <div class="card p-0 overflow-hidden">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="text-center" width="50">STT</th>
-                                <th>Tên Đăng Nhập</th>
-                                <th>Họ Tên</th>
-                                <th>Vai Trò</th>
-                                <th class="d-none d-md-table-cell">Ngày Tạo</th>
-                                <th class="text-end">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div class="card p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                <thead class="bg-light"><tr><th>STT</th><th>Tên Đăng Nhập</th><th>Mật khẩu</th><th>Lớp</th><th>Vai Trò</th><th>Ngày Tạo</th><th class="text-end">Hành động</th></tr></thead>
+                <tbody id="userTableBody"></tbody>
+            </table></div></div>
         </div>
 
-        <div id="tab-logs" style="display: none;">
-            <h3 class="mb-4 fw-bold text-primary">Lịch Sử Hoạt Động</h3>
-            <div class="card p-0 overflow-hidden">
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0 align-middle">
-                        <thead class="table-dark">
-                            <tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th><th>Chi tiết</th></tr>
-                        </thead>
-                        <tbody id="logTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+        <div id="tab-logs" style="display:none;">
+            <h3 class="fw-bold text-dark mb-4">Nhật Ký Hoạt Động</h3>
+            <div class="card p-0"><div class="table-responsive"><table class="table table-striped align-middle mb-0">
+                <thead class="bg-light"><tr><th>Thời gian</th><th>User</th><th>Hành động</th><th>Chi tiết</th></tr></thead>
+                <tbody id="logTableBody"></tbody>
+            </table></div></div>
         </div>
     </div>
 
-    <div class="modal fade" id="userModal">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0"><h5 class="modal-title fw-bold" id="userModalTitle">Thêm Tài Khoản</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <input type="hidden" id="userId">
-                    <div class="mb-3"><label class="fw-bold small">Tên đăng nhập</label><input type="text" class="form-control" id="username"></div>
-                    <div class="mb-3"><label class="fw-bold small">Mật khẩu</label><input type="password" class="form-control" id="password" placeholder="Để trống nếu không đổi"></div>
-                    <div class="mb-3"><label class="fw-bold small">Họ và tên</label><input type="text" class="form-control" id="fullname"></div>
-                    <div class="mb-3"><label class="fw-bold small">Vai trò</label>
-                        <select class="form-select" id="role">
-                            <option value="teacher">Giáo Viên (Điểm danh)</option>
-                            <option value="viewer">Viewer (Chỉ xem)</option>
-                            <option value="admin">Quản Trị Viên</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button class="btn btn-primary px-4" onclick="saveUser()">Lưu</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="userModal"><div class="modal-dialog"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold">Thông Tin Tài Khoản</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+        <input type="hidden" id="userId">
+        <div class="mb-3"><label>Tên đăng nhập (Username)</label><input type="text" class="form-control" id="username"></div>
+        <div class="mb-3"><label>Mật khẩu</label><input type="text" class="form-control" id="password" placeholder="Để trống nếu không đổi"></div>
+        <div class="mb-3"><label>Lớp (Tên hiển thị)</label><input type="text" class="form-control" id="fullname" placeholder="VD: 25TH01"></div>
+        <div class="mb-3"><label>Vai trò</label><select class="form-select" id="role">
+            <option value="admin">Admin (Quản trị)</option>
+            <option value="user">Giảng viên</option>
+            <option value="user">BCS (Ban cán sự)</option>
+            <option value="user">BCH (Ban chấp hành)</option>
+        </select></div>
+    </div><div class="modal-footer border-0"><button class="btn btn-primary w-100" onclick="saveUser()">Lưu</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        async function init() { await loadUsers(); }
+        // Auto Logout
+        let idle=0; setInterval(()=>{idle++;if(idle>=15)auth.logout()},60000);
+        window.onmousemove=()=>idle=0;
 
-        function showTab(tab) {
-            document.getElementById('tab-users').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('tab-logs').style.display = tab === 'logs' ? 'block' : 'none';
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            document.getElementById(`nav-${tab}`).classList.add('active');
-            if(tab === 'users') loadUsers(); else loadLogs();
-        }
+        function showTab(t) { document.getElementById('tab-users').style.display = t==='users'?'block':'none'; document.getElementById('tab-logs').style.display = t==='logs'?'block':'none'; document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active')); event.target.classList.add('active'); if(t==='users') loadUsers(); else loadLogs(); }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
         async function loadUsers() {
             try {
                 const res = await fetch('/api/data/admin/users');
                 const users = await res.json();
                 const tbody = document.getElementById('userTableBody'); tbody.innerHTML = '';
-                
-                // [ĐÃ SỬA] Sử dụng index + 1 để làm STT
-                users.forEach((u, index) => {
-                    let badge = u.role==='admin'?'bg-danger':(u.role==='teacher'?'bg-success':'bg-info text-dark');
-                    let roleName = u.role==='admin'?'Quản trị':(u.role==='teacher'?'Giáo viên':'Người xem');
+                users.forEach((u, i) => {
+                    const roleLabel = u.role === 'admin' ? '<span class="badge bg-danger">ADMIN</span>' : '<span class="badge bg-info text-dark">LỚP/GV</span>';
+                    // Input type password để ẩn, click mắt để hiện
+                    const passHtml = `
+                        <div class="pass-wrapper">
+                            <input type="password" value="${u.password||''}" id="pass-${u.id}" readonly>
+                            <i class="fas fa-eye eye-btn" onclick="togglePass('pass-${u.id}')"></i>
+                        </div>`;
                     
                     tbody.insertAdjacentHTML('beforeend', `
                         <tr>
-                            <td class="text-center fw-bold text-secondary">${index + 1}</td> <td class="fw-bold text-primary">${u.username}</td>
-                            <td>${u.full_name}</td>
-                            <td><span class="badge ${badge}">${roleName}</span></td>
-                            <td class="d-none d-md-table-cell text-muted small">${new Date(u.created_at).toLocaleDateString('vi-VN')}</td>
+                            <td>${i+1}</td>
+                            <td class="fw-bold text-primary">${u.username}</td>
+                            <td>${passHtml}</td>
+                            <td class="fw-bold">${u.full_name||'--'}</td>
+                            <td>${roleLabel}</td>
+                            <td class="small text-muted">${new Date(u.created_at).toLocaleDateString('vi-VN')}</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-warning" onclick="editUser(${u.id},'${u.username}','${u.full_name}','${u.role}')"><i class="fas fa-pen"></i></button> 
-                                ${u.username!=='admin' ? `<button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}
+                                <button class="btn btn-sm btn-light text-warning" onclick="editUser(${u.id}, '${u.username}', '${u.full_name}', '${u.role}')"><i class="fas fa-pen"></i></button>
+                                <button class="btn btn-sm btn-light text-danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
                             </td>
-                        </tr>
-                    `);
+                        </tr>`);
                 });
             } catch(e) { console.error(e); }
         }
 
-        function openUserModal() {
-            document.getElementById('userId').value=''; document.getElementById('username').value=''; document.getElementById('username').disabled=false;
-            document.getElementById('password').value=''; document.getElementById('fullname').value=''; document.getElementById('role').value='teacher';
-            document.getElementById('userModalTitle').innerText='Thêm Tài Khoản'; new bootstrap.Modal(document.getElementById('userModal')).show();
+        function togglePass(id) {
+            const inp = document.getElementById(id);
+            inp.type = inp.type === 'password' ? 'text' : 'password';
         }
-        function editUser(id,user,name,role) {
-            document.getElementById('userId').value=id; document.getElementById('username').value=user; document.getElementById('username').disabled=true;
-            document.getElementById('password').value=''; document.getElementById('fullname').value=name; document.getElementById('role').value=role;
-            document.getElementById('userModalTitle').innerText='Cập Nhật Tài Khoản'; new bootstrap.Modal(document.getElementById('userModal')).show();
-        }
+
+        function openUserModal() { document.getElementById('userId').value=''; document.getElementById('username').value=''; document.getElementById('password').value=''; document.getElementById('fullname').value=''; document.getElementById('userModal').querySelector('.modal-title').innerText='Tạo Tài Khoản'; new bootstrap.Modal(document.getElementById('userModal')).show(); }
+        function editUser(id, u, f, r) { document.getElementById('userId').value=id; document.getElementById('username').value=u; document.getElementById('password').value=''; document.getElementById('fullname').value=f; document.getElementById('role').value=r; document.getElementById('userModal').querySelector('.modal-title').innerText='Sửa Tài Khoản'; new bootstrap.Modal(document.getElementById('userModal')).show(); }
+        
         async function saveUser() {
             const id = document.getElementById('userId').value;
             const body = { username: document.getElementById('username').value, password: document.getElementById('password').value, full_name: document.getElementById('fullname').value, role: document.getElementById('role').value };
@@ -181,15 +123,9 @@
             } catch(e) { alert('Lỗi server'); }
         }
         async function deleteUser(id) { if(confirm('Xóa tài khoản này?')) { await fetch(`/api/data/admin/users/${id}`, { method: 'DELETE' }); loadUsers(); } }
+        async function loadLogs() { const res = await fetch('/api/data/admin/logs'); const logs = await res.json(); document.getElementById('logTableBody').innerHTML = logs.map(l => `<tr><td>${new Date(l.created_at).toLocaleString()}</td><td>${l.username}</td><td>${l.action}</td><td>${l.details}</td></tr>`).join(''); }
         
-        async function loadLogs() {
-            try {
-                const res = await fetch('/api/data/admin/logs'); const logs = await res.json();
-                const tbody = document.getElementById('logTableBody'); tbody.innerHTML = '';
-                logs.forEach(l => tbody.insertAdjacentHTML('beforeend', `<tr><td class="text-muted small">${new Date(l.created_at).toLocaleString('vi-VN')}</td><td class="fw-bold">${l.username}</td><td>${l.action}</td><td class="small text-muted text-wrap" style="max-width: 200px;">${l.details||''}</td></tr>`));
-            } catch(e) { console.error(e); }
-        }
-        init();
+        loadUsers();
     </script>
 </body>
 </html>
