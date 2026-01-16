@@ -11,6 +11,7 @@
     <style>
         :root { 
             --primary-color: #3459e6; 
+            --danger-color: #e6344a; 
             --bg-body: #f4f7fa; 
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
@@ -23,54 +24,91 @@
         .header-title { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--text-dark); margin-right: 20px; white-space: nowrap; }
         .header-subject { position: absolute; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: var(--primary-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%; }
 
-        .btn-back-custom { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 50%; }
+        .btn-back-custom { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; background-color: #fff; border: 2px solid #e2e8f0; }
         .btn-back-custom:active { transform: scale(0.95); background-color: #f1f5f9; }
 
-        .scrollable-controls { background: var(--bg-white); padding: 15px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
-        .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .scrollable-controls { background: var(--bg-white); padding: 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .lbl-caption { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
         
         .info-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 15px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
         .info-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
         .info-value { font-weight: 600; font-size: 0.95rem; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .list-header { 
-            background-color: #e9ecef; color: #495057; padding: 12px 0; 
+            background-color: #e9ecef; color: #495057; padding: 15px 0; 
             border-radius: 8px 8px 0 0; border: 1px solid var(--border-color); border-bottom: none; 
             display: grid; grid-template-columns: var(--student-grid); align-items: center; 
         }
-        .list-header > div { font-weight: 800 !important; font-size: 0.8rem; text-transform: uppercase; text-align: center; }
-        .list-header .col-name { text-align: left; padding-left: 15px; }
+        .list-header > div { font-weight: 800 !important; font-size: 0.85rem; text-transform: uppercase; color: #2c3e50; text-align: center; }
+        .list-header .col-name { text-align: left; padding-left: 20px; }
 
         .student-row { background: var(--bg-white); border: 1px solid var(--border-color); border-top: none; padding: 0; transition: background 0.2s; }
         .student-row:hover { background-color: #f8f9fa; }
-        .student-row.is-absent { background-color: #fff0f3; border-left: 4px solid #e6344a; }
+        .student-row.is-absent { background-color: #fff0f3; border-left: 4px solid var(--danger-color); }
         
         .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; padding: 12px 0; }
-        .col-stt, .col-mssv, .col-class, .col-action { text-align: center; font-size: 0.9rem; }
-        .col-name { padding-left: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; position: relative; }
-        .col-action input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
+        
+        /* [ĐÃ SỬA] CSS Ẩn/Hiện bút chì */
+        .col-name { 
+            padding-left: 20px; font-weight: 600; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; text-align: left; 
+            position: relative; cursor: default;
+        }
+        
+        .col-name .edit-icon { 
+            visibility: hidden; /* Mặc định ẩn */
+            opacity: 0; 
+            transition: all 0.2s ease; 
+            margin-left: 10px; 
+            cursor: pointer; 
+            color: var(--primary-color);
+            padding: 5px;
+        }
+        
+        /* Chỉ khi Hover vào dòng tên mới hiện */
+        .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
+
+        .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
         .note-input-group { display: none !important; margin: 5px 15px 15px 60px; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e2e8f0; }
         .student-row.is-absent .note-input-group { display: block !important; }
-        .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 12px 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        .proof-preview img { width: 80px; height: auto; border-radius: 4px; margin-top: 5px; cursor: pointer; border: 1px solid #ddd; }
+        .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        .btn-excel { background-color: #217346 !important; border-color: #217346 !important; color: white !important; }
+        .empty-state { padding: 40px; text-align: center; background: white; border: 1px solid var(--border-color); }
 
-        /* Mobile Responsive */
-        @media (max-width: 991px) {
-            .filter-row-custom { flex-wrap: wrap !important; }
-            .filter-year, .filter-sem, .filter-add-btn { width: auto; flex-grow: 1; }
-            .filter-sub { width: 100%; margin-top: 8px; }
-            .filter-tools { width: 100%; justify-content: flex-end; margin-top: 8px; }
+        /* Media Queries */
+        @media (min-width: 992px) {
+            .filter-row-custom { flex-wrap: nowrap !important; }
+            .filter-year { width: 170px; flex-shrink: 0; }
+            .filter-sem { width: 110px; flex-shrink: 0; }
+            .filter-add-btn { width: auto; flex-shrink: 0; }
+            .filter-sub { flex-grow: 1; min-width: 200px; }
+            .filter-tools { width: auto; flex-shrink: 0; display: flex; gap: 8px; }
         }
+
+        @media (max-width: 991px) {
+            .filter-row-custom { flex-wrap: wrap; }
+            .filter-year, .filter-sem { width: 48%; }
+            .filter-sub { width: 100%; order: 3; margin-top: 5px; }
+            .filter-add-btn { width: auto; }
+            .filter-tools { width: 100%; margin-top: 5px; display: flex; gap: 5px; }
+        }
+
         @media (max-width: 768px) {
             .sticky-header .header-subject { display: none; }
             .list-header { display: none; }
-            .row-main-content { display: flex; flex-wrap: wrap; padding: 10px; position: relative; }
+            .row-main-content { display: flex; flex-wrap: wrap; padding: 10px; }
             .col-stt { display: none; }
-            .col-name { width: 100%; font-size: 1rem; margin-bottom: 2px; padding-left: 0; padding-right: 40px; }
-            .col-mssv, .col-class { width: auto; font-size: 0.85rem; color: #666; margin-right: 15px; text-align: left; }
+            .col-name { width: 100%; font-size: 1.1rem; margin-bottom: 5px; padding-left: 0; }
+            
+            /* [ĐÃ SỬA] Trên Mobile cũng ẩn, chạm vào mới hiện (hoặc giữ nguyên hover behavior) */
+            .col-name .edit-icon { visibility: hidden; opacity: 0; color: #6c757d; }
+            .col-name:active .edit-icon { visibility: visible; opacity: 1; }
+
+            .col-mssv, .col-class { width: auto; font-size: 0.9rem; color: #666; margin-right: 15px; text-align: left; }
             .col-mssv::before { content: "MSSV: "; } .col-class::before { content: "Lớp: "; }
-            .col-action { position: absolute; right: 10px; top: 10px; }
-            .note-input-group { margin: 10px 0 0 0; margin-left: 0; }
-            .btn-excel { display: none !important; }
+            .col-action { position: absolute; right: 15px; top: 15px; }
         }
     </style>
 </head>
@@ -78,34 +116,50 @@
 
     <div class="sticky-header">
         <div class="container d-flex align-items-center flex-wrap position-relative">
-            <a href="index.html" class="btn rounded-circle shadow-sm me-3 btn-back-custom" title="Quay lại"><i class="fas fa-arrow-left text-primary"></i></a>
-            <div class="header-title fs-5">ĐIỂM DANH</div>
+            <a href="index.html" class="btn rounded-circle shadow-sm me-3 btn-back-custom" title="Quay lại"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title">ĐIỂM DANH</div>
             <div class="header-subject" id="displaySubjectName">--</div>
+            
+            <div class="ms-auto d-flex align-items-center text-secondary">
+                <div class="text-end me-2 d-none d-md-block">
+                    <div class="fw-bold small" id="ddUserName">--</div>
+                    <div class="badge bg-primary" id="ddUserRole" style="font-size: 0.6rem;">--</div>
+                </div>
+                <i class="fas fa-user-circle fs-3 text-primary"></i>
+            </div>
         </div>
     </div>
     
     <div class="scrollable-controls">
         <div class="container">
             <div class="card bg-light p-3 mb-3 border-0 shadow-sm">
+                <label class="lbl-caption">Bộ lọc môn học</label> 
                 <div class="d-flex gap-2 align-items-center filter-row-custom">
-                    <div class="filter-year" style="min-width: 140px;">
-                        <select class="form-select form-select-sm fw-bold border-0 text-dark shadow-sm" id="yearSelect" onchange="filterSubjects()">
+                    
+                    <div class="filter-year">
+                        <select class="form-select fw-bold border-0 text-dark shadow-sm" id="yearSelect" onchange="filterSubjects()">
+                            </select>
+                    </div>
+
+                    <div class="filter-sem">
+                        <select class="form-select fw-bold text-success border-0 shadow-sm" id="semesterSelect" onchange="filterSubjects()">
+                            <option value="HK1">HK1</option>
+                            <option value="HK2">HK2</option>
+                            <option value="HK3">HK3</option>
                         </select>
                     </div>
-                    <div class="filter-sem" style="min-width: 100px;">
-                        <select class="form-select form-select-sm fw-bold text-success border-0 shadow-sm" id="semesterSelect" onchange="filterSubjects()">
-                            <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
-                        </select>
-                    </div>
+
                     <div class="filter-add-btn">
-                        <button class="btn btn-success btn-sm shadow-sm w-100" onclick="openAddSubjectModal()"><i class="fas fa-plus"></i></button>
+                        <button class="btn btn-success shadow-sm" onclick="openAddSubjectModal()" title="Thêm môn mới"><i class="fas fa-plus"></i></button>
                     </div>
-                    <div class="filter-sub flex-grow-1">
-                        <select class="form-select form-select-sm fw-bold text-primary border-0 w-100 shadow-sm" id="subjectSelect" onchange="changeSubject()"></select>
+                    
+                    <div class="filter-sub">
+                        <select class="form-select fw-bold text-primary border-0 w-100 shadow-sm" id="subjectSelect" onchange="changeSubject()"></select>
                     </div>
-                    <div class="filter-tools d-flex gap-2">
-                        <button class="btn btn-warning btn-sm shadow-sm" onclick="openEditSubjectModal()"><i class="fas fa-pen text-white"></i></button>
-                        <button class="btn btn-excel btn-sm shadow-sm d-none d-md-block" id="btnImportExcel" onclick="importClassList()">
+                    
+                    <div class="filter-tools">
+                        <button class="btn btn-warning shadow-sm" onclick="openEditSubjectModal()" title="Sửa môn"><i class="fas fa-pen text-white"></i></button>
+                        <button class="btn btn-excel d-none d-md-block shadow-sm" id="btnImportExcel" onclick="importClassList()">
                             <i class="fas fa-file-excel"></i> Nhập DS
                         </button>
                         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
@@ -114,25 +168,28 @@
             </div>
 
             <div class="row g-2 mb-3">
-                <div class="col-12 col-md-4"><div class="info-box"><div class="info-label"><i class="fas fa-chalkboard-teacher"></i> Giảng viên</div><div class="info-value" id="displayTeacherName">--</div></div></div>
-                <div class="col-6 col-md-4"><div class="info-box"><div class="info-label"><i class="fas fa-calendar-alt"></i> Năm học</div><div class="info-value text-primary" id="displaySchoolYear">--</div></div></div>
-                <div class="col-6 col-md-4"><div class="info-box"><div class="info-label"><i class="far fa-calendar-check"></i> Thời gian</div><div class="info-value text-success"><span id="displayStartDate">--</span> <span class="text-dark">/</span> <span id="displayEndDate" class="text-danger">--</span></div></div></div>
+                <div class="col-md-4 col-12"><div class="info-box"><div class="info-label"><i class="fas fa-chalkboard-teacher me-1"></i> Giảng viên</div><div class="info-value" id="displayTeacherName">--</div></div></div>
+                <div class="col-md-4 col-12"><div class="info-box"><div class="info-label"><i class="fas fa-calendar-alt me-1"></i> Năm học</div><div class="info-value text-primary" id="displaySchoolYear">--</div></div></div>
+                <div class="col-md-2 col-6"><div class="info-box"><div class="info-label"><i class="far fa-calendar-check me-1"></i> Bắt đầu</div><div class="info-value text-success" id="displayStartDate">--</div></div></div>
+                <div class="col-md-2 col-6"><div class="info-box"><div class="info-label"><i class="far fa-calendar-times me-1"></i> Kết thúc</div><div class="info-value text-danger" id="displayEndDate">--</div></div></div>
             </div>
 
-            <div class="row g-2">
-                <div class="col-6 col-md-3">
-                    <label class="lbl-caption">Ngày</label>
-                    <input type="date" class="form-control form-control-sm fw-bold" id="todayDate" onchange="loadSavedAttendance()">
+            <div class="row g-3">
+                <div class="col-md-3 col-12">
+                    <label class="lbl-caption">Ngày điểm danh</label>
+                    <input type="date" class="form-control fw-bold" id="todayDate" onchange="loadSavedAttendance()">
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-md-3 col-6">
                     <label class="lbl-caption">Buổi</label>
-                    <select class="form-select form-select-sm fw-bold text-primary" id="sessionTime" onchange="loadSavedAttendance()">
-                        <option>Sáng</option><option>Chiều</option><option>Tối</option>
+                    <select class="form-select fw-bold text-primary" id="sessionTime" onchange="loadSavedAttendance()">
+                        <option>Sáng</option>
+                        <option>Chiều</option>
+                        <option>Tối</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-md-6 col-12">
                     <label class="lbl-caption">Nhóm Học</label>
-                    <div class="input-group input-group-sm">
+                    <div class="input-group">
                         <select class="form-select fw-bold text-success" id="groupSelect" onchange="renderList(); loadSavedAttendance()"></select>
                         <button class="btn btn-outline-warning" onclick="renameCurrentGroup()"><i class="fas fa-pen"></i></button>
                         <button class="btn btn-outline-danger" onclick="deleteCurrentGroup()"><i class="fas fa-trash"></i></button>
@@ -143,21 +200,22 @@
         </div>
     </div>
 
-    <div class="container mt-3 mb-5 pb-5">
-        <div class="d-flex justify-content-between mb-2 align-items-end">
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between mb-3 align-items-end">
             <span class="text-muted small">Sĩ số: <b id="studentCount">0</b> | Hiện: <b id="filteredCount">0</b></span>
             <div class="d-flex gap-2">
+                <button class="btn btn-excel d-md-none btn-sm" onclick="importClassList()"><i class="fas fa-file-excel"></i></button>
                 <button class="btn btn-success btn-sm" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Thêm SV</button>
             </div>
         </div>
         
         <div class="row g-2 mb-3">
-            <div class="col-12 col-md-8"><input type="text" class="form-control form-control-sm" id="searchInput" onkeyup="filterList()" placeholder="Tìm tên, MSSV..."></div>
-            <div class="col-12 col-md-4"><div class="dropdown"><button class="btn btn-outline-primary btn-sm w-100 fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown" id="classFilterBtn">Tất cả lớp</button><ul class="dropdown-menu shadow w-100" id="classFilterMenu"></ul></div></div>
+            <div class="col-md-8 col-12"><input type="text" class="form-control" id="searchInput" onkeyup="filterList()" placeholder="Tìm tên, MSSV..."></div>
+            <div class="col-md-4 col-12"><div class="dropdown"><button class="btn btn-outline-primary w-100 fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown" id="classFilterBtn">Tất cả lớp</button><ul class="dropdown-menu shadow w-100" id="classFilterMenu"></ul></div></div>
         </div>
 
-        <div id="studentListContainer" class="bg-white border rounded shadow-sm overflow-hidden">
-            <div class="list-header d-none d-md-grid">
+        <div id="studentListContainer">
+            <div class="list-header">
                 <div class="col-stt">STT</div><div class="col-name">HỌ VÀ TÊN</div><div class="col-mssv">MSSV</div><div class="col-class">LỚP</div><div class="col-action">VẮNG</div>
             </div>
             <div id="listBody"></div>
@@ -168,14 +226,14 @@
         <div class="container d-flex justify-content-between align-items-center">
             <div><span class="text-muted small fw-bold text-uppercase">Vắng:</span> <span class="fw-bold text-danger fs-4" id="countAbsent">0</span></div>
             <div class="d-flex gap-2">
-                <button class="btn btn-success btn-sm px-3 fw-bold rounded-pill d-none d-md-block" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Xuất</button>
-                <button class="btn btn-primary px-4 fw-bold rounded-pill shadow" id="btnSave" onclick="submitAttendance()">LƯU</button>
+                <button class="btn btn-success btn-sm px-3 fw-bold rounded-pill d-none d-md-block" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                <button class="btn btn-primary px-4 fw-bold rounded-pill shadow" id="btnSave" onclick="submitAttendance()">LƯU LẠI</button>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="addSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm Môn Mới</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" class="form-control mb-3" id="newSubjectName" placeholder="Tên môn học (Bắt buộc)"><input type="text" class="form-control mb-3" id="newTeacherName" placeholder="Tên giảng viên"><div class="row mb-3"><div class="col-7"><label class="small text-muted fw-bold">Năm học</label><div class="input-group"><input type="number" class="form-control text-center fw-bold" id="newYearStart" placeholder="2025"><span class="input-group-text bg-white fw-bold">-</span><input type="number" class="form-control text-center fw-bold" id="newYearEnd" placeholder="2026"></div></div><div class="col-5"><label class="small text-muted fw-bold">Học kỳ</label><select class="form-select" id="newSemester"><option value="HK1">HK1</option><option value="HK2" selected>HK2</option><option value="HK3">HK3</option></select></div></div><div class="row mb-3"><div class="col-6"><label class="small text-muted">Buổi</label><select class="form-select" id="newDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div><div class="col-6"><label class="small text-muted">Nhóm</label><select class="form-select" id="newDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div></div><div class="row"><div class="col-6"><label class="form-label small fw-bold text-success">Bắt đầu</label><input type="date" class="form-control" id="newStartDate"></div><div class="col-6"><label class="form-label small fw-bold text-danger">Kết thúc</label><input type="date" class="form-control" id="newEndDate"></div></div></div><div class="modal-footer border-0"><button class="btn btn-success w-100" onclick="saveNewSubject()">Lưu Môn Học</button></div></div></div></div>
-    <div class="modal fade" id="editSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-warning">Sửa Môn</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" class="form-control mb-3" id="editSubjectName"><input type="text" class="form-control mb-3" id="editTeacherName"><div class="row mb-3"><div class="col-7"><label class="small text-muted fw-bold">Năm học</label><div class="input-group"><input type="number" class="form-control text-center fw-bold" id="editYearStart"><span class="input-group-text bg-white fw-bold">-</span><input type="number" class="form-control text-center fw-bold" id="editYearEnd"></div></div><div class="col-5"><label class="small text-muted fw-bold">Học kỳ</label><select class="form-select" id="editSemester"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select></div></div><div class="row mb-3"><div class="col-6"><label class="small text-muted">Buổi</label><select class="form-select" id="editDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div><div class="col-6"><label class="small text-muted">Nhóm</label><select class="form-select" id="editDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div></div><div class="row"><div class="col-6"><label class="form-label small fw-bold text-success">Bắt đầu</label><input type="date" class="form-control" id="editStartDate"></div><div class="col-6"><label class="form-label small fw-bold text-danger">Kết thúc</label><input type="date" class="form-control" id="editEndDate"></div></div></div><div class="modal-footer border-0 d-flex justify-content-between"><button class="btn btn-outline-danger" onclick="deleteSubject()">Xóa</button><button class="btn btn-primary" onclick="saveEditedSubject()">Cập nhật</button></div></div></div></div>
+    <div class="modal fade" id="editSubjectModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-warning">Chỉnh Sửa Môn</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" class="form-control mb-3" id="editSubjectName"><input type="text" class="form-control mb-3" id="editTeacherName"><div class="row mb-3"><div class="col-7"><label class="small text-muted fw-bold">Năm học</label><div class="input-group"><input type="number" class="form-control text-center fw-bold" id="editYearStart"><span class="input-group-text bg-white fw-bold">-</span><input type="number" class="form-control text-center fw-bold" id="editYearEnd"></div></div><div class="col-5"><label class="small text-muted fw-bold">Học kỳ</label><select class="form-select" id="editSemester"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select></div></div><div class="row mb-3"><div class="col-6"><label class="small text-muted">Buổi</label><select class="form-select" id="editDefaultSession"><option>Sáng</option><option>Chiều</option><option>Tối</option></select></div><div class="col-6"><label class="small text-muted">Nhóm</label><select class="form-select" id="editDefaultGroup"><option>Nhóm 1</option><option>Nhóm 2</option><option>Nhóm 3</option></select></div></div><div class="row"><div class="col-6"><label class="form-label small fw-bold text-success">Bắt đầu</label><input type="date" class="form-control" id="editStartDate"></div><div class="col-6"><label class="form-label small fw-bold text-danger">Kết thúc</label><input type="date" class="form-control" id="editEndDate"></div></div></div><div class="modal-footer border-0 d-flex justify-content-between"><button class="btn btn-outline-danger" onclick="deleteSubject()">Xóa Môn</button><button class="btn btn-primary" onclick="saveEditedSubject()">Cập nhật</button></div></div></div></div>
     <div class="modal fade" id="addStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold text-success">Thêm SV</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" class="form-control mb-3" id="newStudentName" placeholder="Họ tên"><div class="row"><div class="col-6"><input type="text" class="form-control" id="newStudentMSSV" placeholder="MSSV"></div><div class="col-6"><input type="text" class="form-control" id="newStudentClass" placeholder="Lớp"></div></div></div><div class="modal-footer border-0"><button class="btn btn-success w-100" onclick="saveNewStudent()">Thêm</button></div></div></div></div>
     <div class="modal fade" id="editStudentModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body"><input type="hidden" id="editStudentId"><div class="mb-3"><label>Tên</label><input type="text" class="form-control fw-bold" id="editStudentName"></div><div class="row mb-3"><div class="col-6"><label>MSSV</label><input type="text" class="form-control" id="editStudentMSSV"></div><div class="col-6"><label>Lớp</label><input type="text" class="form-control" id="editStudentClass"></div></div><div class="mb-3"><label>Nhóm</label><select class="form-select" id="editStudentGroup"></select></div></div><div class="modal-footer d-flex justify-content-between"><button class="btn btn-outline-danger" onclick="deleteStudent()">Xóa</button><button class="btn btn-primary" onclick="saveEditedStudent()">Lưu</button></div></div></div></div>
 
@@ -187,17 +245,20 @@
         let proofImages = {}; 
 
         async function init() {
-            // [MỚI] Hiển thị user trên thanh Header (nếu cần, nhưng file này không có header user)
-            // Nếu bạn muốn hiển thị user ở trang này nữa thì thêm HTML vào header như index.html
-            
+            // [MỚI] Hiển thị user info
+            const userStr = localStorage.getItem('user');
+            if(userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('ddUserName').innerText = user.full_name || user.username;
+                document.getElementById('ddUserRole').innerText = user.role.toUpperCase();
+            }
+
             try {
                 const res = await fetch('/api/data/subjects');
                 allSubjects = await res.json();
                 populateYearFilter();
 
-                // Lấy thông tin từ localStorage (được set ở index.html)
                 const savedSem = localStorage.getItem('currentSemester') || 'HK1';
-                // ... (Logic tìm năm hiện tại giống file cũ)
                 const curY = new Date().getFullYear();
                 const m = new Date().getMonth() + 1;
                 const defaultYear = m >= 8 ? `${curY}-${curY+1}` : `${curY-1}-${curY}`;
@@ -209,8 +270,8 @@
                 const yearSelect = document.getElementById('yearSelect');
                 const yearOptionExists = Array.from(yearSelect.options).some(o => o.value === savedYear);
                 
-                if(yearOptionExists) yearSelect.value = savedYear;
-                else if(yearSelect.options.length > 0) yearSelect.selectedIndex = 0;
+                if(yearOptionExists) { yearSelect.value = savedYear; } 
+                else if(yearSelect.options.length > 0) { yearSelect.selectedIndex = 0; }
 
                 const count = filterSubjects(true); 
                 if(count === 0 && allSubjects.length > 0) {
@@ -226,7 +287,7 @@
             } catch (error) { console.error(error); }
         }
 
-        // ... (Giữ nguyên các hàm populateYearFilter, filterSubjects, changeSubject, formatDateVN) ...
+        // ... (Giữ nguyên các hàm khác)
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect'); yearSelect.innerHTML = '';
             const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
@@ -265,47 +326,24 @@
             renderList(); await loadSavedAttendance();
         }
         function formatDateVN(dateStr) { if(!dateStr) return ''; const d = new Date(dateStr); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
-
-        // ... (Giữ nguyên các hàm Modal: openAddSubjectModal, saveNewSubject, openEditSubjectModal, saveEditedSubject...)
         function openAddSubjectModal() { document.getElementById('newSubjectName').value = ''; document.getElementById('newTeacherName').value = ''; const y = new Date().getFullYear(); const m = new Date().getMonth() + 1; const yStart = m >= 8 ? y : y - 1; document.getElementById('newYearStart').value = yStart; document.getElementById('newYearEnd').value = yStart + 1; const el = document.getElementById('addSubjectModal'); const modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
         async function saveNewSubject() { const name = document.getElementById('newSubjectName').value.trim(); if (!name) return alert("Nhập tên môn!"); const y1 = document.getElementById('newYearStart').value; const y2 = document.getElementById('newYearEnd').value; if(!y1 || !y2) return alert("Nhập năm học đầy đủ!"); const schoolYear = `${y1}-${y2}`; const body = { subject_name: name, teacher_name: document.getElementById('newTeacherName').value, school_year: schoolYear, semester: document.getElementById('newSemester').value, start_date: document.getElementById('newStartDate').value, end_date: document.getElementById('newEndDate').value, default_session: document.getElementById('newDefaultSession').value, default_group: document.getElementById('newDefaultGroup').value }; try { await fetch('/api/data/subjects', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); const el = document.getElementById('addSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); populateYearFilter(); document.getElementById('yearSelect').value = schoolYear; document.getElementById('semesterSelect').value = body.semester; filterSubjects(); } catch(e) { alert('Lỗi khi lưu: ' + e.message); } }
         function openEditSubjectModal() { const id = document.getElementById('subjectSelect').value; if(!id) return; const sub = allSubjects.find(s => s.id == id); document.getElementById('editSubjectName').value = sub.subject_name; document.getElementById('editTeacherName').value = sub.teacher_name || ''; const parts = (sub.school_year || "2024-2025").split('-'); if(parts.length===2) { document.getElementById('editYearStart').value = parts[0]; document.getElementById('editYearEnd').value = parts[1]; } document.getElementById('editSemester').value = sub.semester || 'HK1'; document.getElementById('editStartDate').value = sub.start_date ? sub.start_date.split('T')[0] : ''; document.getElementById('editEndDate').value = sub.end_date ? sub.end_date.split('T')[0] : ''; document.getElementById('editDefaultSession').value = sub.default_session || 'Sáng'; document.getElementById('editDefaultGroup').value = sub.default_group || 'Nhóm 1'; const el = document.getElementById('editSubjectModal'); bootstrap.Modal.getOrCreateInstance(el).show(); }
         async function saveEditedSubject() { const id = document.getElementById('subjectSelect').value; const y1 = document.getElementById('editYearStart').value; const y2 = document.getElementById('editYearEnd').value; const schoolYear = `${y1}-${y2}`; const body = { subject_name: document.getElementById('editSubjectName').value, teacher_name: document.getElementById('editTeacherName').value, school_year: schoolYear, semester: document.getElementById('editSemester').value, start_date: document.getElementById('editStartDate').value, end_date: document.getElementById('editEndDate').value, default_session: document.getElementById('editDefaultSession').value, default_group: document.getElementById('editDefaultGroup').value }; try { await fetch(`/api/data/subjects/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide(); const res = await fetch('/api/data/subjects'); allSubjects = await res.json(); populateYearFilter(); if(document.getElementById('yearSelect').value === schoolYear && document.getElementById('semesterSelect').value === body.semester) { changeSubject(); } else { filterSubjects(); } } catch(e) { alert('Lỗi cập nhật'); } }
-
         function resetInfo() { document.getElementById('displaySubjectName').innerText = "--"; document.getElementById('displayTeacherName').innerText = "--"; document.getElementById('displayStartDate').innerText = "--"; document.getElementById('displayEndDate').innerText = "--"; document.getElementById('displaySchoolYear').innerText = "--"; }
         function populateGroupDropdown() { const select = document.getElementById('groupSelect'); const currentSelection = select.value; select.innerHTML = ''; const groups = [...new Set(currentStudents.map(s => s.learning_group || 'Nhóm 1'))].sort(); if (groups.length === 0) groups.push('Nhóm 1'); groups.forEach(g => select.add(new Option(g, g))); if(select.dataset.default && groups.includes(select.dataset.default)) select.value = select.dataset.default; else select.value = groups.includes(currentSelection) ? currentSelection : groups[0]; delete select.dataset.default; }
         function addNewGroup() { const n = prompt("Tên nhóm mới:"); if(n) { document.getElementById('groupSelect').add(new Option(n,n)); document.getElementById('groupSelect').value=n; renderList(); } }
         async function renameCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; const n=prompt("Tên mới:",g); if(n&&n!==g) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',subject_id:sub,group_name:g,new_group_name:n})}); changeSubject(); } }
         async function deleteCurrentGroup() { const sub=document.getElementById('subjectSelect').value; const g=document.getElementById('groupSelect').value; if(confirm(`Xóa nhóm ${g}?`)) { await fetch('/api/data/groups/manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',subject_id:sub,group_name:g})}); changeSubject(); } }
         async function deleteSubject() { if(confirm("Xóa môn này?")) { await fetch(`/api/data/subjects/${document.getElementById('subjectSelect').value}`,{method:'DELETE'}); const el=document.getElementById('editSubjectModal'); bootstrap.Modal.getInstance(el).hide(); const r=await fetch('/api/data/subjects'); allSubjects=await r.json(); populateYearFilter(); filterSubjects(); } }
-        
         async function loadSavedAttendance() {
-            const subjectId = document.getElementById('subjectSelect').value;
-            const date = document.getElementById('todayDate').value;
-            const session = document.getElementById('sessionTime').value;
-            const group = document.getElementById('groupSelect').value;
+            const subjectId = document.getElementById('subjectSelect').value; const date = document.getElementById('todayDate').value; const session = document.getElementById('sessionTime').value; const group = document.getElementById('groupSelect').value;
             if (!subjectId || !date) return;
-            // Reset bảng trước khi load
             document.querySelectorAll('.student-row').forEach(row => { row.classList.remove('is-absent'); row.querySelector('.form-check-input').checked = false; row.querySelector('.txt-reason').value = ''; });
             updateCount();
             try {
-                // [QUAN TRỌNG] Gọi API check
                 const res = await fetch(`/api/data/attendance/check?subject_id=${subjectId}&session_date=${date}&session_time=${session}&learning_group=${encodeURIComponent(group)}`);
-                if (res.ok) { 
-                    const saved = await res.json(); 
-                    saved.forEach(r => { 
-                        if(r.is_absent==1){ 
-                            const row=document.querySelector(`.student-row[data-id="${r.student_id}"]`); 
-                            if(row){ 
-                                row.classList.add('is-absent'); 
-                                row.querySelector('.form-check-input').checked=true; 
-                                row.querySelector('.txt-reason').value=r.reason||''; 
-                                if(r.proof_image_url){ proofImages[r.student_id]=r.proof_image_url; displayProofPreview(r.student_id, r.proof_image_url); } 
-                            } 
-                        } 
-                    }); 
-                    updateCount(); 
-                }
+                if (res.ok) { const saved = await res.json(); saved.forEach(r => { if(r.is_absent==1){ const row=document.querySelector(`.student-row[data-id="${r.student_id}"]`); if(row){ row.classList.add('is-absent'); row.querySelector('.form-check-input').checked=true; row.querySelector('.txt-reason').value=r.reason||''; if(r.proof_image_url){ proofImages[r.student_id]=r.proof_image_url; displayProofPreview(r.student_id, r.proof_image_url); } } } }); updateCount(); }
             } catch (e) {}
         }
         function renderList() {
@@ -330,35 +368,17 @@
         }
         function toggleAbs(id) { document.getElementById(`row-${id}`).classList.toggle('is-absent'); updateCount(); }
         function updateCount() { document.getElementById('countAbsent').innerText = document.querySelectorAll('.student-row .form-check-input:checked').length; }
-        
         function updateClassFilter(list) { const m=document.getElementById('classFilterMenu'); m.innerHTML=`<li><a class="dropdown-item" href="#" onclick="filterByClass('all')">Tất cả</a></li>`; [...new Set(list.map(s=>s.class_name))].sort().forEach(c=>m.insertAdjacentHTML('beforeend',`<li><a class="dropdown-item" href="#" onclick="filterByClass('${c}')">${c}</a></li>`)); }
         function filterByClass(c) { document.getElementById('classFilterBtn').innerText = c==='all'?'Tất cả lớp':c; filterList(); }
         function filterList() {
-            const txt = document.getElementById('searchInput').value.toLowerCase();
-            const cls = document.getElementById('classFilterBtn').innerText;
-            let c=0;
-            document.querySelectorAll('.student-row').forEach(r => {
-                const show = (r.dataset.name.includes(txt) || r.dataset.mssv.includes(txt)) && (cls==='Tất cả lớp' || r.dataset.class===cls);
-                r.style.display = show ? 'block' : 'none';
-                if(show) c++;
-            });
+            const txt = document.getElementById('searchInput').value.toLowerCase(); const cls = document.getElementById('classFilterBtn').innerText; let c=0;
+            document.querySelectorAll('.student-row').forEach(r => { const show = (r.dataset.name.includes(txt) || r.dataset.mssv.includes(txt)) && (cls==='Tất cả lớp' || r.dataset.class===cls); r.style.display = show ? 'block' : 'none'; if(show) c++; });
             document.getElementById('filteredCount').innerText = c;
         }
         function importClassList() { document.getElementById('fileInput').click(); }
-        function handleFileSelect(e) { 
-            const f=e.target.files[0]; const r=new FileReader();
-            r.onload=function(ev){ 
-                const wb=XLSX.read(ev.target.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const d=XLSX.utils.sheet_to_json(ws);
-                const sts=d.map(r=>({mssv:r['MSSV']||r['Mã SV'], full_name:r['Họ tên']||r['Họ và tên'], class_name:r['Lớp']})).filter(s=>s.mssv);
-                if(sts.length && confirm(`Nhập ${sts.length} SV?`)) sendImport(sts);
-            }; r.readAsArrayBuffer(f); e.target.value='';
-        }
+        function handleFileSelect(e) { const f=e.target.files[0]; const r=new FileReader(); r.onload=function(ev){ const wb=XLSX.read(ev.target.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const d=XLSX.utils.sheet_to_json(ws); const sts=d.map(r=>({mssv:r['MSSV']||r['Mã SV'], full_name:r['Họ tên']||r['Họ và tên'], class_name:r['Lớp']})).filter(s=>s.mssv); if(sts.length && confirm(`Nhập ${sts.length} SV?`)) sendImport(sts); }; r.readAsArrayBuffer(f); e.target.value=''; }
         async function sendImport(sts) { await fetch('/api/data/students/import', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, students:sts, learning_group:document.getElementById('groupSelect').value}) }); alert('Xong'); changeSubject(); }
-        async function submitAttendance() { 
-            const d = Array.from(document.querySelectorAll('.student-row')).map(r=>({student_id:r.dataset.id, is_absent:r.querySelector('.form-check-input').checked?1:0, reason:r.querySelector('.txt-reason').value, proof_image_url:proofImages[r.dataset.id]}));
-            await fetch('/api/data/attendance', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, session_date:document.getElementById('todayDate').value, session_time:document.getElementById('sessionTime').value, learning_group:document.getElementById('groupSelect').value, attendance_data:d}) });
-            alert('Đã lưu');
-        }
+        async function submitAttendance() { const d = Array.from(document.querySelectorAll('.student-row')).map(r=>({student_id:r.dataset.id, is_absent:r.querySelector('.form-check-input').checked?1:0, reason:r.querySelector('.txt-reason').value, proof_image_url:proofImages[r.dataset.id]})); await fetch('/api/data/attendance', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:document.getElementById('subjectSelect').value, session_date:document.getElementById('todayDate').value, session_time:document.getElementById('sessionTime').value, learning_group:document.getElementById('groupSelect').value, attendance_data:d}) }); alert('Đã lưu'); }
         async function handleProofUpload(id, inp) { const f=inp.files[0]; const fd=new FormData(); fd.append('proof',f); const r=await fetch('/api/data/upload-proof',{method:'POST',body:fd}); if(r.ok){ const d=await r.json(); proofImages[id]=d.url; displayProofPreview(id,d.url); } }
         function displayProofPreview(id, url) { document.getElementById(`proof-preview-${id}`).innerHTML = `<img src="${url}" onclick="window.open('${url}')">`; }
         function exportToExcel() { const d=currentStudents.filter(s=>(s.learning_group||'Nhóm 1')===document.getElementById('groupSelect').value).map((s,i)=>({STT:i+1,Ten:s.full_name,MSSV:s.mssv,Lop:s.class_name})); const ws=XLSX.utils.json_to_sheet(d); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'DS'); XLSX.writeFile(wb,'DS.xlsx'); }
