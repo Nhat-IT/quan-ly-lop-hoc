@@ -43,25 +43,25 @@
         }
 
         /* -----------------------------------------------------------
-           CẤU HÌNH ĐỘ RỘNG CỘT (Dựa trên Header)
+           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH (ĐÃ CÂN ĐỐI)
            ----------------------------------------------------------- */
         .table th:nth-child(1) { width: 5%; text-align: center; padding-left: 24px !important; } /* STT */
-        .table th:nth-child(2) { width: 25%; text-align: left; padding-left: 30px !important; }  /* Họ tên */
-        .table th:nth-child(3) { width: 25%; text-align: left; padding-left: 30px !important; }  /* Môn học */
-        .table th:nth-child(4) { width: 100px; text-align: center; } /* Ngày */
-        .table th:nth-child(5) { width: 80px; text-align: center; }  /* Buổi */
-        .table th:nth-child(6) { width: 15%; text-align: center; }   /* Lý do */
-        .table th:nth-child(7) { width: 80px; text-align: center; }  /* Minh chứng */
-        .table th:last-child   { width: 80px; text-align: center; padding-right: 24px !important; } /* Vắng */
+        .table th:nth-child(2) { width: 25%; text-align: left; padding-left: 50px !important; }  /* Họ tên */
+        .table th:nth-child(3) { width: 25%; text-align: left; padding-left: 40px !important; }  /* Môn học */
+        .table th:nth-child(4) { width: 10%; text-align: center; } /* Ngày */
+        .table th:nth-child(5) { width: 8%; text-align: center; }  /* Buổi */
+        .table th:nth-child(6) { width: 12%; text-align: center; }   /* Lý do */
+        .table th:nth-child(7) { width: 8%; text-align: center; }  /* Minh chứng */
+        .table th:last-child   { width: 7%; text-align: center; padding-right: 24px !important; } /* Vắng */
 
         /* -----------------------------------------------------------
-           CẤU HÌNH CỘT DỮ LIỆU (Dùng class riêng để tránh lỗi rowspan)
+           CẤU HÌNH CỘT DỮ LIỆU
            ----------------------------------------------------------- */
         .c-stt     { text-align: center; padding-left: 24px !important; font-weight: bold; color: #6c757d; }
-        .c-name    { text-align: left; padding-left: 30px !important; }
-        .c-sub     { text-align: left; padding-left: 30px !important; }
-        .c-date    { text-align: center; font-family: 'Segoe UI', sans-serif; } /* Luôn căn giữa */
-        .c-session { text-align: center; } /* Luôn căn giữa */
+        .c-name    { text-align: left; padding-left: 50px !important; }
+        .c-sub     { text-align: left; padding-left: 40px !important; }
+        .c-date    { text-align: center; font-family: 'Segoe UI', sans-serif; }
+        .c-session { text-align: center; }
         .c-reason  { text-align: center; }
         .c-proof   { text-align: center; }
         .c-absent  { text-align: center; padding-right: 24px !important; }
@@ -72,7 +72,7 @@
             color: #495057; border-radius: 6px; 
             padding: 6px 10px; font-weight: 600; 
             display: inline-block;
-            width: auto; max-width: calc(100% - 30px); 
+            width: auto; max-width: calc(100% - 25px); 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;      
             vertical-align: middle; text-align: left;             
         }
@@ -106,18 +106,22 @@
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm sticky-top">
         <div class="container">
             <span class="navbar-brand fw-bold fs-5"><i class="fas fa-user-shield"></i> DASHBOARD</span>
+            
             <div class="d-flex align-items-center gap-2">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải...</div>
                     <div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
                 </div>
+
                 <div class="d-flex align-items-center text-white border-start border-white ps-3 ms-2" style="height: 35px;">
                     <div class="text-end lh-1 me-2">
                         <div class="fw-bold" id="userNameDisplay" style="font-size: 0.9rem;">--</div>
                     </div>
                     <i class="fas fa-user-circle fs-3"></i>
                 </div>
+
                 <div id="adminButtonPlaceholder"></div>
+
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()" title="Thoát">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
@@ -162,13 +166,30 @@
 
         <div class="d-flex flex-column flex-md-row gap-2 mb-3 justify-content-between">
             <div class="d-flex gap-2 flex-wrap align-items-center">
-                <select class="form-select form-select-sm w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()"><option value="all">Năm: Tất cả</option></select>
-                <select class="form-select form-select-sm w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select>
-                <div class="bg-white px-2 py-1 rounded border fw-bold text-secondary shadow-sm" style="font-size: 0.9rem;">Sinh viên vắng: <span class="text-danger" id="filterTotalCount">0</span></div>
+                <select class="form-select form-select-sm w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()">
+                    <option value="all">Năm: Tất cả</option>
+                </select>
+
+                <select class="form-select form-select-sm w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();">
+                    <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
+                </select>
+                
+                <div class="bg-white px-2 py-1 rounded border fw-bold text-secondary shadow-sm" style="font-size: 0.9rem;">
+                    Sinh viên vắng: <span class="text-danger" id="filterTotalCount">0</span>
+                </div>
+
                 <input type="text" class="form-control form-control-sm w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm kiếm...">
-                <select class="form-select form-select-sm w-auto" id="subFilter" onchange="renderTable()"><option value="all">Tất cả môn</option></select>
-                <select class="form-select form-select-sm w-auto" id="statusFilter" onchange="renderTable()"><option value="all">Tất cả</option><option value="warning" class="text-danger">🔴 Cảnh báo</option></select>
+                
+                <select class="form-select form-select-sm w-auto" id="subFilter" onchange="renderTable()">
+                    <option value="all">Tất cả môn</option>
+                </select>
+                
+                <select class="form-select form-select-sm w-auto" id="statusFilter" onchange="renderTable()">
+                    <option value="all">Tất cả</option>
+                    <option value="warning" class="text-danger">🔴 Cảnh báo</option>
+                </select>
             </div>
+            
             <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
                 <button class="btn btn-success btn-sm" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
                 <a href="diemdanh.html" class="btn btn-primary btn-sm" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
@@ -327,11 +348,21 @@
                     return matchSub && matchYear;
                 });
                 
+                // [ĐÃ SỬA] Logic cảnh báo chính xác theo từng môn
+                let isWarning = false;
+                const warningSubjectsForThisStudent = new Set();
+                const subCounts = {};
+                visibleDetails.forEach(d => { subCounts[d.sub] = (subCounts[d.sub] || 0) + 1; });
+                
+                for (const [sub, count] of Object.entries(subCounts)) {
+                    if (count >= 2) { isWarning = true; warningSubjectsForThisStudent.add(sub); }
+                }
+
                 let total = visibleDetails.length;
-                let isWarning = total >= 2;
                 if (statusFilter === 'warning' && !isWarning) return;
                 if (total > 0) visibleCount++; else return;
-                if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
+
+                if (isWarning) { warnCount++; warningSubjectsForThisStudent.forEach(s => subWarnSet.add(s)); }
                 
                 const rowClass = isWarning ? 'alert-row' : '';
                 const totalColor = isWarning ? 'text-danger' : 'text-success';
@@ -342,7 +373,6 @@
                         const rowspan = visibleDetails.length;
                         const dateStr = formatDateVN(d.date);
                         const reasonText = d.reason ? d.reason : '<i class="text-muted small">--</i>';
-                        // [ĐÃ SỬA] Dùng class cụ thể (c-name, c-sub, c-date...) thay vì mặc định
                         const html = `
                             <tr class="${rowClass}">
                                 ${isFirstRow ? `<td class="c-stt small" rowspan="${rowspan}">${stt++}</td>` : ''}
