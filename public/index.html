@@ -17,31 +17,15 @@
         /* =========================================
            CẤU HÌNH CHUNG
            ========================================= */
-        body { 
-            background-color: #f0f2f5; 
-            font-family: 'Segoe UI', sans-serif; 
-            padding-bottom: 60px; 
-        }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding-bottom: 60px; }
 
         /* Card thống kê */
-        .stat-card { 
-            border: none; border-radius: 15px; background: white; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; 
-        }
+        .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .stat-card:hover { transform: translateY(-3px); }
-        .icon-box { 
-            width: 55px; height: 55px; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 1.8rem; flex-shrink: 0; 
-        }
+        .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
         
-        /* =========================================
-           BẢNG DỮ LIỆU
-           ========================================= */
-        .table-card { 
-            background: white; border-radius: 15px; padding: 20px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; 
-        }
+        /* Bảng dữ liệu */
+        .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
         .table-responsive { overflow-x: auto; }
         .table { margin-bottom: 0; }
         
@@ -59,110 +43,61 @@
         }
 
         /* -----------------------------------------------------------
-           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH (ĐÃ CÂN ĐỐI)
+           CẤU HÌNH ĐỘ RỘNG CỘT (Dựa trên Header)
            ----------------------------------------------------------- */
+        .table th:nth-child(1) { width: 5%; text-align: center; padding-left: 24px !important; } /* STT */
+        .table th:nth-child(2) { width: 25%; text-align: left; padding-left: 30px !important; }  /* Họ tên */
+        .table th:nth-child(3) { width: 25%; text-align: left; padding-left: 30px !important; }  /* Môn học */
+        .table th:nth-child(4) { width: 100px; text-align: center; } /* Ngày */
+        .table th:nth-child(5) { width: 80px; text-align: center; }  /* Buổi */
+        .table th:nth-child(6) { width: 15%; text-align: center; }   /* Lý do */
+        .table th:nth-child(7) { width: 80px; text-align: center; }  /* Minh chứng */
+        .table th:last-child   { width: 80px; text-align: center; padding-right: 24px !important; } /* Vắng */
 
-        /* 1. CỘT STT - Căn giữa, Cách lề TRÁI 24px */
-        .table th:first-child, .table td:first-child {
-            text-align: center;
-            padding-left: 24px !important; /* [ĐÃ SỬA] Cách đều lề trái */
-            width: 60px; /* Cố định chiều rộng tối thiểu */
-        }
-
-        /* 2. CỘT HỌ TÊN - Căn trái, Đẩy sang phải 30px */
-        .table th:nth-child(2), .table td:nth-child(2) {
-            text-align: left;
-            padding-left: 30px !important; 
-            width: 25%;
-        }
-
-        /* 3. CỘT MÔN HỌC - Căn trái, Đẩy sang phải 30px (Thẳng hàng với Họ tên) */
-        .table th:nth-child(3), .table td:nth-child(3) {
-            text-align: left;
-            padding-left: 30px !important; /* [ĐÃ SỬA] Đồng bộ padding để thẳng hàng */
-            width: 25%;
-        }
-
-        /* 4. NGÀY & BUỔI - Gần nhau hơn */
-        .table th:nth-child(4), .table td:nth-child(4) { /* Ngày */
-            text-align: center;
-            width: 80px;
-        }
-        .table th:nth-child(5), .table td:nth-child(5) { /* Buổi */
-            text-align: center;
-            width: 80px;
-        }
-
-        /* 5. CÁC CỘT GIỮA (Lý do, Minh chứng) */
-        .table th:nth-child(6), .table td:nth-child(6) { text-align: center; width: 15%; }
-        .table th:nth-child(7), .table td:nth-child(7) { text-align: center; width: 80px; }
-        
-        /* 6. CỘT VẮNG - Căn giữa, Cách lề PHẢI 24px (Đối xứng với STT) */
-        .table th:last-child, .table td:last-child {
-            text-align: center;
-            padding-right: 24px !important; /* [ĐÃ SỬA] Cách đều lề phải */
-            width: 80px;
-        }
-
-        /* ----------------------------------------------------------- */
+        /* -----------------------------------------------------------
+           CẤU HÌNH CỘT DỮ LIỆU (Dùng class riêng để tránh lỗi rowspan)
+           ----------------------------------------------------------- */
+        .c-stt     { text-align: center; padding-left: 24px !important; font-weight: bold; color: #6c757d; }
+        .c-name    { text-align: left; padding-left: 30px !important; }
+        .c-sub     { text-align: left; padding-left: 30px !important; }
+        .c-date    { text-align: center; font-family: 'Segoe UI', sans-serif; } /* Luôn căn giữa */
+        .c-session { text-align: center; } /* Luôn căn giữa */
+        .c-reason  { text-align: center; }
+        .c-proof   { text-align: center; }
+        .c-absent  { text-align: center; padding-right: 24px !important; }
 
         /* Badge tên môn học */
         .badge-sub { 
             background: #f8f9fa; border: 1px solid #dee2e6; 
             color: #495057; border-radius: 6px; 
             padding: 6px 10px; font-weight: 600; 
-            
             display: inline-block;
-            width: auto;                  
-            max-width: calc(100% - 30px); 
-            
-            white-space: nowrap; 
-            overflow: hidden; 
-            /*text-overflow: ellipsis;     */ 
-            vertical-align: middle;
-            text-align: left;             
+            width: auto; max-width: calc(100% - 30px); 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;      
+            vertical-align: middle; text-align: left;             
         }
         
-        /* Nút con mắt, nút tải */
-        .btn-action { 
-            width: 32px; height: 32px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            border: 1px solid #dee2e6; background: white; color: #6c757d; 
-            transition: 0.2s; cursor: pointer; margin: 0 auto; 
-        }
+        .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; margin: 0 auto; }
         .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
-        
-        /* Dòng cảnh báo */
         .alert-row { background-color: #fff5f5 !important; }
         .alert-row td:first-child { border-left: 5px solid #dc3545; }
-        
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
-
         .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
         .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
         .editable-reason:hover .edit-icon { opacity: 1; }
-
         .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
         .subject-col:hover .delete-absence-icon { opacity: 1; }
         .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
 
-        /* Mobile Responsive */
         @media (max-width: 576px) {
             .navbar .container { padding-left: 10px; padding-right: 10px; }
             .stat-card { margin-bottom: 10px; }
-            .btn span { display: none; } 
-            .btn i { margin: 0; }
+            .btn span { display: none; } .btn i { margin: 0; }
             #semesterDisplay, #yearHeaderDisplay { display: none; }
             .table-card { padding: 10px; }
-            
-            /* Reset padding trên mobile */
-            .table th:first-child, .table td:first-child { padding-left: 8px !important; }
-            .table th:last-child, .table td:last-child { padding-right: 8px !important; }
-            .table th:nth-child(2), .table td:nth-child(2),
-            .table th:nth-child(3), .table td:nth-child(3) { padding-left: 10px !important; }
-            
+            .table th, .table td { padding-left: 10px !important; padding-right: 10px !important; }
             .badge-sub { max-width: 150px; }
         }
     </style>
@@ -171,22 +106,18 @@
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm sticky-top">
         <div class="container">
             <span class="navbar-brand fw-bold fs-5"><i class="fas fa-user-shield"></i> DASHBOARD</span>
-            
             <div class="d-flex align-items-center gap-2">
                 <div class="text-white small text-end d-none d-md-block">
                     <div id="semesterDisplay">Đang tải...</div>
                     <div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
                 </div>
-
                 <div class="d-flex align-items-center text-white border-start border-white ps-3 ms-2" style="height: 35px;">
                     <div class="text-end lh-1 me-2">
                         <div class="fw-bold" id="userNameDisplay" style="font-size: 0.9rem;">--</div>
                     </div>
                     <i class="fas fa-user-circle fs-3"></i>
                 </div>
-
                 <div id="adminButtonPlaceholder"></div>
-
                 <button class="btn btn-outline-light btn-sm fw-bold" onclick="performLogout()" title="Thoát">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
@@ -231,30 +162,13 @@
 
         <div class="d-flex flex-column flex-md-row gap-2 mb-3 justify-content-between">
             <div class="d-flex gap-2 flex-wrap align-items-center">
-                <select class="form-select form-select-sm w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()">
-                    <option value="all">Năm: Tất cả</option>
-                </select>
-
-                <select class="form-select form-select-sm w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();">
-                    <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
-                </select>
-                
-                <div class="bg-white px-2 py-1 rounded border fw-bold text-secondary shadow-sm" style="font-size: 0.9rem;">
-                    Sinh viên vắng: <span class="text-danger" id="filterTotalCount">0</span>
-                </div>
-
+                <select class="form-select form-select-sm w-auto fw-bold border-secondary text-primary" id="yearFilter" onchange="render()"><option value="all">Năm: Tất cả</option></select>
+                <select class="form-select form-select-sm w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select>
+                <div class="bg-white px-2 py-1 rounded border fw-bold text-secondary shadow-sm" style="font-size: 0.9rem;">Sinh viên vắng: <span class="text-danger" id="filterTotalCount">0</span></div>
                 <input type="text" class="form-control form-control-sm w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm kiếm...">
-                
-                <select class="form-select form-select-sm w-auto" id="subFilter" onchange="renderTable()">
-                    <option value="all">Tất cả môn</option>
-                </select>
-                
-                <select class="form-select form-select-sm w-auto" id="statusFilter" onchange="renderTable()">
-                    <option value="all">Tất cả</option>
-                    <option value="warning" class="text-danger">🔴 Cảnh báo</option>
-                </select>
+                <select class="form-select form-select-sm w-auto" id="subFilter" onchange="renderTable()"><option value="all">Tất cả môn</option></select>
+                <select class="form-select form-select-sm w-auto" id="statusFilter" onchange="renderTable()"><option value="all">Tất cả</option><option value="warning" class="text-danger">🔴 Cảnh báo</option></select>
             </div>
-            
             <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
                 <button class="btn btn-success btn-sm" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
                 <a href="diemdanh.html" class="btn btn-primary btn-sm" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
@@ -314,21 +228,16 @@
         async function init() {
             displayUserInfo();
             checkAdminDisplay();
-
             try {
                 const semSelect = document.getElementById('semFilter');
                 const savedSem = localStorage.getItem('currentSemester');
                 if (savedSem) semSelect.value = savedSem;
-
                 const res = await fetch('/api/data/dashboard');
                 if(!res.ok) throw new Error('Lỗi Server');
-                
                 db = await res.json();
                 globalTotalStudents = db.globalTotal || 0; 
-
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
-
                 populateYearFilter(); 
                 render();
             } catch (error) { console.error(error); db = {}; render(); }
@@ -373,17 +282,14 @@
             updateDiemDanhLink();
             const currentData = db[sem] || { total: globalTotalStudents, subjects: [], data: [] };
             const selYear = document.getElementById('yearFilter').value;
-            
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm: Tất cả' : `Năm: ${selYear}`;
             document.getElementById('totalCount').innerText = globalTotalStudents;
-
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
             if (currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
             if (currentSubVal && currentSubVal !== 'all' && currentData.subjects.includes(currentSubVal)) subSelect.value = currentSubVal;
-
             renderTable(currentData);
             renderWarningCards(currentData.data);
         }
@@ -397,9 +303,7 @@
         function renderTable(currentData) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            
             let visibleCount = 0;
-
             if (!currentData.data || currentData.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted fst-italic">Chưa có dữ liệu vắng.</td></tr>';
                 document.getElementById('warningCount').innerText = 0;
@@ -426,10 +330,9 @@
                 let total = visibleDetails.length;
                 let isWarning = total >= 2;
                 if (statusFilter === 'warning' && !isWarning) return;
-                
                 if (total > 0) visibleCount++; else return;
-
                 if (isWarning) { warnCount++; visibleDetails.forEach(d => subWarnSet.add(d.sub)); }
+                
                 const rowClass = isWarning ? 'alert-row' : '';
                 const totalColor = isWarning ? 'text-danger' : 'text-success';
                 
@@ -439,16 +342,17 @@
                         const rowspan = visibleDetails.length;
                         const dateStr = formatDateVN(d.date);
                         const reasonText = d.reason ? d.reason : '<i class="text-muted small">--</i>';
+                        // [ĐÃ SỬA] Dùng class cụ thể (c-name, c-sub, c-date...) thay vì mặc định
                         const html = `
                             <tr class="${rowClass}">
-                                ${isFirstRow ? `<td class="text-center fw-bold text-muted small" rowspan="${rowspan}">${stt++}</td>` : ''}
-                                ${isFirstRow ? `<td class="text-start ps-3" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
-                                <td class="text-start subject-col"><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
-                                <td class="text-center small">${dateStr}</td>
-                                <td class="text-center small">${d.session_time || '-'}</td>
-                                <td class="text-center small editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${reasonText}</span><i class="fas fa-pen edit-icon"></i></td>
-                                <td class="text-center"><button class="btn-action btn-sm" onclick="viewProof('${d.proof || ''}')"><i class="fas fa-eye"></i></button></td>
-                                ${isFirstRow ? `<td class="text-center" rowspan="${rowspan}"><span class="fw-bold ${totalColor}">${total}</span></td>` : ''}
+                                ${isFirstRow ? `<td class="c-stt small" rowspan="${rowspan}">${stt++}</td>` : ''}
+                                ${isFirstRow ? `<td class="c-name" rowspan="${rowspan}"><div class="fw-bold ${isWarning ? 'text-danger' : ''}">${sv.name}</div><div class="small text-muted" style="font-size:0.75rem">${sv.mssv}</div></td>` : ''}
+                                <td class="c-sub subject-col"><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" title="Hủy vắng" onclick="removeAbsence(${d.record_id}, '${sv.name}', '${d.sub}')"></i></td>
+                                <td class="c-date small">${dateStr}</td>
+                                <td class="c-session small">${d.session_time || '-'}</td>
+                                <td class="c-reason small editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${reasonText}</span><i class="fas fa-pen edit-icon"></i></td>
+                                <td class="c-proof"><button class="btn-action btn-sm" onclick="viewProof('${d.proof || ''}')"><i class="fas fa-eye"></i></button></td>
+                                ${isFirstRow ? `<td class="c-absent" rowspan="${rowspan}"><span class="fw-bold ${totalColor}">${total}</span></td>` : ''}
                             </tr>`;
                         tbody.insertAdjacentHTML('beforeend', html);
                     });
