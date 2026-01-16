@@ -17,16 +17,42 @@
         /* =========================================
            CẤU HÌNH CHUNG
            ========================================= */
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding-bottom: 60px; }
+        body { 
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', sans-serif; 
+            padding-bottom: 60px; 
+        }
 
         /* Card thống kê */
-        .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
+        .stat-card { 
+            border: none; border-radius: 15px; background: white; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; 
+        }
         .stat-card:hover { transform: translateY(-3px); }
-        .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+        .icon-box { 
+            width: 55px; height: 55px; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.8rem; flex-shrink: 0; 
+        }
         
-        /* Bảng dữ liệu */
-        .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
-        .table-responsive { overflow-x: auto; }
+        /* =========================================
+           BẢNG DỮ LIỆU (CÓ THANH CUỘN & CỐ ĐỊNH HEADER)
+           ========================================= */
+        .table-card { 
+            background: white; border-radius: 15px; padding: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            /* overflow: hidden; -> Bỏ cái này để scroll bên trong hoạt động tốt hơn */
+        }
+        
+        /* [ĐÃ SỬA] Tạo vùng cuộn dọc */
+        .table-responsive { 
+            overflow-x: auto; /* Cuộn ngang nếu bảng quá rộng */
+            max-height: 60vh; /* Giới hạn chiều cao (khoảng 60% màn hình) để hiện thanh cuộn dọc */
+            overflow-y: auto; /* Hiện thanh cuộn dọc khi danh sách dài */
+            border-radius: 8px; /* Bo góc cho khung bảng */
+            border: 1px solid #dee2e6; /* Viền nhẹ cho đẹp */
+        }
+        
         .table { margin-bottom: 0; }
         
         /* --- ĐỊNH DẠNG CỘT CHUNG --- */
@@ -36,68 +62,122 @@
             padding: 12px 8px;   
         }
 
+        /* [ĐÃ SỬA] Cố định Header (Sticky) */
         .table thead th {
+            position: sticky; 
+            top: 0; 
+            z-index: 10; /* Đảm bảo nằm trên nội dung khi cuộn */
+            
             font-weight: 700; color: #495057; text-transform: uppercase; 
-            font-size: 0.85rem; background-color: #f8f9fa; 
+            font-size: 0.85rem; 
+            background-color: #f8f9fa; /* Màu nền bắt buộc để che nội dung trôi bên dưới */
             border-bottom: 2px solid #dee2e6;
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); /* Bóng nhẹ ngăn cách header */
         }
 
         /* -----------------------------------------------------------
-           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH (ĐÃ CÂN ĐỐI)
+           CẤU HÌNH VỊ TRÍ & KHOẢNG CÁCH
            ----------------------------------------------------------- */
-        .table th:nth-child(1) { width: 5%; text-align: center; padding-left: 24px !important; } /* STT */
-        .table th:nth-child(2) { width: 25%; text-align: left; padding-left: 50px !important; }  /* Họ tên */
-        .table th:nth-child(3) { width: 25%; text-align: left; padding-left: 40px !important; }  /* Môn học */
-        .table th:nth-child(4) { width: 10%; text-align: center; } /* Ngày */
-        .table th:nth-child(5) { width: 8%; text-align: center; }  /* Buổi */
-        .table th:nth-child(6) { width: 12%; text-align: center; }   /* Lý do */
-        .table th:nth-child(7) { width: 8%; text-align: center; }  /* Minh chứng */
-        .table th:last-child   { width: 7%; text-align: center; padding-right: 24px !important; } /* Vắng */
 
-        /* -----------------------------------------------------------
-           CẤU HÌNH CỘT DỮ LIỆU
-           ----------------------------------------------------------- */
-        .c-stt     { text-align: center; padding-left: 24px !important; font-weight: bold; color: #6c757d; }
-        .c-name    { text-align: left; padding-left: 50px !important; }
-        .c-sub     { text-align: left; padding-left: 40px !important; }
-        .c-date    { text-align: center; font-family: 'Segoe UI', sans-serif; }
-        .c-session { text-align: center; }
-        .c-reason  { text-align: center; }
-        .c-proof   { text-align: center; }
-        .c-absent  { text-align: center; padding-right: 24px !important; }
+        /* 1. CỘT STT */
+        .table th:first-child, .table td:first-child {
+            text-align: center;
+            padding-left: 24px !important;
+            width: 5%;
+        }
+
+        /* 2. CỘT HỌ TÊN */
+        .table th:nth-child(2), .table td:nth-child(2) {
+            text-align: left;
+            padding-left: 50px !important; 
+            width: 25%;
+        }
+
+        /* 3. CỘT MÔN HỌC */
+        .table th:nth-child(3), .table td:nth-child(3) {
+            text-align: left;
+            padding-left: 40px !important; 
+            width: 25%;
+        }
+
+        /* 4. NGÀY & BUỔI */
+        .table th:nth-child(4), .table td:nth-child(4) { text-align: center; width: 10%; }
+        .table th:nth-child(5), .table td:nth-child(5) { text-align: center; width: 8%; }
+
+        /* 5. CÁC CỘT GIỮA */
+        .table th:nth-child(6), .table td:nth-child(6) { text-align: center; width: 12%; }
+        .table th:nth-child(7), .table td:nth-child(7) { text-align: center; width: 8%; }
+        
+        /* 6. CỘT VẮNG */
+        .table th:last-child, .table td:last-child {
+            text-align: center;
+            padding-right: 24px !important; 
+            width: 7%;
+        }
+
+        /* ----------------------------------------------------------- */
 
         /* Badge tên môn học */
         .badge-sub { 
             background: #f8f9fa; border: 1px solid #dee2e6; 
             color: #495057; border-radius: 6px; 
             padding: 6px 10px; font-weight: 600; 
+            
             display: inline-block;
-            width: auto; max-width: calc(100% - 25px); 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;      
-            vertical-align: middle; text-align: left;             
+            width: auto;                  
+            max-width: calc(100% - 30px); 
+            
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;      
+            vertical-align: middle;
+            text-align: left;             
         }
         
-        .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; transition: 0.2s; cursor: pointer; margin: 0 auto; }
+        /* Các nút bấm nhỏ */
+        .btn-action { 
+            width: 32px; height: 32px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 1px solid #dee2e6; background: white; color: #6c757d; 
+            transition: 0.2s; cursor: pointer; margin: 0 auto; 
+        }
         .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
+        
+        /* Dòng cảnh báo */
         .alert-row { background-color: #fff5f5 !important; }
         .alert-row td:first-child { border-left: 5px solid #dc3545; }
+        
+        /* Card chi tiết */
         .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .detail-card:hover { background: #ffe69c; transform: translateY(-2px); }
+
+        /* Ô sửa lý do */
         .editable-reason { position: relative; cursor: pointer; transition: background 0.2s; padding-right: 30px !important; }
         .editable-reason:hover { background-color: #fff3cd; }
         .edit-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; color: #0d6efd; }
         .editable-reason:hover .edit-icon { opacity: 1; }
+
         .delete-absence-icon { opacity: 0; transition: all 0.2s; cursor: pointer; color: #dc3545; margin-left: 8px; font-size: 0.9rem; }
         .subject-col:hover .delete-absence-icon { opacity: 1; }
         .subject-col:hover .delete-absence-icon:hover { transform: scale(1.2); }
 
+        /* Mobile Responsive */
         @media (max-width: 576px) {
             .navbar .container { padding-left: 10px; padding-right: 10px; }
             .stat-card { margin-bottom: 10px; }
-            .btn span { display: none; } .btn i { margin: 0; }
+            .btn span { display: none; } 
+            .btn i { margin: 0; }
             #semesterDisplay, #yearHeaderDisplay { display: none; }
+            
+            /* Tắt padding của card để bảng rộng hơn trên mobile */
             .table-card { padding: 10px; }
-            .table th, .table td { padding-left: 10px !important; padding-right: 10px !important; }
+            
+            /* Reset padding cột trên mobile */
+            .table th:first-child, .table td:first-child { padding-left: 8px !important; }
+            .table th:last-child, .table td:last-child { padding-right: 8px !important; }
+            .table th:nth-child(2), .table td:nth-child(2),
+            .table th:nth-child(3), .table td:nth-child(3) { padding-left: 10px !important; }
+            
             .badge-sub { max-width: 150px; }
         }
     </style>
@@ -105,7 +185,7 @@
 <body>
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm sticky-top">
         <div class="container">
-            <span class="navbar-brand fw-bold fs-5"><i class="fas fa-user-shield"></i> DASHBOARD QUẢN LÝ SINH VIÊN</span>
+            <span class="navbar-brand fw-bold fs-5"><i class="fas fa-user-shield"></i> DASHBOARD</span>
             
             <div class="d-flex align-items-center gap-2">
                 <div class="text-white small text-end d-none d-md-block">
@@ -143,7 +223,7 @@
                 <div class="card stat-card h-100 border-start border-4 border-danger">
                     <div class="card-body d-flex align-items-center p-3">
                         <div class="icon-box bg-danger bg-opacity-10 text-danger me-2" style="width: 40px; height: 40px; font-size: 1.2rem;"><i class="fas fa-user-times"></i></div>
-                        <div><h6 class="text-danger small fw-bold mb-0" style="font-size: 0.9rem;">SV CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-danger fs-4" id="warningCount">--</h3></div>
+                        <div><h6 class="text-danger small fw-bold mb-0" style="font-size: 0.7rem;">SV CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-danger fs-4" id="warningCount">--</h3></div>
                     </div>
                 </div>
             </div>
@@ -151,7 +231,7 @@
                 <div class="card stat-card h-100 border-start border-4 border-warning">
                     <div class="card-body d-flex align-items-center p-3">
                         <div class="icon-box bg-warning bg-opacity-10 text-warning-emphasis me-2" style="width: 40px; height: 40px; font-size: 1.2rem;"><i class="fas fa-book-dead"></i></div>
-                        <div><h6 class="text-warning-emphasis small fw-bold mb-0" style="font-size: 0.9rem;">MÔN CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-warning-emphasis fs-4" id="subWarningCount">--</h3></div>
+                        <div><h6 class="text-warning-emphasis small fw-bold mb-0" style="font-size: 0.7rem;">MÔN CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-warning-emphasis fs-4" id="subWarningCount">--</h3></div>
                     </div>
                 </div>
             </div>
@@ -191,7 +271,7 @@
             </div>
             
             <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
-                <button class="btn btn-success btn-sm" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất báo cáo</button>
+                <button class="btn btn-success btn-sm" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
                 <a href="diemdanh.html" class="btn btn-primary btn-sm" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
             </div>
         </div>
@@ -224,7 +304,7 @@
             <div class="modal-content">
                 <div class="modal-body text-center p-0">
                     <img id="proofImg" class="img-fluid w-100" style="display:none;">
-                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Chưa có minh chứng</h5></div>
+                    <div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có ảnh</h5></div>
                 </div>
             </div>
         </div>
@@ -249,16 +329,21 @@
         async function init() {
             displayUserInfo();
             checkAdminDisplay();
+
             try {
                 const semSelect = document.getElementById('semFilter');
                 const savedSem = localStorage.getItem('currentSemester');
                 if (savedSem) semSelect.value = savedSem;
+
                 const res = await fetch('/api/data/dashboard');
                 if(!res.ok) throw new Error('Lỗi Server');
+                
                 db = await res.json();
                 globalTotalStudents = db.globalTotal || 0; 
+
                 const resSub = await fetch('/api/data/subjects');
                 if(resSub.ok) allSubjectsInfo = await resSub.json();
+
                 populateYearFilter(); 
                 render();
             } catch (error) { console.error(error); db = {}; render(); }
@@ -303,14 +388,17 @@
             updateDiemDanhLink();
             const currentData = db[sem] || { total: globalTotalStudents, subjects: [], data: [] };
             const selYear = document.getElementById('yearFilter').value;
+            
             document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
             document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm: Tất cả' : `Năm: ${selYear}`;
             document.getElementById('totalCount').innerText = globalTotalStudents;
+
             const subSelect = document.getElementById('subFilter');
             const currentSubVal = subSelect.value;
             subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
             if (currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
             if (currentSubVal && currentSubVal !== 'all' && currentData.subjects.includes(currentSubVal)) subSelect.value = currentSubVal;
+
             renderTable(currentData);
             renderWarningCards(currentData.data);
         }
@@ -348,7 +436,7 @@
                     return matchSub && matchYear;
                 });
                 
-                // [ĐÃ SỬA] Logic cảnh báo chính xác theo từng môn
+                // Logic cảnh báo theo môn
                 let isWarning = false;
                 const warningSubjectsForThisStudent = new Set();
                 const subCounts = {};
