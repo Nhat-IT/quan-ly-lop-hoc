@@ -10,10 +10,10 @@ class LoginApp {
     }
     
     init() {
-        // [MỚI] Kiểm tra nếu đã đăng nhập thì vào thẳng Index
+        // Kiểm tra lần 2 (Fallback nếu script trên head chưa chạy kịp - hiếm khi xảy ra)
         const user = localStorage.getItem('user');
         if (user) {
-            window.location.href = '/index.html';
+            window.location.replace('index.html');
             return;
         }
 
@@ -38,38 +38,30 @@ class LoginApp {
             });
         }
     }
-    
+
     setupToggle() {
         this.toggleBtn.addEventListener('click', () => {
-            const isPass = this.passwordInput.type === 'password';
-            this.passwordInput.type = isPass ? 'text' : 'password';
-            this.toggleBtn.classList.toggle('toggle-visible', isPass);
+            const type = this.passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            this.passwordInput.setAttribute('type', type);
+            
+            // Toggle icon SVG
+            const openEye = this.toggleBtn.querySelector('.eye-open');
+            const closedEye = this.toggleBtn.querySelector('.eye-closed');
+            if (type === 'text') {
+                openEye.style.display = 'none';
+                closedEye.style.display = 'block';
+            } else {
+                openEye.style.display = 'block';
+                closedEye.style.display = 'none';
+            }
         });
     }
-    
-    showError(fieldId, msg) {
-        const field = document.getElementById(fieldId).closest('.organic-field');
-        const err = document.getElementById(fieldId + 'Error');
-        field.classList.add('error');
-        err.innerText = msg;
-        err.classList.add('show');
-    }
-    
-    clearError(fieldId) {
-        const field = document.getElementById(fieldId).closest('.organic-field');
-        field.classList.remove('error');
-        document.getElementById(fieldId + 'Error').classList.remove('show');
-    }
-    
+
     async handleSubmit() {
-        const username = this.usernameInput.value.trim();
-        const password = this.passwordInput.value;
-        
-        if(!username) return this.showError('username', 'Vui lòng nhập Tên đăng nhập');
-        if(!password) return this.showError('password', 'Vui lòng nhập Mật khẩu');
-        
         this.setLoading(true);
-        
+        const username = this.usernameInput.value;
+        const password = this.passwordInput.value;
+
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -80,10 +72,12 @@ class LoginApp {
             
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
-            // [QUAN TRỌNG] Lưu key 'user'
+            // Lưu thông tin User
             localStorage.setItem('user', JSON.stringify(data.user)); 
-            localStorage.setItem('lastActivity', Date.now());
             
+            // [QUAN TRỌNG] Xóa cache trang trước đó nếu có
+            sessionStorage.clear();
+
             const rememberCheckbox = document.getElementById('remember');
             if (rememberCheckbox && rememberCheckbox.checked) {
                 localStorage.setItem('rememberedUsername', username);
@@ -94,7 +88,8 @@ class LoginApp {
             this.showSuccess();
             
         } catch (err) {
-            this.showError('password', err.message);
+            this.showError('password', err.message); // Hiển thị lỗi chung ở password hoặc alert
+            if(!document.querySelector('.input-error-message')) alert(err.message);
             this.setLoading(false);
         }
     }
@@ -102,18 +97,49 @@ class LoginApp {
     setLoading(isLoading) {
         this.submitBtn.classList.toggle('loading', isLoading);
         this.submitBtn.disabled = isLoading;
+        const btnText = this.submitBtn.querySelector('.button-text');
+        if(btnText) btnText.textContent = isLoading ? 'Đang xử lý...' : 'Đăng Nhập';
     }
     
     showSuccess() {
         this.form.style.opacity = '0';
         setTimeout(() => {
             this.form.style.display = 'none';
-            document.querySelector('.nurture-signup').style.display = 'none';
-            document.getElementById('successMessage').classList.add('show');
+            const signupLink = document.querySelector('.nurture-signup');
+            if(signupLink) signupLink.style.display = 'none';
+            
+            const successMsg = document.getElementById('successMessage');
+            if(successMsg) {
+                successMsg.style.display = 'flex'; // Đảm bảo hiển thị flex để căn giữa
+                // Trigger animation (nếu có CSS animation)
+            }
         }, 300);
         
-        // [QUAN TRỌNG] Đường dẫn tuyệt đối về trang chủ
-        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
+        // [QUAN TRỌNG] Dùng replace thay vì href để xóa lịch sử Login, và trỏ thẳng về index.html
+        setTimeout(() => { 
+            window.location.replace('index.html'); 
+        }, 1500);
+    }
+
+    showError(fieldId, message) {
+        // Hàm hiển thị lỗi đơn giản (bạn có thể tùy biến thêm CSS cho đẹp)
+        const field = document.getElementById(fieldId);
+        field.parentElement.classList.add('error');
+        // Rung nhẹ input
+        field.parentElement.animate([
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-5px)' },
+            { transform: 'translateX(5px)' },
+            { transform: 'translateX(0)' }
+        ], { duration: 300 });
+    }
+
+    clearError(fieldId) {
+        const field = document.getElementById(fieldId);
+        field.parentElement.classList.remove('error');
     }
 }
-new LoginApp();
+
+document.addEventListener('DOMContentLoaded', () => {
+    new LoginApp();
+});
