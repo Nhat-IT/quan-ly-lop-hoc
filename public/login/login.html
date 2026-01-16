@@ -3,43 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>Đăng Nhập Hệ Thống</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script>
+        (function() {
+            // Kiểm tra nếu có dữ liệu user trong localStorage
+            const user = localStorage.getItem('user');
+            if (user) {
+                // Chuyển hướng ngay lập tức sang index.html
+                // Sử dụng replace để người dùng không bấm Back quay lại trang login được
+                window.location.replace('index.html');
+            }
+        })();
+    </script>
+
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header h2 { margin: 0; color: #333; font-weight: 700; }
-        .login-header p { color: #666; margin-top: 5px; }
-        .form-group { margin-bottom: 20px; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
-        .form-control:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
-        .btn-login { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-login:hover { background: #2980b9; }
-        .links { margin-top: 20px; text-align: center; font-size: 14px; }
-        .links a { color: #3498db; text-decoration: none; }
+        /* --- CSS RESPONSIVE CHO MOBILE --- */
+        @media screen and (max-width: 768px) {
+            .login-container {
+                padding: 15px;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .wellness-card {
+                width: 100%;
+                max-width: 100%;
+                padding: 25px 20px;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            .zen-logo svg { width: 45px; height: 45px; }
+            .mindful-header h1 { font-size: 1.5rem; margin-top: 10px; }
+            .mindful-header p { font-size: 0.9rem; }
+
+            .mindful-input { font-size: 16px; padding: 12px 15px; }
+
+            .nature-background .floating-leaf { opacity: 0.3; transform: scale(0.5); }
+        }
+
+        @media screen and (max-width: 400px) {
+            .mindful-options { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .harmony-button { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="login-header"><h2>ĐĂNG NHẬP</h2><p>Hệ thống quản lý sinh viên</p></div>
-        <form id="loginForm">
-            <div class="form-group"><input type="text" id="username" class="form-control" placeholder="Tên đăng nhập" required></div>
-            <div class="form-group"><input type="password" id="password" class="form-control" placeholder="Mật khẩu" required></div>
-            <button type="submit" class="btn-login">Đăng nhập</button>
-        </form>
-        <div class="links"><a href="forgot-password.html">Quên mật khẩu?</a></div>
+    <div class="nature-background">
+        <div class="floating-leaf leaf-1"></div>
+        <div class="floating-leaf leaf-2"></div>
+        <div class="floating-leaf leaf-3"></div>
+        <div class="floating-leaf leaf-4"></div>
     </div>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            try {
-                const res = await fetch('/api/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p}) });
-                const data = await res.json();
-                if(res.ok) { localStorage.setItem('user', JSON.stringify(data.user)); window.location.href = 'index.html'; } else alert(data.message);
-            } catch(e) { alert('Lỗi kết nối'); }
-        });
-    </script>
+
+    <div class="login-container">
+        <div class="wellness-card">
+            <div class="organic-border"></div>
+            
+            <div class="mindful-header">
+                <div class="zen-logo">
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                        <circle cx="28" cy="28" r="26" stroke="currentColor" stroke-width="2" fill="none" opacity="0.6"/>
+                        <circle cx="28" cy="28" r="18" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.8"/>
+                        <circle cx="28" cy="28" r="10" fill="currentColor" opacity="0.9"/>
+                    </svg>
+                </div>
+                <h1>Chào Mừng Trở Lại</h1>
+                <p>Hãy bắt đầu hành trình của bạn</p>
+            </div>
+
+            <form id="loginForm" class="breathe-form">
+                <div class="mindful-input-group">
+                    <label class="floating-label">Tên đăng nhập</label>
+                    <input type="text" class="mindful-input" id="username" required autocomplete="username">
+                    <div class="input-focus-ripple"></div>
+                </div>
+
+                <div class="mindful-input-group">
+                    <label class="floating-label">Mật khẩu</label>
+                    <input type="password" class="mindful-input" id="password" required autocomplete="current-password">
+                    <button type="button" class="eye-toggle" id="passwordToggle">
+                        <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>
+                    </button>
+                </div>
+
+                <div class="mindful-options">
+                    <label class="gentle-checkbox">
+                        <input type="checkbox" id="remember">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                        <span class="checkbox-text">Ghi nhớ đăng nhập</span>
+                    </label>
+                    <a href="forgot-password.html" class="healing-link">Quên mật khẩu?</a>
+                </div>
+
+                <button type="submit" class="harmony-button">
+                    <div class="button-earth"></div>
+                    <span class="button-text">Đăng Nhập</span>
+                    <div class="button-growth"><div class="growing-circle"></div><div class="growing-circle circle-2"></div><div class="growing-circle circle-3"></div></div>
+                </button>
+            </form>
+
+            <div class="nurture-signup">
+                <span>Chưa có tài khoản? </span>
+                <a href="#" class="growth-link">Liên hệ quản trị viên</a>
+            </div>
+
+            <div class="harmony-success" id="successMessage">
+                <div class="success-mandala">
+                    <div class="mandala-ring ring-1"></div><div class="mandala-ring ring-2"></div>
+                    <div class="mandala-center"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 14l6 6 12-12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+                </div>
+                <h3>Thành Công</h3>
+                <p>Đang chuyển hướng vào hệ thống...</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
