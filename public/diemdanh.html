@@ -16,7 +16,7 @@
             --bg-white: #ffffff; 
             --text-dark: #2c3e50; 
             --border-color: #e2e8f0; 
-            --student-grid: 15% 25% 20% 20% 20%; 
+            --student-grid: 5% 30% 20% 20% 15% 10%; 
         }
         body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-dark); padding-bottom: 100px; }
         
@@ -49,24 +49,17 @@
         .row-main-content { display: grid; grid-template-columns: var(--student-grid); align-items: center; width: 100%; padding: 12px 0; }
         .col-stt, .col-mssv, .col-class, .col-action { text-align: center; }
         
-        /* [ĐÃ SỬA] CSS Ẩn/Hiện bút chì */
+        /* CSS Ẩn/Hiện bút chì */
         .col-name { 
             padding-left: 20px; font-weight: 600; white-space: nowrap; 
             overflow: hidden; text-overflow: ellipsis; text-align: left; 
             position: relative; cursor: default;
         }
-        
         .col-name .edit-icon { 
-            visibility: hidden; /* Mặc định ẩn */
-            opacity: 0; 
-            transition: all 0.2s ease; 
-            margin-left: 10px; 
-            cursor: pointer; 
-            color: var(--primary-color);
-            padding: 5px;
+            visibility: hidden; opacity: 0; transition: all 0.2s ease; 
+            margin-left: 10px; cursor: pointer; color: var(--primary-color); padding: 5px;
         }
-        
-        /* Chỉ khi Hover vào dòng tên mới hiện */
+        /* Hover vào dòng tên mới hiện */
         .col-name:hover .edit-icon { visibility: visible; opacity: 1; }
 
         .col-action input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
@@ -74,7 +67,10 @@
         .student-row.is-absent .note-input-group { display: block !important; }
         .proof-preview img { width: 80px; height: auto; border-radius: 4px; margin-top: 5px; cursor: pointer; border: 1px solid #ddd; }
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        
+        /* [QUAN TRỌNG] Class cho nút Excel */
         .btn-excel { background-color: #217346 !important; border-color: #217346 !important; color: white !important; }
+        
         .empty-state { padding: 40px; text-align: center; background: white; border: 1px solid var(--border-color); }
 
         /* Media Queries */
@@ -102,13 +98,15 @@
             .col-stt { display: none; }
             .col-name { width: 100%; font-size: 1.1rem; margin-bottom: 5px; padding-left: 0; }
             
-            /* [ĐÃ SỬA] Trên Mobile cũng ẩn, chạm vào mới hiện (hoặc giữ nguyên hover behavior) */
+            /* Bút chì trên mobile: ẩn, active mới hiện */
             .col-name .edit-icon { visibility: hidden; opacity: 0; color: #6c757d; }
             .col-name:active .edit-icon { visibility: visible; opacity: 1; }
 
             .col-mssv, .col-class { width: auto; font-size: 0.9rem; color: #666; margin-right: 15px; text-align: left; }
             .col-mssv::before { content: "MSSV: "; } .col-class::before { content: "Lớp: "; }
             .col-action { position: absolute; right: 15px; top: 15px; }
+            
+            /* [ĐÃ SỬA] Đã xóa dòng ẩn btn-excel ở đây để nó hiện lại */
         }
     </style>
 </head>
@@ -135,28 +133,20 @@
             <div class="card bg-light p-3 mb-3 border-0 shadow-sm">
                 <label class="lbl-caption">Bộ lọc môn học</label> 
                 <div class="d-flex gap-2 align-items-center filter-row-custom">
-                    
                     <div class="filter-year">
-                        <select class="form-select fw-bold border-0 text-dark shadow-sm" id="yearSelect" onchange="filterSubjects()">
-                            </select>
+                        <select class="form-select fw-bold border-0 text-dark shadow-sm" id="yearSelect" onchange="filterSubjects()"></select>
                     </div>
-
                     <div class="filter-sem">
                         <select class="form-select fw-bold text-success border-0 shadow-sm" id="semesterSelect" onchange="filterSubjects()">
-                            <option value="HK1">HK1</option>
-                            <option value="HK2">HK2</option>
-                            <option value="HK3">HK3</option>
+                            <option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option>
                         </select>
                     </div>
-
                     <div class="filter-add-btn">
                         <button class="btn btn-success shadow-sm" onclick="openAddSubjectModal()" title="Thêm môn mới"><i class="fas fa-plus"></i></button>
                     </div>
-                    
                     <div class="filter-sub">
                         <select class="form-select fw-bold text-primary border-0 w-100 shadow-sm" id="subjectSelect" onchange="changeSubject()"></select>
                     </div>
-                    
                     <div class="filter-tools">
                         <button class="btn btn-warning shadow-sm" onclick="openEditSubjectModal()" title="Sửa môn"><i class="fas fa-pen text-white"></i></button>
                         <button class="btn btn-excel d-none d-md-block shadow-sm" id="btnImportExcel" onclick="importClassList()">
@@ -182,9 +172,7 @@
                 <div class="col-md-3 col-6">
                     <label class="lbl-caption">Buổi</label>
                     <select class="form-select fw-bold text-primary" id="sessionTime" onchange="loadSavedAttendance()">
-                        <option>Sáng</option>
-                        <option>Chiều</option>
-                        <option>Tối</option>
+                        <option>Sáng</option><option>Chiều</option><option>Tối</option>
                     </select>
                 </div>
                 <div class="col-md-6 col-12">
@@ -245,7 +233,6 @@
         let proofImages = {}; 
 
         async function init() {
-            // [MỚI] Hiển thị user info
             const userStr = localStorage.getItem('user');
             if(userStr) {
                 const user = JSON.parse(userStr);
@@ -270,8 +257,8 @@
                 const yearSelect = document.getElementById('yearSelect');
                 const yearOptionExists = Array.from(yearSelect.options).some(o => o.value === savedYear);
                 
-                if(yearOptionExists) { yearSelect.value = savedYear; } 
-                else if(yearSelect.options.length > 0) { yearSelect.selectedIndex = 0; }
+                if(yearOptionExists) yearSelect.value = savedYear;
+                else if(yearSelect.options.length > 0) yearSelect.selectedIndex = 0;
 
                 const count = filterSubjects(true); 
                 if(count === 0 && allSubjects.length > 0) {
@@ -287,7 +274,6 @@
             } catch (error) { console.error(error); }
         }
 
-        // ... (Giữ nguyên các hàm khác)
         function populateYearFilter() {
             const yearSelect = document.getElementById('yearSelect'); yearSelect.innerHTML = '';
             const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
