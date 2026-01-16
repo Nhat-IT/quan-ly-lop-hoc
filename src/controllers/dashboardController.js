@@ -2,7 +2,6 @@ const db = require('../config/db');
 
 exports.getDashboardData = async (req, res) => {
     try {
-        // Nhận tham số lọc lớp (nếu có)
         const { classFilter } = req.query;
 
         // 1. Query lấy sinh viên vắng
@@ -23,23 +22,25 @@ exports.getDashboardData = async (req, res) => {
         // 2. Query đếm tổng sinh viên
         let sqlCount = `SELECT COUNT(*) as total FROM students`;
 
-        // --- ÁP DỤNG BỘ LỌC THEO LỚP ---
         const params = [];
-        if (classFilter && classFilter !== 'admin') {
+        const countParams = [];
+
+        // [SỬA LỖI] Logic lọc Class
+        if (classFilter && classFilter !== 'admin' && classFilter !== 'undefined') {
             sqlAbsent += ` AND st.class_name = ?`;
             params.push(classFilter);
 
             sqlCount += ` WHERE class_name = ?`;
+            countParams.push(classFilter);
         }
 
         sqlAbsent += ` ORDER BY ses.session_date DESC`;
 
         const [rows] = await db.query(sqlAbsent, params);
-        const [countResult] = await db.query(sqlCount, classFilter && classFilter !== 'admin' ? [classFilter] : []);
+        const [countResult] = await db.query(sqlCount, countParams);
         
-        const realTotalStudents = countResult[0].total || 0;
+        const realTotalStudents = countResult[0]?.total || 0;
 
-        // --- XỬ LÝ DỮ LIỆU TRẢ VỀ ---
         const result = {
             "HK1": { total: realTotalStudents, subjects: [], data: [] },
             "HK2": { total: realTotalStudents, subjects: [], data: [] },

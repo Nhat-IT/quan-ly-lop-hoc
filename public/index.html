@@ -3,90 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Sinh Viên</title>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    
+    <title>Dashboard Sinh Viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="auth.js"></script> 
-    
     <style>
         body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding-bottom: 60px; }
         .stat-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
         .stat-card:hover { transform: translateY(-3px); }
         .icon-box { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
         
-        .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .table-card { background: white; border-radius: 15px; padding: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        .table-responsive { max-height: 60vh; overflow-y: auto; }
         
-        /* Bảng có thanh cuộn giới hạn 10 dòng */
-        .table-responsive { 
-            overflow-x: auto; 
-            max-height: 60vh; 
-            overflow-y: auto; 
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-        }
-        
-        /* Cố định header */
+        /* [SỬA LỖI] Căn chỉnh cột dùng width % cố định cho cả TH và TD */
+        .table { margin-bottom: 0; table-layout: fixed; width: 100%; min-width: 900px; /* Đảm bảo không bị co quá mức */ }
         .table thead th {
             position: sticky; top: 0; z-index: 10;
             background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;
             font-weight: 700; color: #495057; text-transform: uppercase; font-size: 0.85rem;
-            vertical-align: middle; padding: 12px 8px; white-space: nowrap;
+            vertical-align: middle; padding: 12px 8px;
             box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
         }
-        .table tbody td { vertical-align: middle; white-space: nowrap; padding: 12px 8px; }
+        .table tbody td { vertical-align: middle; padding: 12px 8px; word-wrap: break-word; }
 
-        /* Căn chỉnh độ rộng cột cố định */
-        .table th:nth-child(1), .table td:nth-child(1) { width: 50px; min-width: 50px; text-align: center; } /* STT */
-        .table th:nth-child(2), .table td:nth-child(2) { width: 20%; min-width: 200px; text-align: left; padding-left: 20px !important; } /* Tên */
-        .table th:nth-child(3), .table td:nth-child(3) { width: 20%; min-width: 180px; text-align: left; padding-left: 20px !important; } /* Môn */
-        .table th:nth-child(4), .table td:nth-child(4) { width: 100px; min-width: 100px; text-align: center; } /* Ngày */
-        .table th:nth-child(5), .table td:nth-child(5) { width: 80px; min-width: 80px; text-align: center; } /* Buổi */
-        .table th:nth-child(6), .table td:nth-child(6) { width: 15%; min-width: 150px; text-align: center; } /* Lý do */
-        .table th:nth-child(7), .table td:nth-child(7) { width: 80px; min-width: 80px; text-align: center; } /* Ảnh */
-        .table th:nth-child(8), .table td:nth-child(8) { width: 60px; min-width: 60px; text-align: center; } /* Vắng */
+        /* Định nghĩa độ rộng cột */
+        .col-stt { width: 50px; text-align: center; }
+        .col-name { width: 20%; text-align: left; padding-left: 15px !important; }
+        .col-sub { width: 20%; text-align: left; }
+        .col-date { width: 100px; text-align: center; }
+        .col-sess { width: 80px; text-align: center; }
+        .col-reason { width: 15%; text-align: left; }
+        .col-proof { width: 80px; text-align: center; }
+        .col-absent { width: 60px; text-align: center; }
 
-        .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 6px 10px; font-weight: 600; display: inline-block; width: auto; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .btn-action { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; cursor: pointer; margin: 0 auto; transition: 0.2s; }
-        .btn-action:hover { transform: scale(1.1); color: #0d6efd; border-color: #0d6efd; }
+        .badge-sub { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; border-radius: 6px; padding: 4px 8px; font-weight: 600; font-size: 0.85rem; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-action { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; background: white; color: #6c757d; cursor: pointer; margin: 0 auto; }
         .alert-row { background-color: #fff5f5 !important; }
         .alert-row td:first-child { border-left: 5px solid #dc3545; }
-        .detail-card { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; cursor: pointer; transition: 0.2s; }
-        .editable-reason:hover .edit-icon { opacity: 1; }
-        .edit-icon { opacity: 0; color: #0d6efd; margin-left: 5px; transition: 0.2s; }
         
-        #btnScrollTop { position: fixed; bottom: 80px; right: 20px; width: 45px; height: 45px; background: #0d6efd; color: white; border: none; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: none; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 999; cursor: pointer; transition: 0.3s; }
-        #btnScrollTop:hover { transform: translateY(-3px); background: #0b5ed7; }
-
-        @media (max-width: 576px) {
-            .table-card { padding: 10px; }
-            .btn span, #semesterDisplay, #yearHeaderDisplay { display: none; } 
-            .btn i { margin: 0; }
-        }
+        #btnScrollTop { position: fixed; bottom: 80px; right: 20px; width: 45px; height: 45px; background: #0d6efd; color: white; border: none; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 999; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
-    <button id="btnScrollTop" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
+    <button id="btnScrollTop" onclick="window.scrollTo({top:0, behavior:'smooth'})"><i class="fas fa-arrow-up"></i></button>
 
     <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm sticky-top">
         <div class="container">
             <span class="navbar-brand fw-bold fs-5"><i class="fas fa-user-shield"></i> DASHBOARD</span>
             <div class="d-flex align-items-center gap-2">
                 <div class="text-white small text-end d-none d-md-block">
-                    <div id="semesterDisplay">Đang tải...</div>
-                    <div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
+                    <div id="semesterDisplay">--</div><div id="yearHeaderDisplay" class="fw-bold text-warning">--</div> 
                 </div>
-                <div class="d-flex align-items-center text-white border-start border-white ps-3 ms-2" style="height: 35px;">
-                    <div class="text-end lh-1 me-2">
-                        <div class="fw-bold" id="userNameDisplay">--</div>
-                        <div class="badge bg-warning text-dark" id="userRoleDisplay" style="font-size: 0.6rem;">--</div>
-                    </div>
-                    <i class="fas fa-user-circle fs-3"></i>
+                <div class="d-flex align-items-center text-white border-start border-white ps-3 ms-2">
+                    <div class="text-end lh-1 me-2"><div class="fw-bold" id="userNameDisplay">--</div><div class="badge bg-warning text-dark" id="userRoleDisplay" style="font-size:0.6rem">--</div></div><i class="fas fa-user-circle fs-3"></i>
                 </div>
-                <div id="adminButtonPlaceholder"></div>
-                <button class="btn btn-outline-light btn-sm fw-bold" onclick="auth.logout()" title="Thoát"><i class="fas fa-sign-out-alt"></i></button>
+                <div id="adminBtnArea"></div>
+                <button class="btn btn-outline-light btn-sm" onclick="auth.logout()"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </div>
     </nav>
@@ -98,164 +71,150 @@
             <div class="col-6 col-md-4"><div class="card stat-card h-100 border-start border-4 border-warning"><div class="card-body d-flex align-items-center p-3"><div class="icon-box bg-warning bg-opacity-10 text-warning-emphasis me-2"><i class="fas fa-book-dead"></i></div><div><h6 class="text-warning-emphasis small fw-bold mb-0">MÔN CẢNH BÁO</h6><h3 class="fw-bold mb-0 text-warning-emphasis fs-4" id="subWarningCount">--</h3></div></div></div></div>
         </div>
 
-        <div class="card mb-4 border-0 shadow-sm" id="detailSection">
-            <div class="card-header bg-white fw-bold border-0 pt-3"><i class="fas fa-list-ul text-secondary me-2"></i> MÔN CÓ CẢNH BÁO</div>
-            <div class="card-body pt-0"><div class="row g-2" id="warningSubjectList"></div></div>
-        </div>
-
-        <div class="d-flex flex-column flex-md-row gap-2 mb-3 justify-content-between">
-            <div class="d-flex gap-2 flex-wrap align-items-center">
-                <select class="form-select form-select-sm w-auto fw-bold" id="yearFilter" onchange="render()"><option value="all">Năm: Tất cả</option></select>
-                <select class="form-select form-select-sm w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render(); updateDiemDanhLink();"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select>
-                <div class="bg-white px-2 py-1 rounded border fw-bold text-secondary shadow-sm" style="font-size: 0.9rem;">Sinh viên vắng: <span class="text-danger" id="filterTotalCount">0</span></div>
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center justify-content-between">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <select class="form-select form-select-sm w-auto fw-bold" id="yearFilter" onchange="render()"></select>
+                <select class="form-select form-select-sm w-auto fw-bold bg-primary text-white" id="semFilter" onchange="render()"><option value="HK1">HK1</option><option value="HK2">HK2</option><option value="HK3">HK3</option></select>
+                <div class="bg-white px-2 py-1 rounded border text-secondary small fw-bold">Vắng: <span class="text-danger" id="filterTotalCount">0</span></div>
                 <input type="text" class="form-control form-control-sm w-auto" id="search" onkeyup="renderTable()" placeholder="Tìm kiếm...">
                 <select class="form-select form-select-sm w-auto" id="subFilter" onchange="renderTable()"><option value="all">Tất cả môn</option></select>
-                <select class="form-select form-select-sm w-auto" id="statusFilter" onchange="renderTable()"><option value="all">Tất cả</option><option value="warning" class="text-danger">🔴 Cảnh báo</option></select>
             </div>
-            <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
-                <button class="btn btn-success btn-sm" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-                <a href="diemdanh.html" class="btn btn-primary btn-sm" id="btnDiemDanh"><i class="fas fa-pen-nib"></i> Điểm danh</a>
+            <div>
+                <a href="diemdanh.html" class="btn btn-primary btn-sm fw-bold"><i class="fas fa-pen-nib"></i> Điểm danh</a>
             </div>
         </div>
 
-        <div class="table-card p-0">
+        <div class="table-card">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="mainTable">
-                    <thead class="bg-light"><tr><th>STT</th><th>Họ và tên</th><th>Môn học</th><th>Ngày</th><th>Buổi</th><th>Lý do</th><th>Minh chứng</th><th>Vắng</th></tr></thead>
-                    <tbody id="tableBody"><tr><td colspan="8" class="text-center py-4 text-muted">Đang tải...</td></tr></tbody>
+                <table class="table table-hover mb-0" id="mainTable">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th class="col-name">Họ và tên</th>
+                            <th class="col-sub">Môn học</th>
+                            <th class="col-date">Ngày</th>
+                            <th class="col-sess">Buổi</th>
+                            <th class="col-reason">Lý do</th>
+                            <th class="col-proof">Ảnh</th>
+                            <th class="col-absent">Vắng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="proofModal"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-body text-center p-0"><img id="proofImg" class="img-fluid w-100" style="display:none;"><div id="noProof" class="py-5 text-muted" style="display:none"><i class="fas fa-file-slash fs-1 mb-3"></i><h5>Không có ảnh</h5></div></div></div></div></div>
-    
+    <div class="modal fade" id="proofModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body text-center p-0"><img id="proofImg" class="img-fluid w-100"></div></div></div></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto Logout 15p
-        let idleTime = 0; setInterval(() => { idleTime++; if(idleTime >= 15) auth.logout(); }, 60000);
-        window.onmousemove = () => idleTime = 0;
+        let idle=0; setInterval(()=>{idle++;if(idle>=15)auth.logout()},60000); window.onmousemove=()=>idle=0;
+        window.onscroll = () => document.getElementById("btnScrollTop").style.display = window.scrollY > 300 ? "flex" : "none";
 
-        let db = {}; let globalTotalStudents = 0; let allSubjectsInfo = []; let currentUser = null;
-        window.onscroll = () => document.getElementById("btnScrollTop").style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "flex" : "none";
-        function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
-        function formatDateVN(d) { if(!d) return '-'; const date=new Date(d); return isNaN(date) ? '-' : `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`; }
+        let db = {}, currentUser = null, allSubjects = [];
 
         async function init() {
             const userStr = localStorage.getItem('user');
-            if (userStr) {
-                currentUser = JSON.parse(userStr);
-                document.getElementById('userNameDisplay').innerText = currentUser.fullName || currentUser.username;
-                document.getElementById('userRoleDisplay').innerText = currentUser.role.toUpperCase();
-                if (currentUser.role === 'admin') document.getElementById('adminButtonPlaceholder').innerHTML = `<a href="quanly.html" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-user-cog"></i></a>`;
-            } else { window.location.href = 'login.html'; return; }
+            if(!userStr) return window.location.href='login.html';
+            currentUser = JSON.parse(userStr);
+            document.getElementById('userNameDisplay').innerText = currentUser.fullName;
+            document.getElementById('userRoleDisplay').innerText = currentUser.role.toUpperCase();
+            if(currentUser.role === 'admin') document.getElementById('adminBtnArea').innerHTML = `<a href="quanly.html" class="btn btn-warning btn-sm"><i class="fas fa-cog"></i></a>`;
 
             try {
-                const semSelect = document.getElementById('semFilter');
-                const savedSem = localStorage.getItem('currentSemester');
-                if (savedSem) semSelect.value = savedSem;
+                let url = '/api/data/dashboard';
+                // [SỬA LỖI] Lọc theo class chính xác
+                if(currentUser.role !== 'admin') url += `?classFilter=${encodeURIComponent(currentUser.fullName)}`;
 
-                // [QUAN TRỌNG] Gửi tham số classFilter để lọc dữ liệu theo lớp nếu không phải admin
-                let apiURL = '/api/data/dashboard';
-                if (currentUser.role !== 'admin') apiURL += `?classFilter=${encodeURIComponent(currentUser.fullName)}`;
-
-                const res = await fetch(apiURL);
-                if(!res.ok) throw new Error('Lỗi Server');
-                db = await res.json();
-                globalTotalStudents = db.globalTotal || 0; 
-                const resSub = await fetch('/api/data/subjects');
-                if(resSub.ok) allSubjectsInfo = await resSub.json();
-                populateYearFilter(); render();
-            } catch (error) { console.error(error); db = {}; render(); }
+                const [resDb, resSub] = await Promise.all([fetch(url), fetch('/api/data/subjects')]);
+                db = await resDb.json();
+                allSubjects = await resSub.json();
+                
+                populateYear();
+                render();
+            } catch(e) { console.error(e); }
         }
 
-        function populateYearFilter() {
-            const years = new Set(["2023-2024", "2024-2025", "2025-2026", "2026-2027"]); 
-            if (allSubjectsInfo.length) allSubjectsInfo.forEach(s => { if (s.school_year) years.add(s.school_year); });
-            const sel = document.getElementById('yearFilter'); sel.innerHTML = '<option value="all">Năm: Tất cả</option>';
-            Array.from(years).sort().reverse().forEach(y => sel.add(new Option(y, y)));
-            const curY = new Date().getMonth() >= 7 ? `${new Date().getFullYear()}-${new Date().getFullYear()+1}` : `${new Date().getFullYear()-1}-${new Date().getFullYear()}`;
-            if (years.has(curY)) sel.value = curY;
+        function populateYear() {
+            const ySel = document.getElementById('yearFilter'); ySel.innerHTML = '<option value="all">Năm: Tất cả</option>';
+            const years = [...new Set(allSubjects.map(s => s.school_year || '2024-2025'))].sort().reverse();
+            years.forEach(y => ySel.add(new Option(y, y)));
+            ySel.value = years[0] || 'all';
         }
 
         function render() {
             const sem = document.getElementById('semFilter').value;
-            localStorage.setItem('currentSemester', sem);
-            updateDiemDanhLink();
-            const currentData = db[sem] || { total: globalTotalStudents, subjects: [], data: [] };
-            const selYear = document.getElementById('yearFilter').value;
-            document.getElementById('semesterDisplay').innerText = `Dữ liệu: ${sem}`;
-            document.getElementById('yearHeaderDisplay').innerText = selYear === 'all' ? 'Năm: Tất cả' : `Năm: ${selYear}`;
-            document.getElementById('totalCount').innerText = globalTotalStudents;
-            const subSelect = document.getElementById('subFilter');
-            const oldSub = subSelect.value;
-            subSelect.innerHTML = '<option value="all">Tất cả môn</option>';
-            if(currentData.subjects) currentData.subjects.forEach(s => subSelect.add(new Option(s, s)));
-            if(oldSub !== 'all' && currentData.subjects.includes(oldSub)) subSelect.value = oldSub;
-            renderTable(currentData);
-            renderWarningCards(currentData.data);
+            // Lưu semester để diemdanh.html dùng
+            localStorage.setItem('currentSemester', sem); 
+            
+            const data = db[sem] || { total: 0, subjects: [], data: [] };
+            
+            document.getElementById('totalCount').innerText = db.globalTotal || 0;
+            document.getElementById('semesterDisplay').innerText = `HK: ${sem}`;
+            
+            const subSel = document.getElementById('subFilter');
+            const oldSub = subSel.value;
+            subSel.innerHTML = '<option value="all">Tất cả môn</option>';
+            data.subjects.forEach(s => subSel.add(new Option(s, s)));
+            if(data.subjects.includes(oldSub)) subSel.value = oldSub;
+
+            renderTable(data);
         }
-        
-        function updateDiemDanhLink() { const btn = document.getElementById('btnDiemDanh'); if(btn) btn.href = `diemdanh.html?semester=${document.getElementById('semFilter').value}`; }
 
-        function renderTable(currentData) {
+        function renderTable(data) {
+            // Nếu data không được truyền vào, lấy từ state
+            if(!data) data = db[document.getElementById('semFilter').value] || { total: 0, subjects: [], data: [] };
+
             const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
-            if (!currentData || !currentData.data || currentData.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Chưa có dữ liệu vắng.</td></tr>';
-                document.getElementById('warningCount').innerText = 0; document.getElementById('subWarningCount').innerText = 0; document.getElementById('filterTotalCount').innerText = 0;
-                return;
-            }
-            const search = document.getElementById('search').value.toLowerCase();
-            const subFilter = document.getElementById('subFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            const yearFilter = document.getElementById('yearFilter').value;
-            let stt = 1, warnCount = 0, subWarnSet = new Set(), visibleCount = 0;
+            if(!data.data.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Không có dữ liệu</td></tr>'; return; }
 
-            currentData.data.forEach(sv => {
-                if (search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
-                const details = sv.details.filter(d => {
-                    const matchSub = subFilter === 'all' || d.sub === subFilter;
-                    const matchYear = yearFilter === 'all' || (d.school_year || '2024-2025') === yearFilter;
-                    return matchSub && matchYear;
-                });
-                const subCounts = {};
-                details.forEach(d => subCounts[d.sub] = (subCounts[d.sub]||0) + 1);
-                let isWarning = Object.values(subCounts).some(c => c >= 2);
-                if (statusFilter === 'warning' && !isWarning) return;
-                if (details.length === 0) return;
-                visibleCount++;
-                if (isWarning) { warnCount++; Object.keys(subCounts).forEach(s => { if(subCounts[s]>=2) subWarnSet.add(s); }); }
+            const search = document.getElementById('search').value.toLowerCase();
+            const subF = document.getElementById('subFilter').value;
+            const yearF = document.getElementById('yearFilter').value;
+            
+            let stt = 1, warnCount = 0, subWarnSet = new Set(), displayCount = 0;
+
+            data.data.forEach(sv => {
+                if(search && !sv.name.toLowerCase().includes(search) && !sv.mssv.includes(search)) return;
+
+                const details = sv.details.filter(d => (subF === 'all' || d.sub === subF) && (yearF === 'all' || d.school_year === yearF));
+                if(details.length === 0) return;
+
+                const subCount = {}; details.forEach(d => subCount[d.sub] = (subCount[d.sub]||0)+1);
+                const isWarn = Object.values(subCount).some(c => c >= 2);
+                
+                if(isWarn) { warnCount++; Object.keys(subCount).forEach(s => { if(subCount[s]>=2) subWarnSet.add(s); }); }
+
+                displayCount++;
+                const rowSpan = details.length;
+                const rowClass = isWarn ? 'alert-row' : '';
+
                 details.forEach((d, i) => {
-                    const rowClass = isWarning ? 'alert-row' : '';
-                    tbody.insertAdjacentHTML('beforeend', `<tr class="${rowClass}">${i===0 ? `<td rowspan="${details.length}" class="text-center fw-bold text-muted">${stt++}</td><td rowspan="${details.length}" class="fw-bold ${isWarning?'text-danger':''}">${sv.name}<div class="small text-muted">${sv.mssv}</div></td>` : ''}<td><span class="badge-sub" title="${d.sub}">${d.sub}</span><i class="fas fa-trash-alt delete-absence-icon" onclick="removeAbsence(${d.record_id})"></i></td><td class="text-center small">${formatDateVN(d.date)}</td><td class="text-center small">${d.session_time||'-'}</td><td class="editable-reason" onclick="editReason(this, ${d.record_id})"><span class="reason-text">${d.reason||'<i class="text-muted small">--</i>'}</span><i class="fas fa-pen edit-icon"></i></td><td class="text-center"><button class="btn-action btn-sm" onclick="viewProof('${d.proof||''}')"><i class="fas fa-eye"></i></button></td>${i===0 ? `<td rowspan="${details.length}" class="text-center fw-bold ${isWarning?'text-danger':'text-success'}">${details.length}</td>` : ''}</tr>`);
+                    let html = `<tr class="${rowClass}">`;
+                    if(i === 0) {
+                        html += `<td rowspan="${rowSpan}" class="col-stt fw-bold text-muted">${stt++}</td>`;
+                        html += `<td rowspan="${rowSpan}" class="col-name fw-bold ${isWarn?'text-danger':''}">${sv.name}<div class="small text-muted">${sv.mssv}</div></td>`;
+                    }
+                    html += `<td class="col-sub"><span class="badge-sub">${d.sub}</span></td>`;
+                    html += `<td class="col-date small">${new Date(d.date).toLocaleDateString('vi-VN')}</td>`;
+                    html += `<td class="col-sess small">${d.session_time}</td>`;
+                    html += `<td class="col-reason small text-muted">${d.reason || '--'}</td>`;
+                    html += `<td class="col-proof text-center">${d.proof ? `<button class="btn-action" onclick="viewProof('${d.proof}')"><i class="fas fa-eye"></i></button>` : ''}</td>`;
+                    
+                    if(i === 0) html += `<td rowspan="${rowSpan}" class="col-absent fw-bold ${isWarn?'text-danger':'text-success'}">${rowSpan}</td>`;
+                    html += `</tr>`;
+                    tbody.insertAdjacentHTML('beforeend', html);
                 });
             });
+
             document.getElementById('warningCount').innerText = warnCount;
             document.getElementById('subWarningCount').innerText = subWarnSet.size;
-            document.getElementById('filterTotalCount').innerText = visibleCount;
+            document.getElementById('filterTotalCount').innerText = displayCount;
         }
 
-        function renderWarningCards(data) {
-            const container = document.getElementById('warningSubjectList'); container.innerHTML = '';
-            if (!data || data.length === 0) { container.innerHTML = '<div class="col-12 text-center text-muted fst-italic py-3">Không có cảnh báo.</div>'; return; }
-            const subCounts = {}; const selYear = document.getElementById('yearFilter').value;
-            data.forEach(sv => {
-                const grouped = {};
-                sv.details.filter(d => selYear === 'all' || (d.school_year||'2024-2025') === selYear).forEach(d => grouped[d.sub] = (grouped[d.sub]||0)+1);
-                for(let s in grouped) if(grouped[s]>=2) subCounts[s] = (subCounts[s]||0)+1;
-            });
-            for(let [k,v] of Object.entries(subCounts)) {
-                const t = allSubjectsInfo.find(s=>s.subject_name===k)?.teacher_name || "Chưa cập nhật";
-                container.insertAdjacentHTML('beforeend', `<div class="col-12 col-md-4"><div class="p-3 detail-card d-flex justify-content-between align-items-center" onclick="quickFilter('${k}')"><div><div class="fw-bold text-dark">${k}</div><div class="small text-muted">GV: ${t}</div></div><div class="text-end"><span class="badge bg-danger">${v} SV</span></div></div></div>`);
-            }
-        }
-        function quickFilter(s) { document.getElementById('subFilter').value=s; document.getElementById('statusFilter').value='warning'; renderTable(db[document.getElementById('semFilter').value]); document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth' }); }
-        function editReason(td, id) { if(td.querySelector('input')) return; const txt = td.querySelector('.reason-text').innerText.replace('--','').trim(); td.innerHTML = `<input type="text" class="form-control form-control-sm" value="${txt}" onblur="saveReason(this, ${id})">`; td.querySelector('input').focus(); }
-        async function saveReason(inp, id) { await fetch('/api/data/attendance/update-reason', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_id:id, reason:inp.value}) }); init(); }
-        async function removeAbsence(id) { if(confirm('Xóa vắng này?')) { await fetch('/api/data/attendance/remove-absence', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_id:id}) }); init(); } }
-        function viewProof(url) { const m = new bootstrap.Modal(document.getElementById('proofModal')); const img = document.getElementById('proofImg'); const none = document.getElementById('noProof'); if(url&&url!=='undefined') { img.src=url; img.style.display='block'; none.style.display='none'; } else { img.style.display='none'; none.style.display='block'; } m.show(); }
-        function exportExcel() { const wb = XLSX.utils.table_to_book(document.getElementById('mainTable'), {sheet:"Data"}); XLSX.writeFile(wb, "Report.xlsx"); }
-
+        function viewProof(url) { document.getElementById('proofImg').src = url; new bootstrap.Modal(document.getElementById('proofModal')).show(); }
+        
         init();
     </script>
 </body>
