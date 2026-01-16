@@ -68,7 +68,7 @@
         .proof-preview img { width: 80px; height: auto; border-radius: 4px; margin-top: 5px; cursor: pointer; border: 1px solid #ddd; }
         .bottom-bar-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         
-        /* [QUAN TRỌNG] Class cho nút Excel */
+        /* [QUAN TRỌNG] Style nút Excel */
         .btn-excel { background-color: #217346 !important; border-color: #217346 !important; color: white !important; }
         
         .empty-state { padding: 40px; text-align: center; background: white; border: 1px solid var(--border-color); }
@@ -98,7 +98,7 @@
             .col-stt { display: none; }
             .col-name { width: 100%; font-size: 1.1rem; margin-bottom: 5px; padding-left: 0; }
             
-            /* Bút chì trên mobile: ẩn, active mới hiện */
+            /* Bút chì trên mobile: ẩn, chạm vào mới hiện */
             .col-name .edit-icon { visibility: hidden; opacity: 0; color: #6c757d; }
             .col-name:active .edit-icon { visibility: visible; opacity: 1; }
 
@@ -106,7 +106,7 @@
             .col-mssv::before { content: "MSSV: "; } .col-class::before { content: "Lớp: "; }
             .col-action { position: absolute; right: 15px; top: 15px; }
             
-            /* [ĐÃ SỬA] Đã xóa dòng ẩn btn-excel ở đây để nó hiện lại */
+            /* [ĐÃ SỬA] Đã xóa dòng lệnh ẩn nút Excel ở đây */
         }
     </style>
 </head>
@@ -192,7 +192,8 @@
         <div class="d-flex justify-content-between mb-3 align-items-end">
             <span class="text-muted small">Sĩ số: <b id="studentCount">0</b> | Hiện: <b id="filteredCount">0</b></span>
             <div class="d-flex gap-2">
-                <button class="btn btn-excel d-md-none btn-sm" onclick="importClassList()"><i class="fas fa-file-excel"></i></button>
+                <button class="btn btn-excel d-md-none btn-sm" onclick="importClassList()" title="Nhập danh sách từ Excel"><i class="fas fa-file-excel"></i></button>
+                
                 <button class="btn btn-success btn-sm" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Thêm SV</button>
             </div>
         </div>
