@@ -10,10 +10,9 @@ class LoginApp {
     }
     
     init() {
-        // [MỚI] Kiểm tra nếu đã đăng nhập thì vào thẳng Index
-        const user = localStorage.getItem('user');
-        if (user) {
-            window.location.href = '/index.html';
+        // Kiểm tra ngay khi tải trang: Nếu có session thì vào luôn index
+        if (sessionStorage.getItem('user')) {
+            window.location.replace('index.html');
             return;
         }
 
@@ -80,10 +79,11 @@ class LoginApp {
             
             if(!response.ok) throw new Error(data.message || 'Đăng nhập thất bại');
             
-            // [QUAN TRỌNG] Lưu key 'user'
-            localStorage.setItem('user', JSON.stringify(data.user)); 
-            localStorage.setItem('lastActivity', Date.now());
+            // [QUAN TRỌNG] Lưu user vào sessionStorage (mất khi tắt trình duyệt)
+            sessionStorage.setItem('user', JSON.stringify(data.user)); 
+            sessionStorage.setItem('lastActivity', Date.now());
             
+            // [GIỮ NGUYÊN] Lưu tên đăng nhập vào localStorage (giữ lại khi tắt trình duyệt)
             const rememberCheckbox = document.getElementById('remember');
             if (rememberCheckbox && rememberCheckbox.checked) {
                 localStorage.setItem('rememberedUsername', username);
@@ -113,7 +113,10 @@ class LoginApp {
         }, 300);
         
         // [QUAN TRỌNG] Đường dẫn tuyệt đối về trang chủ
-        setTimeout(() => { window.location.href = '/index.html'; }, 2000);
+        setTimeout(() => { window.location.href = '/index.html'; }, 1500);
     }
 }
-new LoginApp();
+// Khởi tạo
+document.addEventListener('DOMContentLoaded', () => {
+    new LoginApp();
+});

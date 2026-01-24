@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập Hệ Thống</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        if (sessionStorage.getItem('user')) {
+            window.location.replace('index.html');
+        }
+    </script>
 </head>
 <body>
     <div class="nature-background">

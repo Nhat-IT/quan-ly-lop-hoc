@@ -10,22 +10,26 @@ class AuthGuard {
 
     // 1. KIỂM TRA ĐĂNG NHẬP
     checkLogin() {
-        const user = localStorage.getItem('user'); 
+        const user = sessionStorage.getItem('user'); 
         const path = window.location.pathname; 
 
-        // Danh sách các trang không cần kiểm tra (Trang công khai)
-        // [QUAN TRỌNG] Kiểm tra từ khóa trong đường dẫn để linh hoạt hơn
-        const isPublicPage = path.includes('/login/login.html') || path.includes('/login/forgot-password.html');
+        const isPublicPage = path.includes('login.html') || path.includes('forgot-password.html');
 
         if (!user) {
-            // Chưa đăng nhập -> Đá về Login (nếu đang ở trang nội bộ)
-            if (!isPublicPage) {
-                window.location.href = '/login/login.html'; // Đường dẫn tuyệt đối
+            // Chưa đăng nhập -> Đá về Login
+            if (!isPublicPage && path !== '/' && !path.endsWith('/')) { 
+                // Fix lỗi redirect loop nếu đang ở root nhưng chưa login
+                if (path.indexOf('.html') !== -1) {
+                    window.location.replace('login.html');
+                } else {
+                     // Trường hợp vào root / mà chưa login, server thường tự serve index.html, 
+                     // nên index.html sẽ tự check ở script init()
+                }
             }
         } else {
-            // Đã đăng nhập -> Đá về Index (nếu cố tình vào trang Login)
+            // Đã đăng nhập -> Đá về Index nếu cố vào Login
             if (isPublicPage) {
-                window.location.href = '/index.html'; // Đường dẫn tuyệt đối
+                window.location.replace('index.html');
             }
         }
     }
@@ -33,29 +37,35 @@ class AuthGuard {
     // 2. LẮNG NGHE HÀNH ĐỘNG
     setupActivityListener() {
         const resetTimer = () => {
-            localStorage.setItem('lastActivity', Date.now());
+            sessionStorage.setItem('lastActivity', Date.now());
         };
         window.addEventListener('mousemove', resetTimer);
         window.addEventListener('click', resetTimer);
         window.addEventListener('keypress', resetTimer);
         window.addEventListener('scroll', resetTimer);
-        resetTimer();
+        // Set thời gian lần đầu
+        if (!sessionStorage.getItem('lastActivity')) 
+        {
+            resetTimer();
+        }
     }
 
-    // 3. KIỂM TRA TIMEOUT
+    // 3. KIỂM TRA KHÔNG HOẠT ĐỘNG
     startInactivityCheck() {
         setInterval(() => {
-            const lastActivity = localStorage.getItem('lastActivity');
+            const lastActivity = parseInt(sessionStorage.getItem('lastActivity'));
             const now = Date.now();
-            if (lastActivity && (now - lastActivity > INACTIVITY_LIMIT)) {
-                this.logout("Hết phiên làm việc do không hoạt động!");
+            // Nếu quá thời gian và đang có user đăng nhập
+            if (sessionStorage.getItem('user') && lastActivity && (now - lastActivity > INACTIVITY_LIMIT)) {
+                this.logout("Hết phiên làm việc do không thao tác!");
             }
-        }, 10000); 
+        }, 10000); // Check mỗi 10s
     }
 
     // 4. HÀM ĐĂNG XUẤT CHUNG
     logout(message = "") {
-        localStorage.removeItem('user'); 
+        sessionStorage.clear(); // Xóa sạch session
+        localStorage.removeItem('user'); // Xóa cả local nếu lỡ có
         localStorage.removeItem('lastActivity');
         if (message) alert(message);
         // [QUAN TRỌNG] Dùng đường dẫn tuyệt đối bắt đầu bằng /
